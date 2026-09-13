@@ -61,3 +61,7 @@ Thumbs.db
 # Local review files
 sentinel_review.md
 planning/
+
+# Generated WebUI state (runs/baselines are produced by `sentinel serve` and by
+# scripts/generate_demo_data.py; they accumulated into git history once already)
+.sentinel/
