@@ -1,0 +1,69 @@
+# Chaos Scenario — tool failure injection, UNHANDLED agent (expected to FAIL)
+#
+# Run: sentinel run --path examples/chaos_scenario_unhandled.yaml
+#
+# This file is *deliberately* a failing scenario. It is the negative control for
+# chaos_scenario.yaml: identical tools, identical chaos, identical assertions — the
+# only difference is 'on_error: continue' instead of 'on_error: fallback'.
+#
+# The agent swallows the timeout and carries on without ever reaching the cache, so
+# `tool_called: cache` fails. That failure is the product working: Sentinel detects
+# an agent that does not degrade gracefully under a tool failure.
+#
+# Expected output:
+#   [FAIL] Search timeout with no fallback (1/3 assertions, ...)
+#       ✗ tool_called(tool_name='cache'): Expected tool 'cache' to be called ...
+#   [sentinel] 1 scenario(s): 0 passed, 1 failed
+#   exit code 1
+
+id: chaos-search-timeout-unhandled
+name: Search timeout with no fallback
+description: |
+  Negative control for chaos_scenario.yaml. The agent has no fallback strategy, so
+  a search timeout leaves it degraded. Expected to FAIL.
+
+task: "Search for 'current exchange rates' and report findings"
+
+env_config:
+  tools:
+    search:
+      response:
+        rates: {USD: 1.0, EUR: 0.85, GBP: 0.73}
+    cache:
+      response:
+        rates: {USD: 1.0, EUR: 0.85, GBP: 0.73}
+        source: cached-2026-01-15
+
+chaos:
+  budget:
+    max_failures: 10
+  injectors:
+    - type: tool_failure
+      tool: search
+      failure_type: timeout
+      probability: 1.0
+      seed: 42
+      error_message: "Search API timed out after 30s"
+
+agent:
+  type: script
+  # The only change from chaos_scenario.yaml:
+  on_error: continue
+  steps:
+    - tool: search
+      args:
+        query: "current exchange rates"
+
+assertions:
+  - type: tool_called
+    tool: search
+  - type: tool_called
+    tool: cache
+  - type: graceful_degradation
+
+tags:
+  - chaos
+  - timeout
+  - negative-control
+
+timeout_seconds: 60

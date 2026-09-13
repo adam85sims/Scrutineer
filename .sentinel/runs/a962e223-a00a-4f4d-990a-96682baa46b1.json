@@ -1,0 +1,30 @@
+{
+  "run_id": "a962e223-a00a-4f4d-990a-96682baa46b1",
+  "scenario_id": "agent-frameworks.full",
+  "scenario_name": "agent-frameworks.full",
+  "status": "completed",
+  "started_at": "2026-09-07T00:54:24.439498+00:00",
+  "completed_at": "2026-09-07T00:54:24.439607+00:00",
+  "result": {
+    "scenario_id": "agent-frameworks.full",
+    "scenario_name": "agent-frameworks.full",
+    "passed": true,
+    "duration_ms": 0.007867813110351562,
+    "error": null,
+    "timestamp": 1788742464.439606,
+    "assertion_results": [],
+    "trace": {
+      "total_steps": 0,
+      "total_tool_calls": 0,
+      "total_duration_ms": 0.0057220458984375,
+      "tool_names_called": [],
+      "failed_tool_calls": [],
+      "errors": [],
+      "state_changes": [],
+      "steps": [],
+      "metadata": {},
+      "start_time": 1788742464.4395971,
+      "end_time": 1788742464.4396029
+    }
+  }
+}

@@ -1,8 +1,10 @@
-# Basic Scenario — Minimal YAML test
+# Basic Scenario — minimal passing example
 #
 # Run: sentinel run --path examples/basic_scenario.yaml
 #
-# This scenario tests a simple search agent that calls one tool.
+# A deterministic reference agent calls one mocked tool. The assertions verify that
+# it did — and they can genuinely fail, because the tool call is what is being
+# observed, not a plan the assertion was copied from.
 
 id: search-basic-001
 name: Basic search agent
@@ -18,11 +20,27 @@ env_config:
           - "Refund policy: 30-day money back guarantee"
           - "Contact support@example.com for refunds"
 
-# Tags for filtering
+# The subject under test. 'script' is a built-in *reference* agent: it runs a
+# declared plan with a declared error policy. It is not an LLM. For a real agent,
+# use the Python API: ScenarioRunner().run(scenario, agent_fn=...)
+agent:
+  type: script
+  steps:
+    - tool: search
+      args:
+        query: "refund policy"
+
+assertions:
+  - type: tool_called
+    tool: search
+  - type: tool_call_count
+    tool: search
+    expected_count: 1
+  - type: no_tool_errors
+
 tags:
   - basic
   - search
   - smoke-test
 
-# Timeout in seconds
 timeout_seconds: 30

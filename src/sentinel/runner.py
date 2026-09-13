@@ -118,6 +118,17 @@ class SentinelScenario:
     assertions: list[Callable[..., None]] = field(default_factory=list)
     timeout_seconds: int = 30
     tags: list[str] = field(default_factory=list)
+    #: Declarative assertions loaded from a scenario file (see sentinel.scenario_schema).
+    #: Compiled alongside ``assertions`` at run time so that every loader — CLI, WebUI,
+    #: YAML, JSON — behaves identically.
+    assertion_specs: list[Any] = field(default_factory=list)
+    #: A scenario that declares no assertions verifies nothing, so a run of it fails
+    #: rather than reporting a green it did not earn. Set True only to collect a trace
+    #: on purpose.
+    allow_no_assertions: bool = False
+    #: Declarative agent (see sentinel.scenario_schema.compile_agent). Only used when
+    #: no explicit agent_fn is supplied to run().
+    agent_spec: dict[str, Any] = field(default_factory=dict)
 
 
 # TestScenario is the canonical public name (architecture §6.1).
@@ -231,12 +242,54 @@ class ScenarioRunner:
         else:
             resolved_env = Environment()
 
+        # Compile the scenario's declarative assertions and chaos configuration.
+        # Both raise ScenarioSchemaError on anything they cannot honour, so a
+        # malformed scenario fails loudly instead of quietly verifying nothing.
+        from sentinel.scenario_schema import compile_assertions, compile_chaos
+
+        budget = compile_chaos(scenario.chaos_config)
+        checks = list(scenario.assertions) + compile_assertions(
+            scenario.assertion_specs, budget=budget
+        )
+
+        # A scenario with no assertions proves nothing, so it must not report a pass.
+        if not checks and not scenario.allow_no_assertions:
+            duration_ms = (time.time() - start_time) * 1000
+            message = (
+                "Scenario declares no assertions — nothing would be verified. "
+                "Add an 'assertions:' block, or set allow_no_assertions: true to "
+                "collect a trace deliberately."
+            )
+            return SentinelResult(
+                scenario_id=scenario.id,
+                scenario_name=scenario.name,
+                passed=False,
+                trace=trace,
+                assertion_results=[
+                    SentinelAssertionResult(
+                        assertion_name="no_assertions_declared",
+                        passed=False,
+                        error_message=message,
+                    )
+                ],
+                duration_ms=duration_ms,
+                error=message,
+            )
+
+        # Apply chaos before the trace is attached, so wrapped tools record into it.
+        if budget is not None:
+            _apply_chaos(budget, resolved_env)
+
         # Wire trace to environment so tool calls are auto-recorded
         resolved_env.set_trace(trace)
 
         # Resolve agent function
         if agent_fn is None and scenario.agent_config:
             agent_fn = scenario.agent_config.factory
+        if agent_fn is None and scenario.agent_spec:
+            from sentinel.scenario_schema import compile_agent
+
+            agent_fn = compile_agent(scenario.agent_spec)
 
         # Run the agent
         try:
@@ -270,7 +323,7 @@ class ScenarioRunner:
         assertion_results: list[SentinelAssertionResult] = []
         all_passed = True
 
-        for assertion in scenario.assertions:
+        for assertion in checks:
             a_start = time.time()
             try:
                 assertion(trace)
@@ -337,12 +390,38 @@ class ScenarioRunner:
         builder = EnvironmentBuilder()
         tools_config = config.get("tools", {})
 
+        # Only keys that can be honoured from a file are accepted. Anything else
+        # raises: a silently dropped tool option means a scenario that does not do
+        # what its author believes it does.
+        allowed = {"response", "latency_ms", "error_probability"}
+        guidance = {
+            "side_effect": "use the scenario's 'chaos:' block instead",
+            "error_message": "set 'error_message' on a chaos injector instead",
+            "response_fn": "callables are not serialisable — use the Python API",
+            "error_factory": "callables are not serialisable — use the Python API",
+            "call_handler": "internal — use a chaos injector instead",
+        }
+
         for name, tool_cfg in tools_config.items():
+            if not isinstance(tool_cfg, dict):
+                raise ValueError(
+                    f"env_config.tools.{name} must be a mapping, got "
+                    f"{type(tool_cfg).__name__}"
+                )
+            unknown = sorted(set(tool_cfg) - allowed)
+            if unknown:
+                details = "; ".join(
+                    f"{k!r}: {guidance.get(k, 'not supported')}" for k in unknown
+                )
+                raise ValueError(
+                    f"env_config.tools.{name} has unsupported key(s): {details}. "
+                    f"Supported: {', '.join(sorted(allowed))}"
+                )
             builder.mock_tool(
                 name=name,
                 response=tool_cfg.get("response"),
-                response_fn=tool_cfg.get("response_fn"),
                 latency_ms=tool_cfg.get("latency_ms", 0.0),
+                error_probability=tool_cfg.get("error_probability", 0.0),
             )
 
         rate_limit = config.get("rate_limit")
@@ -439,22 +518,29 @@ def sentinel_test(
 def _apply_chaos(chaos: Any, env: Environment) -> None:
     """Wire chaos injectors into the environment's tools.
 
-    If ``chaos`` is a ChaosBudget, wraps matching tools with their
-    configured injectors.
+    Only ``ToolFailureInjector`` can be applied here: its ``wrap()`` configures the
+    mock tool in place. Anything else raises rather than being silently skipped — an
+    injector that quietly does nothing would let a resilience scenario pass with no
+    chaos applied at all.
     """
-    try:
-        from sentinel.chaos import ChaosBudget
-    except ImportError:
-        return
+    from sentinel.chaos import ChaosBudget, ToolFailureInjector
 
     if not isinstance(chaos, ChaosBudget):
-        return
+        raise TypeError(f"chaos must be a ChaosBudget, got {type(chaos).__name__}")
 
     for injector in chaos.get_injectors():
-        # Try to find a matching ToolFailureInjector
-        from sentinel.chaos import ToolFailureInjector
+        if not isinstance(injector, ToolFailureInjector):
+            raise NotImplementedError(
+                f"{type(injector).__name__} cannot be applied by this path yet "
+                "(only ToolFailureInjector can). It would otherwise be silently "
+                "skipped and inject nothing."
+            )
 
-        if isinstance(injector, ToolFailureInjector):
-            tool = env.get_tool(injector.tool_name)
-            if tool is not None:
-                injector.wrap(tool)
+        tool = env.get_tool(injector.tool_name)
+        if tool is None:
+            available = sorted(env.get_tools())
+            raise ValueError(
+                f"chaos targets tool {injector.tool_name!r}, which is not in the "
+                f"environment. Available tools: {available or '(none)'}"
+            )
+        injector.wrap(tool)

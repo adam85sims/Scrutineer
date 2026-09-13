@@ -117,6 +117,12 @@ def _simple_agent(task: str, env: Environment, trace: AgentTrace) -> None:
         trace.add_step(Step(step_id=1, action=StepAction.RESPOND, output="no tools"))
 
 
+# A scenario that declares no assertions verifies nothing, so ScenarioRunner fails it
+# by design (see TestScenarioNoAssertions and tests/sentinel/test_scenario_schema.py).
+# Batch/formatting tests below are about mechanics, so they carry one real check.
+_STEP_OCCURRED = [{"type": "step_count", "min_steps": 1}]
+
+
 class TestScenarioRunner:
     def test_run_passes(self):
         """Runner passes when assertions succeed."""
@@ -168,7 +174,7 @@ class TestScenarioRunner:
             id="test-crash",
             name="Crashing agent",
             task="do something",
-            assertions=[],
+            assertion_specs=[{"type": "no_tool_errors"}],
         )
 
         runner = ScenarioRunner()
@@ -201,7 +207,9 @@ class TestScenarioRunner:
     def test_run_batch(self):
         """run_batch executes multiple scenarios."""
         scenarios = [
-            SentinelScenario(id=f"batch-{i}", name=f"Batch {i}", task="task")
+            SentinelScenario(
+                id=f"batch-{i}", name=f"Batch {i}", task="task", assertion_specs=_STEP_OCCURRED
+            )
             for i in range(3)
         ]
 
@@ -214,7 +222,12 @@ class TestScenarioRunner:
     def test_run_batch_parallel(self):
         """run_batch executes multiple scenarios in parallel with max_workers."""
         scenarios = [
-            SentinelScenario(id=f"parallel-{i}", name=f"Parallel {i}", task="task")
+            SentinelScenario(
+                id=f"parallel-{i}",
+                name=f"Parallel {i}",
+                task="task",
+                assertion_specs=_STEP_OCCURRED,
+            )
             for i in range(3)
         ]
 
@@ -247,9 +260,11 @@ class TestScenarioRunner:
 
     def test_result_summary(self):
         """SentinelResult.summary formats nicely."""
-        scenario = SentinelScenario(id="x", name="Test X")
+        scenario = SentinelScenario(
+            id="x", name="Test X", assertion_specs=_STEP_OCCURRED
+        )
         runner = ScenarioRunner()
-        result = runner.run(scenario, agent_fn=lambda **kw: None)
+        result = runner.run(scenario, agent_fn=_simple_agent)
 
         summary = result.summary
         assert "[PASS]" in summary

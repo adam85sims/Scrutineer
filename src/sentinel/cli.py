@@ -87,6 +87,7 @@ def run(
         sentinel-run run --path scenarios/refund_agent.json
     """
     from sentinel.runner import ScenarioRunner, TestResult
+    from sentinel.scenario_schema import ScenarioSchemaError
 
     runner = ScenarioRunner()
 
@@ -136,17 +137,35 @@ def run(
             click.echo(f"    Task: {scenario.task}")
             click.echo(f"    Tags: {', '.join(scenario.tags) if scenario.tags else 'none'}")
 
-        result = runner.run(scenario)
+        try:
+            result = runner.run(scenario)
+        except ScenarioSchemaError as exc:
+            result = TestResult(
+                scenario_id=scenario.id,
+                scenario_name=scenario.name,
+                passed=False,
+                error=f"Invalid scenario: {exc}",
+            )
+        except (ValueError, TypeError) as exc:
+            # Raised by _build_env / _apply_chaos for malformed env or chaos blocks.
+            result = TestResult(
+                scenario_id=scenario.id,
+                scenario_name=scenario.name,
+                passed=False,
+                error=f"Invalid scenario: {exc}",
+            )
         results.append(result)
 
-        status = "PASS" if result.passed else "FAIL"
-        click.echo(f"  [{status}] {result.summary}")
+        # result.summary already carries the [PASS]/[FAIL] tag.
+        click.echo(f"  {result.summary}")
 
-        if verbose and not result.passed:
+        # Failure reasons are always shown: a test runner that hides why something
+        # failed is worse than useless.
+        if not result.passed:
             for a in result.failed_assertions():
-                click.echo(f"    ✗ {a.assertion_name}: {a.error_message}")
-            if result.error:
-                click.echo(f"    ERROR: {result.error[:200]}")
+                click.echo(f"      ✗ {a.assertion_name}: {a.error_message}")
+            if result.error and not result.failed_assertions():
+                click.echo(f"      ! {result.error}")
 
         if verbose:
             click.echo()
@@ -199,8 +218,8 @@ def run(
 # ──────────────────────────────────────────────────────
 
 
-@cli.command()
-def list() -> None:  # noqa: A001 — shadowing built-in is intentional for CLI name
+@cli.command(name="list")
+def list_scenarios() -> None:
     """List all discovered test scenarios."""
     scenarios = _discover_scenarios()
     if not scenarios:
@@ -702,6 +721,10 @@ def _load_scenario_file(path: str) -> list:
     items = data if isinstance(data, list) else [data]
 
     for item in items:
+        if not isinstance(item, dict):
+            raise ValueError(
+                f"Each scenario must be a mapping, got {type(item).__name__}: {item!r}"
+            )
         scenario = TestScenario(
             id=item.get("id", item.get("name", "unnamed")),
             name=item.get("name", item.get("id", "unnamed")),
@@ -710,6 +733,12 @@ def _load_scenario_file(path: str) -> list:
             tags=item.get("tags", []),
             timeout_seconds=item.get("timeout_seconds", 30),
             env_config=item.get("env_config", {}),
+            # 'chaos' is the documented spelling; 'chaos_config' is accepted for
+            # compatibility with the dataclass field name.
+            chaos_config=item.get("chaos", item.get("chaos_config", {})),
+            assertion_specs=item.get("assertions", []),
+            allow_no_assertions=bool(item.get("allow_no_assertions", False)),
+            agent_spec=item.get("agent", {}),
         )
         scenarios.append(scenario)
 

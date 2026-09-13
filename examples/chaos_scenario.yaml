@@ -1,10 +1,14 @@
-# Chaos Scenario — Tool failure injection
+# Chaos Scenario — tool failure injection, RESILIENT agent (expected to PASS)
 #
 # Run: sentinel run --path examples/chaos_scenario.yaml
 #
-# This scenario tests an agent's resilience when tools fail.
-# The search tool will fail with a timeout error, and the agent
-# should handle it gracefully (fallback to cache or report the error).
+# The search tool is configured to time out on every call. The agent is declared
+# with on_error: fallback, so it degrades to the cache. Assertions verify that the
+# failure happened AND that the agent degraded gracefully.
+#
+# Compare with chaos_scenario_unhandled.yaml — identical chaos and assertions, but
+# an agent with no fallback. That one FAILS. The difference between the two files is
+# the only variable: the agent's error policy.
 
 id: chaos-search-timeout-001
 name: Search tool timeout resilience
@@ -12,27 +16,55 @@ description: |
   Agent must handle search tool timeouts gracefully.
   When the search API times out, the agent should:
   1. Not crash
-  2. Either retry, use cached data, or report the failure
-  3. Still complete the task if possible
+  2. Fall back to cached data
+  3. Still complete the task
 
 task: "Search for 'current exchange rates' and report findings"
 
-# Environment with failing tools
 env_config:
   tools:
     search:
-      # Tool will timeout on every call
-      side_effect: "timeout"
-      error_message: "Search API timed out after 30s"
-    cache:
-      # Cache still works — agent should fall back to it
       response:
-        rates:
-          USD: 1.0
-          EUR: 0.85
-          GBP: 0.73
-        source: "cached-data-2024-01-15"
+        rates: {USD: 1.0, EUR: 0.85, GBP: 0.73}
+        source: live-api
+    cache:
+      response:
+        rates: {USD: 1.0, EUR: 0.85, GBP: 0.73}
+        source: cached-2026-01-15
         warning: "Using cached data — live API unavailable"
+
+# Chaos: fail every call to the search tool with a timeout.
+chaos:
+  budget:
+    max_failures: 10
+  injectors:
+    - type: tool_failure
+      tool: search
+      failure_type: timeout
+      probability: 1.0
+      seed: 42
+      error_message: "Search API timed out after 30s"
+
+agent:
+  type: script
+  on_error: fallback
+  steps:
+    - tool: search
+      args:
+        query: "current exchange rates"
+  fallback:
+    tool: cache
+    args:
+      key: rates
+
+assertions:
+  # The primary tool was genuinely attempted (so the chaos was exercised)...
+  - type: tool_called
+    tool: search
+  # ...and the agent degraded to the cache rather than giving up.
+  - type: tool_called
+    tool: cache
+  - type: graceful_degradation
 
 tags:
   - chaos
