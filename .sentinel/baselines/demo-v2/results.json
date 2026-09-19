@@ -1,362 +1,47 @@
 [
   {
-    "scenario_id": "refund-agent-timeout",
-    "scenario_name": "Refund Agent Timeout Handling",
-    "passed": true,
-    "duration_ms": 0.0,
-    "error": null,
-    "timestamp": 1784718959.7383502,
-    "assertion_results": [
-      {
-        "assertion_name": "tool_fallback_used",
-        "passed": true,
-        "error_message": null,
-        "duration_ms": 1.2
-      },
-      {
-        "assertion_name": "graceful_degradation",
-        "passed": true,
-        "error_message": null,
-        "duration_ms": 0.8
-      },
-      {
-        "assertion_name": "error_handling",
-        "passed": true,
-        "error_message": null,
-        "duration_ms": 0.5
-      },
-      {
-        "assertion_name": "response_quality",
-        "passed": true,
-        "error_message": null,
-        "duration_ms": 0.3
-      }
-    ],
-    "trace": {
-      "total_steps": 4,
-      "total_tool_calls": 2,
-      "total_duration_ms": 0.0,
-      "tool_names_called": [
-        "search",
-        "cache"
-      ],
-      "failed_tool_calls_count": 1,
-      "errors_count": 1,
-      "state_changes_count": 0,
-      "steps": [
-        {
-          "step_id": 1,
-          "action": "reason",
-          "duration_ms": 5.2,
-          "error": null
-        },
-        {
-          "step_id": 2,
-          "action": "tool_call",
-          "duration_ms": 10023.0,
-          "error": null
-        },
-        {
-          "step_id": 3,
-          "action": "tool_call",
-          "duration_ms": 8.3,
-          "error": null
-        },
-        {
-          "step_id": 4,
-          "action": "respond",
-          "duration_ms": 3.1,
-          "error": null
-        }
-      ],
-      "tool_calls": [
-        {
-          "tool_name": "search",
-          "arguments": {
-            "query": "refund policy"
-          },
-          "duration_ms": 10023.0,
-          "error": "Search API timed out",
-          "succeeded": false,
-          "step_id": 2,
-          "timestamp": 1784718959.7383502
-        },
-        {
-          "tool_name": "cache",
-          "arguments": {
-            "key": "refund_policy"
-          },
-          "duration_ms": 8.3,
-          "error": null,
-          "succeeded": true,
-          "step_id": 3,
-          "timestamp": 1784718959.7383502
-        }
-      ],
-      "errors": [
-        {
-          "message": "Search API timed out after 10s",
-          "severity": "high",
-          "recoverable": true,
-          "step_id": 2,
-          "timestamp": 1784718959.7383502
-        }
-      ],
-      "state_changes": [],
-      "metadata": {}
-    }
-  },
-  {
-    "scenario_id": "refund-agent-timeout",
-    "scenario_name": "Refund Agent Timeout Handling",
-    "passed": true,
-    "duration_ms": 0.0,
-    "error": null,
-    "timestamp": 1784718959.7391748,
-    "assertion_results": [
-      {
-        "assertion_name": "tool_fallback_used",
-        "passed": true,
-        "error_message": null,
-        "duration_ms": 1.5
-      },
-      {
-        "assertion_name": "graceful_degradation",
-        "passed": true,
-        "error_message": null,
-        "duration_ms": 0.9
-      },
-      {
-        "assertion_name": "error_handling",
-        "passed": true,
-        "error_message": null,
-        "duration_ms": 0.6
-      },
-      {
-        "assertion_name": "response_quality",
-        "passed": true,
-        "error_message": null,
-        "duration_ms": 0.4
-      }
-    ],
-    "trace": {
-      "total_steps": 4,
-      "total_tool_calls": 2,
-      "total_duration_ms": 0.0,
-      "tool_names_called": [
-        "search",
-        "cache"
-      ],
-      "failed_tool_calls_count": 1,
-      "errors_count": 1,
-      "state_changes_count": 0,
-      "steps": [
-        {
-          "step_id": 1,
-          "action": "reason",
-          "duration_ms": 5.2,
-          "error": null
-        },
-        {
-          "step_id": 2,
-          "action": "tool_call",
-          "duration_ms": 10023.0,
-          "error": null
-        },
-        {
-          "step_id": 3,
-          "action": "tool_call",
-          "duration_ms": 8.3,
-          "error": null
-        },
-        {
-          "step_id": 4,
-          "action": "respond",
-          "duration_ms": 3.1,
-          "error": null
-        }
-      ],
-      "tool_calls": [
-        {
-          "tool_name": "search",
-          "arguments": {
-            "query": "refund policy"
-          },
-          "duration_ms": 10023.0,
-          "error": "Search API timed out",
-          "succeeded": false,
-          "step_id": 2,
-          "timestamp": 1784718959.7391748
-        },
-        {
-          "tool_name": "cache",
-          "arguments": {
-            "key": "refund_policy"
-          },
-          "duration_ms": 8.3,
-          "error": null,
-          "succeeded": true,
-          "step_id": 3,
-          "timestamp": 1784718959.7391748
-        }
-      ],
-      "errors": [
-        {
-          "message": "Search API timed out after 10s",
-          "severity": "high",
-          "recoverable": true,
-          "step_id": 2,
-          "timestamp": 1784718959.7391748
-        }
-      ],
-      "state_changes": [],
-      "metadata": {}
-    }
-  },
-  {
-    "scenario_id": "refund-agent-timeout",
-    "scenario_name": "Refund Agent Timeout Handling",
-    "passed": false,
-    "duration_ms": 0.0,
-    "error": null,
-    "timestamp": 1784718959.74018,
-    "assertion_results": [
-      {
-        "assertion_name": "tool_fallback_used",
-        "passed": false,
-        "error_message": "Fallback not triggered",
-        "duration_ms": 1.0
-      },
-      {
-        "assertion_name": "graceful_degradation",
-        "passed": false,
-        "error_message": "Agent crashed or hung",
-        "duration_ms": 0.8
-      },
-      {
-        "assertion_name": "error_handling",
-        "passed": false,
-        "error_message": "Error propagated unhandled",
-        "duration_ms": 0.5
-      },
-      {
-        "assertion_name": "response_quality",
-        "passed": false,
-        "error_message": "No useful response produced",
-        "duration_ms": 0.3
-      }
-    ],
-    "trace": {
-      "total_steps": 4,
-      "total_tool_calls": 2,
-      "total_duration_ms": 0.0,
-      "tool_names_called": [
-        "search",
-        "cache"
-      ],
-      "failed_tool_calls_count": 1,
-      "errors_count": 1,
-      "state_changes_count": 0,
-      "steps": [
-        {
-          "step_id": 1,
-          "action": "reason",
-          "duration_ms": 5.2,
-          "error": null
-        },
-        {
-          "step_id": 2,
-          "action": "tool_call",
-          "duration_ms": 10023.0,
-          "error": null
-        },
-        {
-          "step_id": 3,
-          "action": "tool_call",
-          "duration_ms": 8.3,
-          "error": null
-        },
-        {
-          "step_id": 4,
-          "action": "respond",
-          "duration_ms": 3.1,
-          "error": null
-        }
-      ],
-      "tool_calls": [
-        {
-          "tool_name": "search",
-          "arguments": {
-            "query": "refund policy"
-          },
-          "duration_ms": 10023.0,
-          "error": "Search API timed out",
-          "succeeded": false,
-          "step_id": 2,
-          "timestamp": 1784718959.74018
-        },
-        {
-          "tool_name": "cache",
-          "arguments": {
-            "key": "refund_policy"
-          },
-          "duration_ms": 8.3,
-          "error": null,
-          "succeeded": true,
-          "step_id": 3,
-          "timestamp": 1784718959.74018
-        }
-      ],
-      "errors": [
-        {
-          "message": "Search API timed out after 10s",
-          "severity": "high",
-          "recoverable": true,
-          "step_id": 2,
-          "timestamp": 1784718959.74018
-        }
-      ],
-      "state_changes": [],
-      "metadata": {}
-    }
-  },
-  {
     "scenario_id": "cascade-db-api-ui",
-    "scenario_name": "Cascading Database Failure",
+    "scenario_name": "Cascading Database and API Failure",
     "passed": true,
-    "duration_ms": 0.0,
+    "duration_ms": 0.6008148193359375,
     "error": null,
-    "timestamp": 1784718959.74118,
+    "timestamp": 1789691787.763123,
     "assertion_results": [
       {
-        "assertion_name": "tool_fallback_used",
+        "assertion_name": "tool_called(tool_name='database')",
         "passed": true,
         "error_message": null,
-        "duration_ms": 1.2
+        "duration_ms": 0.0050067901611328125
       },
       {
-        "assertion_name": "graceful_degradation",
+        "assertion_name": "tool_called(tool_name='api_server')",
         "passed": true,
         "error_message": null,
-        "duration_ms": 0.8
+        "duration_ms": 0.00095367431640625
       },
       {
-        "assertion_name": "error_handling",
+        "assertion_name": "tool_called(tool_name='user_interface')",
         "passed": true,
         "error_message": null,
-        "duration_ms": 0.5
+        "duration_ms": 0.0
       },
       {
-        "assertion_name": "response_quality",
+        "assertion_name": "agent_recovers",
         "passed": true,
         "error_message": null,
-        "duration_ms": 0.3
+        "duration_ms": 0.0040531158447265625
+      },
+      {
+        "assertion_name": "chaos_resilience(chaos_budget='auto', max_failure_rate=0.7)",
+        "passed": true,
+        "error_message": null,
+        "duration_ms": 0.0030994415283203125
       }
     ],
     "trace": {
-      "total_steps": 5,
+      "total_steps": 1,
       "total_tool_calls": 3,
-      "total_duration_ms": 0.0,
+      "total_duration_ms": 0.5819797515869141,
       "tool_names_called": [
         "database",
         "api_server",
@@ -367,33 +52,9 @@
       "state_changes_count": 0,
       "steps": [
         {
-          "step_id": 1,
-          "action": "reason",
-          "duration_ms": 4.8,
-          "error": null
-        },
-        {
-          "step_id": 2,
-          "action": "tool_call",
-          "duration_ms": 8012.0,
-          "error": null
-        },
-        {
           "step_id": 3,
           "action": "tool_call",
-          "duration_ms": 1500.0,
-          "error": null
-        },
-        {
-          "step_id": 4,
-          "action": "tool_call",
-          "duration_ms": 12.0,
-          "error": null
-        },
-        {
-          "step_id": 5,
-          "action": "respond",
-          "duration_ms": 2.5,
+          "duration_ms": 0.0,
           "error": null
         }
       ],
@@ -403,313 +64,49 @@
           "arguments": {
             "query": "user 789"
           },
-          "duration_ms": 8012.0,
-          "error": "Database timeout",
+          "duration_ms": 0.015974044799804688,
+          "error": "Database connection timeout after 5000ms",
           "succeeded": false,
-          "step_id": 2,
-          "timestamp": 1784718959.74118
+          "step_id": 0,
+          "timestamp": 1789691787.763084
         },
         {
           "tool_name": "api_server",
           "arguments": {
             "path": "/user/789/orders"
           },
-          "duration_ms": 1500.0,
-          "error": "API unavailable",
+          "duration_ms": 0.005245208740234375,
+          "error": "API unavailable: upstream dependency failed",
           "succeeded": false,
-          "step_id": 3,
-          "timestamp": 1784718959.74118
+          "step_id": 0,
+          "timestamp": 1789691787.763097
         },
         {
           "tool_name": "user_interface",
           "arguments": {
             "view": "dashboard"
           },
-          "duration_ms": 12.0,
+          "duration_ms": 0.0021457672119140625,
           "error": null,
           "succeeded": true,
-          "step_id": 4,
-          "timestamp": 1784718959.74118
+          "step_id": 0,
+          "timestamp": 1789691787.763102
         }
       ],
       "errors": [
         {
-          "message": "Database connection timeout",
+          "message": "Tool 'database' failed: Database connection timeout after 5000ms",
           "severity": "high",
           "recoverable": true,
-          "step_id": 2,
-          "timestamp": 1784718959.74118
+          "step_id": 0,
+          "timestamp": 1789691787.763088
         },
         {
-          "message": "API unavailable: upstream dependency failed",
+          "message": "Tool 'api_server' failed: API unavailable: upstream dependency failed",
           "severity": "high",
           "recoverable": true,
-          "step_id": 3,
-          "timestamp": 1784718959.74118
-        }
-      ],
-      "state_changes": [],
-      "metadata": {}
-    }
-  },
-  {
-    "scenario_id": "cascade-db-api-ui",
-    "scenario_name": "Cascading Database Failure",
-    "passed": true,
-    "duration_ms": 0.0,
-    "error": null,
-    "timestamp": 1784718959.74118,
-    "assertion_results": [
-      {
-        "assertion_name": "tool_fallback_used",
-        "passed": true,
-        "error_message": null,
-        "duration_ms": 1.5
-      },
-      {
-        "assertion_name": "graceful_degradation",
-        "passed": true,
-        "error_message": null,
-        "duration_ms": 0.9
-      },
-      {
-        "assertion_name": "error_handling",
-        "passed": true,
-        "error_message": null,
-        "duration_ms": 0.6
-      },
-      {
-        "assertion_name": "response_quality",
-        "passed": true,
-        "error_message": null,
-        "duration_ms": 0.4
-      }
-    ],
-    "trace": {
-      "total_steps": 5,
-      "total_tool_calls": 3,
-      "total_duration_ms": 0.0,
-      "tool_names_called": [
-        "database",
-        "api_server",
-        "user_interface"
-      ],
-      "failed_tool_calls_count": 2,
-      "errors_count": 2,
-      "state_changes_count": 0,
-      "steps": [
-        {
-          "step_id": 1,
-          "action": "reason",
-          "duration_ms": 4.8,
-          "error": null
-        },
-        {
-          "step_id": 2,
-          "action": "tool_call",
-          "duration_ms": 8012.0,
-          "error": null
-        },
-        {
-          "step_id": 3,
-          "action": "tool_call",
-          "duration_ms": 1500.0,
-          "error": null
-        },
-        {
-          "step_id": 4,
-          "action": "tool_call",
-          "duration_ms": 12.0,
-          "error": null
-        },
-        {
-          "step_id": 5,
-          "action": "respond",
-          "duration_ms": 2.5,
-          "error": null
-        }
-      ],
-      "tool_calls": [
-        {
-          "tool_name": "database",
-          "arguments": {
-            "query": "user 789"
-          },
-          "duration_ms": 8012.0,
-          "error": "Database timeout",
-          "succeeded": false,
-          "step_id": 2,
-          "timestamp": 1784718959.74118
-        },
-        {
-          "tool_name": "api_server",
-          "arguments": {
-            "path": "/user/789/orders"
-          },
-          "duration_ms": 1500.0,
-          "error": "API unavailable",
-          "succeeded": false,
-          "step_id": 3,
-          "timestamp": 1784718959.74118
-        },
-        {
-          "tool_name": "user_interface",
-          "arguments": {
-            "view": "dashboard"
-          },
-          "duration_ms": 12.0,
-          "error": null,
-          "succeeded": true,
-          "step_id": 4,
-          "timestamp": 1784718959.74118
-        }
-      ],
-      "errors": [
-        {
-          "message": "Database connection timeout",
-          "severity": "high",
-          "recoverable": true,
-          "step_id": 2,
-          "timestamp": 1784718959.74118
-        },
-        {
-          "message": "API unavailable: upstream dependency failed",
-          "severity": "high",
-          "recoverable": true,
-          "step_id": 3,
-          "timestamp": 1784718959.74118
-        }
-      ],
-      "state_changes": [],
-      "metadata": {}
-    }
-  },
-  {
-    "scenario_id": "cascade-db-api-ui",
-    "scenario_name": "Cascading Database Failure",
-    "passed": false,
-    "duration_ms": 0.0,
-    "error": null,
-    "timestamp": 1784718959.7421813,
-    "assertion_results": [
-      {
-        "assertion_name": "tool_fallback_used",
-        "passed": false,
-        "error_message": "Fallback not triggered",
-        "duration_ms": 1.0
-      },
-      {
-        "assertion_name": "graceful_degradation",
-        "passed": false,
-        "error_message": "Agent crashed or hung",
-        "duration_ms": 0.8
-      },
-      {
-        "assertion_name": "error_handling",
-        "passed": false,
-        "error_message": "Error propagated unhandled",
-        "duration_ms": 0.5
-      },
-      {
-        "assertion_name": "response_quality",
-        "passed": false,
-        "error_message": "No useful response produced",
-        "duration_ms": 0.3
-      }
-    ],
-    "trace": {
-      "total_steps": 5,
-      "total_tool_calls": 3,
-      "total_duration_ms": 0.0,
-      "tool_names_called": [
-        "database",
-        "api_server",
-        "user_interface"
-      ],
-      "failed_tool_calls_count": 2,
-      "errors_count": 2,
-      "state_changes_count": 0,
-      "steps": [
-        {
-          "step_id": 1,
-          "action": "reason",
-          "duration_ms": 4.8,
-          "error": null
-        },
-        {
-          "step_id": 2,
-          "action": "tool_call",
-          "duration_ms": 8012.0,
-          "error": null
-        },
-        {
-          "step_id": 3,
-          "action": "tool_call",
-          "duration_ms": 1500.0,
-          "error": null
-        },
-        {
-          "step_id": 4,
-          "action": "tool_call",
-          "duration_ms": 12.0,
-          "error": null
-        },
-        {
-          "step_id": 5,
-          "action": "respond",
-          "duration_ms": 2.5,
-          "error": null
-        }
-      ],
-      "tool_calls": [
-        {
-          "tool_name": "database",
-          "arguments": {
-            "query": "user 789"
-          },
-          "duration_ms": 8012.0,
-          "error": "Database timeout",
-          "succeeded": false,
-          "step_id": 2,
-          "timestamp": 1784718959.7421813
-        },
-        {
-          "tool_name": "api_server",
-          "arguments": {
-            "path": "/user/789/orders"
-          },
-          "duration_ms": 1500.0,
-          "error": "API unavailable",
-          "succeeded": false,
-          "step_id": 3,
-          "timestamp": 1784718959.7421813
-        },
-        {
-          "tool_name": "user_interface",
-          "arguments": {
-            "view": "dashboard"
-          },
-          "duration_ms": 12.0,
-          "error": null,
-          "succeeded": true,
-          "step_id": 4,
-          "timestamp": 1784718959.7421813
-        }
-      ],
-      "errors": [
-        {
-          "message": "Database connection timeout",
-          "severity": "high",
-          "recoverable": true,
-          "step_id": 2,
-          "timestamp": 1784718959.7421813
-        },
-        {
-          "message": "API unavailable: upstream dependency failed",
-          "severity": "high",
-          "recoverable": true,
-          "step_id": 3,
-          "timestamp": 1784718959.7421813
+          "step_id": 0,
+          "timestamp": 1789691787.763098
         }
       ],
       "state_changes": [],
@@ -718,368 +115,103 @@
   },
   {
     "scenario_id": "context-degradation-long",
-    "scenario_name": "Context Degradation in Long Conversations",
-    "passed": true,
-    "duration_ms": 0.0,
-    "error": null,
-    "timestamp": 1784718959.7431803,
-    "assertion_results": [
-      {
-        "assertion_name": "tool_fallback_used",
-        "passed": true,
-        "error_message": null,
-        "duration_ms": 1.2
-      },
-      {
-        "assertion_name": "graceful_degradation",
-        "passed": true,
-        "error_message": null,
-        "duration_ms": 0.8
-      },
-      {
-        "assertion_name": "error_handling",
-        "passed": true,
-        "error_message": null,
-        "duration_ms": 0.5
-      },
-      {
-        "assertion_name": "response_quality",
-        "passed": true,
-        "error_message": null,
-        "duration_ms": 0.3
-      }
-    ],
-    "trace": {
-      "total_steps": 5,
-      "total_tool_calls": 2,
-      "total_duration_ms": 0.0,
-      "tool_names_called": [
-        "customer_lookup",
-        "order_history"
-      ],
-      "failed_tool_calls_count": 0,
-      "errors_count": 0,
-      "state_changes_count": 0,
-      "steps": [
-        {
-          "step_id": 1,
-          "action": "reason",
-          "duration_ms": 3.2,
-          "error": null
-        },
-        {
-          "step_id": 2,
-          "action": "tool_call",
-          "duration_ms": 15.0,
-          "error": null
-        },
-        {
-          "step_id": 3,
-          "action": "tool_call",
-          "duration_ms": 22.0,
-          "error": null
-        },
-        {
-          "step_id": 4,
-          "action": "error",
-          "duration_ms": 8.5,
-          "error": {
-            "message": "Formality rule not applied to response after context pressure",
-            "severity": "medium"
-          }
-        },
-        {
-          "step_id": 5,
-          "action": "respond",
-          "duration_ms": 4.0,
-          "error": null
-        }
-      ],
-      "tool_calls": [
-        {
-          "tool_name": "customer_lookup",
-          "arguments": {
-            "id": "78432"
-          },
-          "duration_ms": 15.0,
-          "error": null,
-          "succeeded": true,
-          "step_id": 2,
-          "timestamp": 1784718959.7431803
-        },
-        {
-          "tool_name": "order_history",
-          "arguments": {
-            "customer_id": "78432"
-          },
-          "duration_ms": 22.0,
-          "error": null,
-          "succeeded": true,
-          "step_id": 3,
-          "timestamp": 1784718959.7431803
-        }
-      ],
-      "errors": [],
-      "state_changes": [],
-      "metadata": {}
-    }
-  },
-  {
-    "scenario_id": "context-degradation-long",
-    "scenario_name": "Context Degradation in Long Conversations",
-    "passed": true,
-    "duration_ms": 0.0,
-    "error": null,
-    "timestamp": 1784718959.7441804,
-    "assertion_results": [
-      {
-        "assertion_name": "tool_fallback_used",
-        "passed": true,
-        "error_message": null,
-        "duration_ms": 1.5
-      },
-      {
-        "assertion_name": "graceful_degradation",
-        "passed": true,
-        "error_message": null,
-        "duration_ms": 0.9
-      },
-      {
-        "assertion_name": "error_handling",
-        "passed": true,
-        "error_message": null,
-        "duration_ms": 0.6
-      },
-      {
-        "assertion_name": "response_quality",
-        "passed": true,
-        "error_message": null,
-        "duration_ms": 0.4
-      }
-    ],
-    "trace": {
-      "total_steps": 5,
-      "total_tool_calls": 2,
-      "total_duration_ms": 0.0,
-      "tool_names_called": [
-        "customer_lookup",
-        "order_history"
-      ],
-      "failed_tool_calls_count": 0,
-      "errors_count": 0,
-      "state_changes_count": 0,
-      "steps": [
-        {
-          "step_id": 1,
-          "action": "reason",
-          "duration_ms": 3.2,
-          "error": null
-        },
-        {
-          "step_id": 2,
-          "action": "tool_call",
-          "duration_ms": 15.0,
-          "error": null
-        },
-        {
-          "step_id": 3,
-          "action": "tool_call",
-          "duration_ms": 22.0,
-          "error": null
-        },
-        {
-          "step_id": 4,
-          "action": "error",
-          "duration_ms": 8.5,
-          "error": {
-            "message": "Formality rule not applied to response after context pressure",
-            "severity": "medium"
-          }
-        },
-        {
-          "step_id": 5,
-          "action": "respond",
-          "duration_ms": 4.0,
-          "error": null
-        }
-      ],
-      "tool_calls": [
-        {
-          "tool_name": "customer_lookup",
-          "arguments": {
-            "id": "78432"
-          },
-          "duration_ms": 15.0,
-          "error": null,
-          "succeeded": true,
-          "step_id": 2,
-          "timestamp": 1784718959.7441804
-        },
-        {
-          "tool_name": "order_history",
-          "arguments": {
-            "customer_id": "78432"
-          },
-          "duration_ms": 22.0,
-          "error": null,
-          "succeeded": true,
-          "step_id": 3,
-          "timestamp": 1784718959.7441804
-        }
-      ],
-      "errors": [],
-      "state_changes": [],
-      "metadata": {}
-    }
-  },
-  {
-    "scenario_id": "context-degradation-long",
-    "scenario_name": "Context Degradation in Long Conversations",
+    "scenario_name": "Long-Session Tool Degradation",
     "passed": false,
-    "duration_ms": 0.0,
-    "error": null,
-    "timestamp": 1784718959.7441804,
-    "assertion_results": [
-      {
-        "assertion_name": "tool_fallback_used",
-        "passed": false,
-        "error_message": "Fallback not triggered",
-        "duration_ms": 1.0
-      },
-      {
-        "assertion_name": "graceful_degradation",
-        "passed": false,
-        "error_message": "Agent crashed or hung",
-        "duration_ms": 0.8
-      },
-      {
-        "assertion_name": "error_handling",
-        "passed": false,
-        "error_message": "Error propagated unhandled",
-        "duration_ms": 0.5
-      },
-      {
-        "assertion_name": "response_quality",
-        "passed": false,
-        "error_message": "No useful response produced",
-        "duration_ms": 0.3
-      }
-    ],
+    "duration_ms": 0.11777877807617188,
+    "error": "Agent crashed: Customer lookup service degraded\nTraceback (most recent call last):\n  File \"/Users/adam/Documents/projects/sentinel/src/sentinel/runner.py\", line 297, in run\n    agent_fn(\n  File \"/Users/adam/Documents/projects/sentinel/src/sentinel/script_agent.py\", line 60, in __call__\n    self._call(env, trace, step, index)\n  File \"/Users/adam/Documents/projects/sentinel/src/sentinel/script_agent.py\", line 85, in _call\n    output = tool(**step.get(\"args\", {}))\n             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/adam/Documents/projects/sentinel/src/sentinel/env.py\", line 1026, in __call__\n    result = tool(**kwargs)\n             ^^^^^^^^^^^^^^\n  File \"/Users/adam/Documents/projects/sentinel/src/sentinel/env.py\", line 130, in __call__\n    return self.call_handler(**kwargs)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/adam/Documents/projects/sentinel/src/sentinel/chaos.py\", line 368, in _injected_call\n    raise error\nsentinel.env.MockToolError: Customer lookup service degraded\n",
+    "timestamp": 1789691787.7689002,
+    "assertion_results": [],
     "trace": {
-      "total_steps": 5,
-      "total_tool_calls": 2,
-      "total_duration_ms": 0.0,
+      "total_steps": 0,
+      "total_tool_calls": 1,
+      "total_duration_ms": 0.11706352233886719,
       "tool_names_called": [
-        "customer_lookup",
-        "order_history"
+        "customer_lookup"
       ],
-      "failed_tool_calls_count": 0,
-      "errors_count": 0,
+      "failed_tool_calls_count": 1,
+      "errors_count": 1,
       "state_changes_count": 0,
-      "steps": [
-        {
-          "step_id": 1,
-          "action": "reason",
-          "duration_ms": 3.2,
-          "error": null
-        },
-        {
-          "step_id": 2,
-          "action": "tool_call",
-          "duration_ms": 15.0,
-          "error": null
-        },
-        {
-          "step_id": 3,
-          "action": "tool_call",
-          "duration_ms": 22.0,
-          "error": null
-        },
-        {
-          "step_id": 4,
-          "action": "error",
-          "duration_ms": 8.5,
-          "error": {
-            "message": "Formality rule not applied to response after context pressure",
-            "severity": "medium"
-          }
-        },
-        {
-          "step_id": 5,
-          "action": "respond",
-          "duration_ms": 4.0,
-          "error": null
-        }
-      ],
+      "steps": [],
       "tool_calls": [
         {
           "tool_name": "customer_lookup",
           "arguments": {
             "id": "78432"
           },
-          "duration_ms": 15.0,
-          "error": null,
-          "succeeded": true,
-          "step_id": 2,
-          "timestamp": 1784718959.7441804
-        },
-        {
-          "tool_name": "order_history",
-          "arguments": {
-            "customer_id": "78432"
-          },
-          "duration_ms": 22.0,
-          "error": null,
-          "succeeded": true,
-          "step_id": 3,
-          "timestamp": 1784718959.7441804
+          "duration_ms": 0.008821487426757812,
+          "error": "Customer lookup service degraded",
+          "succeeded": false,
+          "step_id": 0,
+          "timestamp": 1789691787.7686641
         }
       ],
-      "errors": [],
+      "errors": [
+        {
+          "message": "Agent execution failed: Customer lookup service degraded",
+          "severity": "critical",
+          "recoverable": false,
+          "step_id": 0,
+          "timestamp": 1789691787.768666
+        }
+      ],
       "state_changes": [],
       "metadata": {}
     }
   },
   {
-    "scenario_id": "spec-drift-pressure",
-    "scenario_name": "Spec Drift Under Error Pressure",
+    "scenario_id": "memory-pressure-evict",
+    "scenario_name": "Critical State Under Partial Tool Failure",
     "passed": true,
-    "duration_ms": 0.0,
+    "duration_ms": 0.1850128173828125,
     "error": null,
-    "timestamp": 1784718959.7451808,
+    "timestamp": 1789691787.771554,
     "assertion_results": [
       {
-        "assertion_name": "tool_fallback_used",
+        "assertion_name": "tool_called(tool_name='session_manager')",
         "passed": true,
         "error_message": null,
-        "duration_ms": 1.2
+        "duration_ms": 0.0050067901611328125
       },
       {
-        "assertion_name": "graceful_degradation",
+        "assertion_name": "tool_called(tool_name='order_service')",
         "passed": true,
         "error_message": null,
-        "duration_ms": 0.8
+        "duration_ms": 0.0019073486328125
       },
       {
-        "assertion_name": "error_handling",
+        "assertion_name": "tool_called(tool_name='payment_service')",
         "passed": true,
         "error_message": null,
-        "duration_ms": 0.5
+        "duration_ms": 0.0011920928955078125
       },
       {
-        "assertion_name": "response_quality",
+        "assertion_name": "agent_recovers",
         "passed": true,
         "error_message": null,
-        "duration_ms": 0.3
+        "duration_ms": 0.003814697265625
+      },
+      {
+        "assertion_name": "chaos_resilience(chaos_budget='auto')",
+        "passed": true,
+        "error_message": null,
+        "duration_ms": 0.0019073486328125
+      },
+      {
+        "assertion_name": "no_silent_failure",
+        "passed": true,
+        "error_message": null,
+        "duration_ms": 0.0
       }
     ],
     "trace": {
-      "total_steps": 5,
-      "total_tool_calls": 2,
-      "total_duration_ms": 0.0,
+      "total_steps": 3,
+      "total_tool_calls": 4,
+      "total_duration_ms": 0.16689300537109375,
       "tool_names_called": [
-        "availability_check",
-        "booking_service"
+        "session_manager",
+        "order_service",
+        "inventory_service",
+        "payment_service"
       ],
       "failed_tool_calls_count": 1,
       "errors_count": 1,
@@ -1087,69 +219,76 @@
       "steps": [
         {
           "step_id": 1,
-          "action": "reason",
-          "duration_ms": 4.1,
+          "action": "tool_call",
+          "duration_ms": 0.0,
           "error": null
         },
         {
           "step_id": 2,
           "action": "tool_call",
-          "duration_ms": 45.0,
-          "error": null
-        },
-        {
-          "step_id": 3,
-          "action": "tool_call",
-          "duration_ms": 2015.0,
+          "duration_ms": 0.0,
           "error": null
         },
         {
           "step_id": 4,
-          "action": "error",
-          "duration_ms": 6.2,
-          "error": {
-            "message": "Confirmation step skipped \u2014 spec violation",
-            "severity": "medium"
-          }
-        },
-        {
-          "step_id": 5,
-          "action": "respond",
-          "duration_ms": 3.0,
+          "action": "tool_call",
+          "duration_ms": 0.0,
           "error": null
         }
       ],
       "tool_calls": [
         {
-          "tool_name": "availability_check",
+          "tool_name": "session_manager",
           "arguments": {
-            "date_range": "2026-08"
+            "action": "init"
           },
-          "duration_ms": 45.0,
+          "duration_ms": 0.0030994415283203125,
           "error": null,
           "succeeded": true,
-          "step_id": 2,
-          "timestamp": 1784718959.7451808
+          "step_id": 0,
+          "timestamp": 1789691787.771511
         },
         {
-          "tool_name": "booking_service",
+          "tool_name": "order_service",
           "arguments": {
-            "date": "2026-08-15"
+            "action": "create"
           },
-          "duration_ms": 2015.0,
-          "error": "503 Service Unavailable",
+          "duration_ms": 0.00095367431640625,
+          "error": null,
+          "succeeded": true,
+          "step_id": 0,
+          "timestamp": 1789691787.7715158
+        },
+        {
+          "tool_name": "inventory_service",
+          "arguments": {
+            "sku": "PREMIUM-WIDGET"
+          },
+          "duration_ms": 0.007867813110351562,
+          "error": "Inventory check timed out under load",
           "succeeded": false,
-          "step_id": 3,
-          "timestamp": 1784718959.7451808
+          "step_id": 0,
+          "timestamp": 1789691787.7715268
+        },
+        {
+          "tool_name": "payment_service",
+          "arguments": {
+            "action": "select"
+          },
+          "duration_ms": 0.00095367431640625,
+          "error": null,
+          "succeeded": true,
+          "step_id": 0,
+          "timestamp": 1789691787.771533
         }
       ],
       "errors": [
         {
-          "message": "Booking service 503",
+          "message": "Tool 'inventory_service' failed: Inventory check timed out under load",
           "severity": "high",
           "recoverable": true,
-          "step_id": 3,
-          "timestamp": 1784718959.7451808
+          "step_id": 0,
+          "timestamp": 1789691787.77153
         }
       ],
       "state_changes": [],
@@ -1157,231 +296,44 @@
     }
   },
   {
-    "scenario_id": "spec-drift-pressure",
-    "scenario_name": "Spec Drift Under Error Pressure",
-    "passed": true,
-    "duration_ms": 0.0,
-    "error": null,
-    "timestamp": 1784718959.7461805,
-    "assertion_results": [
-      {
-        "assertion_name": "tool_fallback_used",
-        "passed": true,
-        "error_message": null,
-        "duration_ms": 1.5
-      },
-      {
-        "assertion_name": "graceful_degradation",
-        "passed": true,
-        "error_message": null,
-        "duration_ms": 0.9
-      },
-      {
-        "assertion_name": "error_handling",
-        "passed": true,
-        "error_message": null,
-        "duration_ms": 0.6
-      },
-      {
-        "assertion_name": "response_quality",
-        "passed": true,
-        "error_message": null,
-        "duration_ms": 0.4
-      }
-    ],
-    "trace": {
-      "total_steps": 5,
-      "total_tool_calls": 2,
-      "total_duration_ms": 0.0,
-      "tool_names_called": [
-        "availability_check",
-        "booking_service"
-      ],
-      "failed_tool_calls_count": 1,
-      "errors_count": 1,
-      "state_changes_count": 0,
-      "steps": [
-        {
-          "step_id": 1,
-          "action": "reason",
-          "duration_ms": 4.1,
-          "error": null
-        },
-        {
-          "step_id": 2,
-          "action": "tool_call",
-          "duration_ms": 45.0,
-          "error": null
-        },
-        {
-          "step_id": 3,
-          "action": "tool_call",
-          "duration_ms": 2015.0,
-          "error": null
-        },
-        {
-          "step_id": 4,
-          "action": "error",
-          "duration_ms": 6.2,
-          "error": {
-            "message": "Confirmation step skipped \u2014 spec violation",
-            "severity": "medium"
-          }
-        },
-        {
-          "step_id": 5,
-          "action": "respond",
-          "duration_ms": 3.0,
-          "error": null
-        }
-      ],
-      "tool_calls": [
-        {
-          "tool_name": "availability_check",
-          "arguments": {
-            "date_range": "2026-08"
-          },
-          "duration_ms": 45.0,
-          "error": null,
-          "succeeded": true,
-          "step_id": 2,
-          "timestamp": 1784718959.7461805
-        },
-        {
-          "tool_name": "booking_service",
-          "arguments": {
-            "date": "2026-08-15"
-          },
-          "duration_ms": 2015.0,
-          "error": "503 Service Unavailable",
-          "succeeded": false,
-          "step_id": 3,
-          "timestamp": 1784718959.7461805
-        }
-      ],
-      "errors": [
-        {
-          "message": "Booking service 503",
-          "severity": "high",
-          "recoverable": true,
-          "step_id": 3,
-          "timestamp": 1784718959.7461805
-        }
-      ],
-      "state_changes": [],
-      "metadata": {}
-    }
-  },
-  {
-    "scenario_id": "spec-drift-pressure",
-    "scenario_name": "Spec Drift Under Error Pressure",
+    "scenario_id": "multi-tool-resilience",
+    "scenario_name": "Multi-Tool Failure Resilience",
     "passed": false,
-    "duration_ms": 0.0,
-    "error": null,
-    "timestamp": 1784718959.7461805,
-    "assertion_results": [
-      {
-        "assertion_name": "tool_fallback_used",
-        "passed": false,
-        "error_message": "Fallback not triggered",
-        "duration_ms": 1.0
-      },
-      {
-        "assertion_name": "graceful_degradation",
-        "passed": false,
-        "error_message": "Agent crashed or hung",
-        "duration_ms": 0.8
-      },
-      {
-        "assertion_name": "error_handling",
-        "passed": false,
-        "error_message": "Error propagated unhandled",
-        "duration_ms": 0.5
-      },
-      {
-        "assertion_name": "response_quality",
-        "passed": false,
-        "error_message": "No useful response produced",
-        "duration_ms": 0.3
-      }
-    ],
+    "duration_ms": 0.15687942504882812,
+    "error": "Agent crashed: Search service timeout after 10s\nTraceback (most recent call last):\n  File \"/Users/adam/Documents/projects/sentinel/src/sentinel/runner.py\", line 297, in run\n    agent_fn(\n  File \"/Users/adam/Documents/projects/sentinel/src/sentinel/script_agent.py\", line 60, in __call__\n    self._call(env, trace, step, index)\n  File \"/Users/adam/Documents/projects/sentinel/src/sentinel/script_agent.py\", line 85, in _call\n    output = tool(**step.get(\"args\", {}))\n             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/adam/Documents/projects/sentinel/src/sentinel/env.py\", line 1026, in __call__\n    result = tool(**kwargs)\n             ^^^^^^^^^^^^^^\n  File \"/Users/adam/Documents/projects/sentinel/src/sentinel/env.py\", line 130, in __call__\n    return self.call_handler(**kwargs)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/adam/Documents/projects/sentinel/src/sentinel/chaos.py\", line 368, in _injected_call\n    raise error\nsentinel.env.TimeoutError: Search service timeout after 10s\n",
+    "timestamp": 1789691787.776663,
+    "assertion_results": [],
     "trace": {
-      "total_steps": 5,
-      "total_tool_calls": 2,
-      "total_duration_ms": 0.0,
+      "total_steps": 0,
+      "total_tool_calls": 1,
+      "total_duration_ms": 0.15616416931152344,
       "tool_names_called": [
-        "availability_check",
-        "booking_service"
+        "search"
       ],
       "failed_tool_calls_count": 1,
       "errors_count": 1,
       "state_changes_count": 0,
-      "steps": [
-        {
-          "step_id": 1,
-          "action": "reason",
-          "duration_ms": 4.1,
-          "error": null
-        },
-        {
-          "step_id": 2,
-          "action": "tool_call",
-          "duration_ms": 45.0,
-          "error": null
-        },
-        {
-          "step_id": 3,
-          "action": "tool_call",
-          "duration_ms": 2015.0,
-          "error": null
-        },
-        {
-          "step_id": 4,
-          "action": "error",
-          "duration_ms": 6.2,
-          "error": {
-            "message": "Confirmation step skipped \u2014 spec violation",
-            "severity": "medium"
-          }
-        },
-        {
-          "step_id": 5,
-          "action": "respond",
-          "duration_ms": 3.0,
-          "error": null
-        }
-      ],
+      "steps": [],
       "tool_calls": [
         {
-          "tool_name": "availability_check",
+          "tool_name": "search",
           "arguments": {
-            "date_range": "2026-08"
+            "query": "order ORD-7721"
           },
-          "duration_ms": 45.0,
-          "error": null,
-          "succeeded": true,
-          "step_id": 2,
-          "timestamp": 1784718959.7461805
-        },
-        {
-          "tool_name": "booking_service",
-          "arguments": {
-            "date": "2026-08-15"
-          },
-          "duration_ms": 2015.0,
-          "error": "503 Service Unavailable",
+          "duration_ms": 0.0050067901611328125,
+          "error": "Search service timeout after 10s",
           "succeeded": false,
-          "step_id": 3,
-          "timestamp": 1784718959.7461805
+          "step_id": 0,
+          "timestamp": 1789691787.776459
         }
       ],
       "errors": [
         {
-          "message": "Booking service 503",
-          "severity": "high",
-          "recoverable": true,
-          "step_id": 3,
-          "timestamp": 1784718959.7461805
+          "message": "Agent execution failed: Search service timeout after 10s",
+          "severity": "critical",
+          "recoverable": false,
+          "step_id": 0,
+          "timestamp": 1789691787.77646
         }
       ],
       "state_changes": [],
@@ -1390,41 +342,47 @@
   },
   {
     "scenario_id": "network-partition-db",
-    "scenario_name": "Network Partition Database Recovery",
+    "scenario_name": "Primary Database Unreachable, Replica Fallback",
     "passed": true,
-    "duration_ms": 0.0,
+    "duration_ms": 0.17309188842773438,
     "error": null,
-    "timestamp": 1784718959.7471802,
+    "timestamp": 1789691787.779573,
     "assertion_results": [
       {
-        "assertion_name": "tool_fallback_used",
+        "assertion_name": "tool_called(tool_name='primary_database')",
         "passed": true,
         "error_message": null,
-        "duration_ms": 1.2
+        "duration_ms": 0.004291534423828125
       },
       {
-        "assertion_name": "graceful_degradation",
+        "assertion_name": "tool_called(tool_name='replica_east')",
         "passed": true,
         "error_message": null,
-        "duration_ms": 0.8
+        "duration_ms": 0.0
       },
       {
-        "assertion_name": "error_handling",
+        "assertion_name": "tool_called(tool_name='replica_west')",
         "passed": true,
         "error_message": null,
-        "duration_ms": 0.5
+        "duration_ms": 0.0
       },
       {
-        "assertion_name": "response_quality",
+        "assertion_name": "agent_recovers",
         "passed": true,
         "error_message": null,
-        "duration_ms": 0.3
+        "duration_ms": 0.00286102294921875
+      },
+      {
+        "assertion_name": "chaos_resilience(chaos_budget='auto')",
+        "passed": true,
+        "error_message": null,
+        "duration_ms": 0.0021457672119140625
       }
     ],
     "trace": {
-      "total_steps": 5,
+      "total_steps": 2,
       "total_tool_calls": 3,
-      "total_duration_ms": 0.0,
+      "total_duration_ms": 0.15997886657714844,
       "tool_names_called": [
         "primary_database",
         "replica_east",
@@ -1435,33 +393,15 @@
       "state_changes_count": 0,
       "steps": [
         {
-          "step_id": 1,
-          "action": "reason",
-          "duration_ms": 3.8,
-          "error": null
-        },
-        {
           "step_id": 2,
           "action": "tool_call",
-          "duration_ms": 5012.0,
+          "duration_ms": 0.0,
           "error": null
         },
         {
           "step_id": 3,
           "action": "tool_call",
-          "duration_ms": 120.0,
-          "error": null
-        },
-        {
-          "step_id": 4,
-          "action": "tool_call",
-          "duration_ms": 135.0,
-          "error": null
-        },
-        {
-          "step_id": 5,
-          "action": "respond",
-          "duration_ms": 5.0,
+          "duration_ms": 0.0,
           "error": null
         }
       ],
@@ -1471,42 +411,42 @@
           "arguments": {
             "query": "inventory"
           },
-          "duration_ms": 5012.0,
-          "error": "Network unreachable",
+          "duration_ms": 0.009059906005859375,
+          "error": "Connection refused: network unreachable (10.0.1.50:5432)",
           "succeeded": false,
-          "step_id": 2,
-          "timestamp": 1784718959.7471802
+          "step_id": 0,
+          "timestamp": 1789691787.779549
         },
         {
           "tool_name": "replica_east",
           "arguments": {
             "query": "inventory"
           },
-          "duration_ms": 120.0,
+          "duration_ms": 0.00095367431640625,
           "error": null,
           "succeeded": true,
-          "step_id": 3,
-          "timestamp": 1784718959.7471802
+          "step_id": 0,
+          "timestamp": 1789691787.779556
         },
         {
           "tool_name": "replica_west",
           "arguments": {
             "query": "inventory"
           },
-          "duration_ms": 135.0,
+          "duration_ms": 0.00095367431640625,
           "error": null,
           "succeeded": true,
-          "step_id": 4,
-          "timestamp": 1784718959.7471802
+          "step_id": 0,
+          "timestamp": 1789691787.779559
         }
       ],
       "errors": [
         {
-          "message": "Connection refused: network unreachable",
+          "message": "Tool 'primary_database' failed: Connection refused: network unreachable (10.0.1.50:5432)",
           "severity": "high",
           "recoverable": true,
-          "step_id": 2,
-          "timestamp": 1784718959.7471802
+          "step_id": 0,
+          "timestamp": 1789691787.779552
         }
       ],
       "state_changes": [],
@@ -1514,46 +454,160 @@
     }
   },
   {
-    "scenario_id": "network-partition-db",
-    "scenario_name": "Network Partition Database Recovery",
+    "scenario_id": "rate-limit-retry",
+    "scenario_name": "Rate-Limited Tool Retry",
+    "passed": false,
+    "duration_ms": 0.09989738464355469,
+    "error": "Agent crashed: 429 Too Many Requests\nTraceback (most recent call last):\n  File \"/Users/adam/Documents/projects/sentinel/src/sentinel/runner.py\", line 297, in run\n    agent_fn(\n  File \"/Users/adam/Documents/projects/sentinel/src/sentinel/script_agent.py\", line 60, in __call__\n    self._call(env, trace, step, index)\n  File \"/Users/adam/Documents/projects/sentinel/src/sentinel/script_agent.py\", line 85, in _call\n    output = tool(**step.get(\"args\", {}))\n             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/adam/Documents/projects/sentinel/src/sentinel/env.py\", line 1026, in __call__\n    result = tool(**kwargs)\n             ^^^^^^^^^^^^^^\n  File \"/Users/adam/Documents/projects/sentinel/src/sentinel/env.py\", line 130, in __call__\n    return self.call_handler(**kwargs)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/adam/Documents/projects/sentinel/src/sentinel/chaos.py\", line 368, in _injected_call\n    raise error\nsentinel.env.RateLimitError: 429 Too Many Requests\n",
+    "timestamp": 1789691787.78334,
+    "assertion_results": [],
+    "trace": {
+      "total_steps": 0,
+      "total_tool_calls": 1,
+      "total_duration_ms": 0.09989738464355469,
+      "tool_names_called": [
+        "search_api"
+      ],
+      "failed_tool_calls_count": 1,
+      "errors_count": 1,
+      "state_changes_count": 0,
+      "steps": [],
+      "tool_calls": [
+        {
+          "tool_name": "search_api",
+          "arguments": {
+            "query": "ergonomic keyboard"
+          },
+          "duration_ms": 0.005245208740234375,
+          "error": "429 Too Many Requests",
+          "succeeded": false,
+          "step_id": 0,
+          "timestamp": 1789691787.783173
+        }
+      ],
+      "errors": [
+        {
+          "message": "Agent execution failed: 429 Too Many Requests",
+          "severity": "critical",
+          "recoverable": false,
+          "step_id": 0,
+          "timestamp": 1789691787.7831738
+        }
+      ],
+      "state_changes": [],
+      "metadata": {}
+    }
+  },
+  {
+    "scenario_id": "refund-agent-timeout",
+    "scenario_name": "Refund Agent Timeout Handling",
     "passed": true,
-    "duration_ms": 0.0,
+    "duration_ms": 0.11396408081054688,
     "error": null,
-    "timestamp": 1784718959.74818,
+    "timestamp": 1789691787.785481,
     "assertion_results": [
       {
-        "assertion_name": "tool_fallback_used",
+        "assertion_name": "tool_called(tool_name='search')",
         "passed": true,
         "error_message": null,
-        "duration_ms": 1.5
+        "duration_ms": 0.0021457672119140625
+      },
+      {
+        "assertion_name": "tool_called(tool_name='cache')",
+        "passed": true,
+        "error_message": null,
+        "duration_ms": 0.0
       },
       {
         "assertion_name": "graceful_degradation",
         "passed": true,
         "error_message": null,
-        "duration_ms": 0.9
+        "duration_ms": 0.0040531158447265625
       },
       {
-        "assertion_name": "error_handling",
+        "assertion_name": "chaos_resilience(chaos_budget='auto')",
         "passed": true,
         "error_message": null,
-        "duration_ms": 0.6
+        "duration_ms": 0.0016689300537109375
       },
       {
-        "assertion_name": "response_quality",
+        "assertion_name": "no_silent_failure",
         "passed": true,
         "error_message": null,
-        "duration_ms": 0.4
+        "duration_ms": 0.0011920928955078125
       }
     ],
     "trace": {
-      "total_steps": 5,
-      "total_tool_calls": 3,
-      "total_duration_ms": 0.0,
+      "total_steps": 1,
+      "total_tool_calls": 2,
+      "total_duration_ms": 0.10180473327636719,
       "tool_names_called": [
-        "primary_database",
-        "replica_east",
-        "replica_west"
+        "search",
+        "cache"
+      ],
+      "failed_tool_calls_count": 1,
+      "errors_count": 1,
+      "state_changes_count": 0,
+      "steps": [
+        {
+          "step_id": 2,
+          "action": "tool_call",
+          "duration_ms": 0.0,
+          "error": null
+        }
+      ],
+      "tool_calls": [
+        {
+          "tool_name": "search",
+          "arguments": {
+            "query": "refund policy"
+          },
+          "duration_ms": 0.0050067901611328125,
+          "error": "Search API timed out after 10s",
+          "succeeded": false,
+          "step_id": 0,
+          "timestamp": 1789691787.785463
+        },
+        {
+          "tool_name": "cache",
+          "arguments": {
+            "key": "order_12345"
+          },
+          "duration_ms": 0.00095367431640625,
+          "error": null,
+          "succeeded": true,
+          "step_id": 0,
+          "timestamp": 1789691787.7854679
+        }
+      ],
+      "errors": [
+        {
+          "message": "Tool 'search' failed: Search API timed out after 10s",
+          "severity": "high",
+          "recoverable": true,
+          "step_id": 0,
+          "timestamp": 1789691787.785465
+        }
+      ],
+      "state_changes": [],
+      "metadata": {}
+    }
+  },
+  {
+    "scenario_id": "spec-drift-pressure",
+    "scenario_name": "Booking Service Failure Recovery",
+    "passed": false,
+    "duration_ms": 0.11491775512695312,
+    "error": "Agent crashed: Booking service returned 503: Service temporarily unavailable\nTraceback (most recent call last):\n  File \"/Users/adam/Documents/projects/sentinel/src/sentinel/runner.py\", line 297, in run\n    agent_fn(\n  File \"/Users/adam/Documents/projects/sentinel/src/sentinel/script_agent.py\", line 60, in __call__\n    self._call(env, trace, step, index)\n  File \"/Users/adam/Documents/projects/sentinel/src/sentinel/script_agent.py\", line 85, in _call\n    output = tool(**step.get(\"args\", {}))\n             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/adam/Documents/projects/sentinel/src/sentinel/env.py\", line 1026, in __call__\n    result = tool(**kwargs)\n             ^^^^^^^^^^^^^^\n  File \"/Users/adam/Documents/projects/sentinel/src/sentinel/env.py\", line 130, in __call__\n    return self.call_handler(**kwargs)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/adam/Documents/projects/sentinel/src/sentinel/chaos.py\", line 368, in _injected_call\n    raise error\nsentinel.env.MockToolError: Booking service returned 503: Service temporarily unavailable\n",
+    "timestamp": 1789691787.789233,
+    "assertion_results": [],
+    "trace": {
+      "total_steps": 1,
+      "total_tool_calls": 2,
+      "total_duration_ms": 0.11396408081054688,
+      "tool_names_called": [
+        "availability_check",
+        "booking_service"
       ],
       "failed_tool_calls_count": 1,
       "errors_count": 1,
@@ -1561,1597 +615,42 @@
       "steps": [
         {
           "step_id": 1,
-          "action": "reason",
-          "duration_ms": 3.8,
-          "error": null
-        },
-        {
-          "step_id": 2,
           "action": "tool_call",
-          "duration_ms": 5012.0,
-          "error": null
-        },
-        {
-          "step_id": 3,
-          "action": "tool_call",
-          "duration_ms": 120.0,
-          "error": null
-        },
-        {
-          "step_id": 4,
-          "action": "tool_call",
-          "duration_ms": 135.0,
-          "error": null
-        },
-        {
-          "step_id": 5,
-          "action": "respond",
-          "duration_ms": 5.0,
+          "duration_ms": 0.0,
           "error": null
         }
       ],
       "tool_calls": [
         {
-          "tool_name": "primary_database",
+          "tool_name": "availability_check",
           "arguments": {
-            "query": "inventory"
+            "date_range": "2026-08"
           },
-          "duration_ms": 5012.0,
-          "error": "Network unreachable",
+          "duration_ms": 0.0021457672119140625,
+          "error": null,
+          "succeeded": true,
+          "step_id": 0,
+          "timestamp": 1789691787.789046
+        },
+        {
+          "tool_name": "booking_service",
+          "arguments": {
+            "date": "2026-08-15"
+          },
+          "duration_ms": 0.0050067901611328125,
+          "error": "Booking service returned 503: Service temporarily unavailable",
           "succeeded": false,
-          "step_id": 2,
-          "timestamp": 1784718959.74818
-        },
-        {
-          "tool_name": "replica_east",
-          "arguments": {
-            "query": "inventory"
-          },
-          "duration_ms": 120.0,
-          "error": null,
-          "succeeded": true,
-          "step_id": 3,
-          "timestamp": 1784718959.74818
-        },
-        {
-          "tool_name": "replica_west",
-          "arguments": {
-            "query": "inventory"
-          },
-          "duration_ms": 135.0,
-          "error": null,
-          "succeeded": true,
-          "step_id": 4,
-          "timestamp": 1784718959.74818
+          "step_id": 0,
+          "timestamp": 1789691787.789053
         }
       ],
       "errors": [
         {
-          "message": "Connection refused: network unreachable",
-          "severity": "high",
-          "recoverable": true,
-          "step_id": 2,
-          "timestamp": 1784718959.74818
-        }
-      ],
-      "state_changes": [],
-      "metadata": {}
-    }
-  },
-  {
-    "scenario_id": "network-partition-db",
-    "scenario_name": "Network Partition Database Recovery",
-    "passed": false,
-    "duration_ms": 0.0,
-    "error": null,
-    "timestamp": 1784718959.74818,
-    "assertion_results": [
-      {
-        "assertion_name": "tool_fallback_used",
-        "passed": false,
-        "error_message": "Fallback not triggered",
-        "duration_ms": 1.0
-      },
-      {
-        "assertion_name": "graceful_degradation",
-        "passed": false,
-        "error_message": "Agent crashed or hung",
-        "duration_ms": 0.8
-      },
-      {
-        "assertion_name": "error_handling",
-        "passed": false,
-        "error_message": "Error propagated unhandled",
-        "duration_ms": 0.5
-      },
-      {
-        "assertion_name": "response_quality",
-        "passed": false,
-        "error_message": "No useful response produced",
-        "duration_ms": 0.3
-      }
-    ],
-    "trace": {
-      "total_steps": 5,
-      "total_tool_calls": 3,
-      "total_duration_ms": 0.0,
-      "tool_names_called": [
-        "primary_database",
-        "replica_east",
-        "replica_west"
-      ],
-      "failed_tool_calls_count": 1,
-      "errors_count": 1,
-      "state_changes_count": 0,
-      "steps": [
-        {
-          "step_id": 1,
-          "action": "reason",
-          "duration_ms": 3.8,
-          "error": null
-        },
-        {
-          "step_id": 2,
-          "action": "tool_call",
-          "duration_ms": 5012.0,
-          "error": null
-        },
-        {
-          "step_id": 3,
-          "action": "tool_call",
-          "duration_ms": 120.0,
-          "error": null
-        },
-        {
-          "step_id": 4,
-          "action": "tool_call",
-          "duration_ms": 135.0,
-          "error": null
-        },
-        {
-          "step_id": 5,
-          "action": "respond",
-          "duration_ms": 5.0,
-          "error": null
-        }
-      ],
-      "tool_calls": [
-        {
-          "tool_name": "primary_database",
-          "arguments": {
-            "query": "inventory"
-          },
-          "duration_ms": 5012.0,
-          "error": "Network unreachable",
-          "succeeded": false,
-          "step_id": 2,
-          "timestamp": 1784718959.74818
-        },
-        {
-          "tool_name": "replica_east",
-          "arguments": {
-            "query": "inventory"
-          },
-          "duration_ms": 120.0,
-          "error": null,
-          "succeeded": true,
-          "step_id": 3,
-          "timestamp": 1784718959.74818
-        },
-        {
-          "tool_name": "replica_west",
-          "arguments": {
-            "query": "inventory"
-          },
-          "duration_ms": 135.0,
-          "error": null,
-          "succeeded": true,
-          "step_id": 4,
-          "timestamp": 1784718959.74818
-        }
-      ],
-      "errors": [
-        {
-          "message": "Connection refused: network unreachable",
-          "severity": "high",
-          "recoverable": true,
-          "step_id": 2,
-          "timestamp": 1784718959.74818
-        }
-      ],
-      "state_changes": [],
-      "metadata": {}
-    }
-  },
-  {
-    "scenario_id": "memory-pressure-evict",
-    "scenario_name": "Memory Pressure Context Eviction",
-    "passed": true,
-    "duration_ms": 0.0,
-    "error": null,
-    "timestamp": 1784718959.7491803,
-    "assertion_results": [
-      {
-        "assertion_name": "tool_fallback_used",
-        "passed": true,
-        "error_message": null,
-        "duration_ms": 1.2
-      },
-      {
-        "assertion_name": "graceful_degradation",
-        "passed": true,
-        "error_message": null,
-        "duration_ms": 0.8
-      },
-      {
-        "assertion_name": "error_handling",
-        "passed": true,
-        "error_message": null,
-        "duration_ms": 0.5
-      },
-      {
-        "assertion_name": "response_quality",
-        "passed": true,
-        "error_message": null,
-        "duration_ms": 0.3
-      }
-    ],
-    "trace": {
-      "total_steps": 6,
-      "total_tool_calls": 3,
-      "total_duration_ms": 0.0,
-      "tool_names_called": [
-        "session_manager",
-        "order_service",
-        "payment_service"
-      ],
-      "failed_tool_calls_count": 0,
-      "errors_count": 0,
-      "state_changes_count": 3,
-      "steps": [
-        {
-          "step_id": 1,
-          "action": "reason",
-          "duration_ms": 4.5,
-          "error": null
-        },
-        {
-          "step_id": 2,
-          "action": "tool_call",
-          "duration_ms": 10.0,
-          "error": null
-        },
-        {
-          "step_id": 3,
-          "action": "tool_call",
-          "duration_ms": 25.0,
-          "error": null
-        },
-        {
-          "step_id": 4,
-          "action": "tool_call",
-          "duration_ms": 18.0,
-          "error": null
-        },
-        {
-          "step_id": 5,
-          "action": "error",
-          "duration_ms": 2.0,
-          "error": {
-            "message": "Context eviction triggered at 70% threshold",
-            "severity": "medium"
-          }
-        },
-        {
-          "step_id": 6,
-          "action": "respond",
-          "duration_ms": 3.5,
-          "error": null
-        }
-      ],
-      "tool_calls": [
-        {
-          "tool_name": "session_manager",
-          "arguments": {
-            "action": "init"
-          },
-          "duration_ms": 10.0,
-          "error": null,
-          "succeeded": true,
-          "step_id": 2,
-          "timestamp": 1784718959.7491803
-        },
-        {
-          "tool_name": "order_service",
-          "arguments": {
-            "action": "create"
-          },
-          "duration_ms": 25.0,
-          "error": null,
-          "succeeded": true,
-          "step_id": 3,
-          "timestamp": 1784718959.7491803
-        },
-        {
-          "tool_name": "payment_service",
-          "arguments": {
-            "action": "select"
-          },
-          "duration_ms": 18.0,
-          "error": null,
-          "succeeded": true,
-          "step_id": 4,
-          "timestamp": 1784718959.7491803
-        }
-      ],
-      "errors": [],
-      "state_changes": [
-        {
-          "key": "session",
-          "old_value": null,
-          "new_value": "sess_a1b2c3d4",
-          "step_id": 2,
-          "timestamp": 1784718959.7491803
-        },
-        {
-          "key": "order_id",
-          "old_value": null,
-          "new_value": "ORD-5521",
-          "step_id": 3,
-          "timestamp": 1784718959.7491803
-        },
-        {
-          "key": "payment_method",
-          "old_value": null,
-          "new_value": "credit_card",
-          "step_id": 4,
-          "timestamp": 1784718959.7491803
-        }
-      ],
-      "metadata": {}
-    }
-  },
-  {
-    "scenario_id": "memory-pressure-evict",
-    "scenario_name": "Memory Pressure Context Eviction",
-    "passed": true,
-    "duration_ms": 0.0,
-    "error": null,
-    "timestamp": 1784718959.7491803,
-    "assertion_results": [
-      {
-        "assertion_name": "tool_fallback_used",
-        "passed": true,
-        "error_message": null,
-        "duration_ms": 1.5
-      },
-      {
-        "assertion_name": "graceful_degradation",
-        "passed": true,
-        "error_message": null,
-        "duration_ms": 0.9
-      },
-      {
-        "assertion_name": "error_handling",
-        "passed": true,
-        "error_message": null,
-        "duration_ms": 0.6
-      },
-      {
-        "assertion_name": "response_quality",
-        "passed": true,
-        "error_message": null,
-        "duration_ms": 0.4
-      }
-    ],
-    "trace": {
-      "total_steps": 6,
-      "total_tool_calls": 3,
-      "total_duration_ms": 0.0,
-      "tool_names_called": [
-        "session_manager",
-        "order_service",
-        "payment_service"
-      ],
-      "failed_tool_calls_count": 0,
-      "errors_count": 0,
-      "state_changes_count": 3,
-      "steps": [
-        {
-          "step_id": 1,
-          "action": "reason",
-          "duration_ms": 4.5,
-          "error": null
-        },
-        {
-          "step_id": 2,
-          "action": "tool_call",
-          "duration_ms": 10.0,
-          "error": null
-        },
-        {
-          "step_id": 3,
-          "action": "tool_call",
-          "duration_ms": 25.0,
-          "error": null
-        },
-        {
-          "step_id": 4,
-          "action": "tool_call",
-          "duration_ms": 18.0,
-          "error": null
-        },
-        {
-          "step_id": 5,
-          "action": "error",
-          "duration_ms": 2.0,
-          "error": {
-            "message": "Context eviction triggered at 70% threshold",
-            "severity": "medium"
-          }
-        },
-        {
-          "step_id": 6,
-          "action": "respond",
-          "duration_ms": 3.5,
-          "error": null
-        }
-      ],
-      "tool_calls": [
-        {
-          "tool_name": "session_manager",
-          "arguments": {
-            "action": "init"
-          },
-          "duration_ms": 10.0,
-          "error": null,
-          "succeeded": true,
-          "step_id": 2,
-          "timestamp": 1784718959.7491803
-        },
-        {
-          "tool_name": "order_service",
-          "arguments": {
-            "action": "create"
-          },
-          "duration_ms": 25.0,
-          "error": null,
-          "succeeded": true,
-          "step_id": 3,
-          "timestamp": 1784718959.7491803
-        },
-        {
-          "tool_name": "payment_service",
-          "arguments": {
-            "action": "select"
-          },
-          "duration_ms": 18.0,
-          "error": null,
-          "succeeded": true,
-          "step_id": 4,
-          "timestamp": 1784718959.7491803
-        }
-      ],
-      "errors": [],
-      "state_changes": [
-        {
-          "key": "session",
-          "old_value": null,
-          "new_value": "sess_a1b2c3d4",
-          "step_id": 2,
-          "timestamp": 1784718959.7491803
-        },
-        {
-          "key": "order_id",
-          "old_value": null,
-          "new_value": "ORD-5521",
-          "step_id": 3,
-          "timestamp": 1784718959.7491803
-        },
-        {
-          "key": "payment_method",
-          "old_value": null,
-          "new_value": "credit_card",
-          "step_id": 4,
-          "timestamp": 1784718959.7491803
-        }
-      ],
-      "metadata": {}
-    }
-  },
-  {
-    "scenario_id": "memory-pressure-evict",
-    "scenario_name": "Memory Pressure Context Eviction",
-    "passed": false,
-    "duration_ms": 0.0,
-    "error": null,
-    "timestamp": 1784718959.7503035,
-    "assertion_results": [
-      {
-        "assertion_name": "tool_fallback_used",
-        "passed": false,
-        "error_message": "Fallback not triggered",
-        "duration_ms": 1.0
-      },
-      {
-        "assertion_name": "graceful_degradation",
-        "passed": false,
-        "error_message": "Agent crashed or hung",
-        "duration_ms": 0.8
-      },
-      {
-        "assertion_name": "error_handling",
-        "passed": false,
-        "error_message": "Error propagated unhandled",
-        "duration_ms": 0.5
-      },
-      {
-        "assertion_name": "response_quality",
-        "passed": false,
-        "error_message": "No useful response produced",
-        "duration_ms": 0.3
-      }
-    ],
-    "trace": {
-      "total_steps": 6,
-      "total_tool_calls": 3,
-      "total_duration_ms": 0.0,
-      "tool_names_called": [
-        "session_manager",
-        "order_service",
-        "payment_service"
-      ],
-      "failed_tool_calls_count": 0,
-      "errors_count": 0,
-      "state_changes_count": 3,
-      "steps": [
-        {
-          "step_id": 1,
-          "action": "reason",
-          "duration_ms": 4.5,
-          "error": null
-        },
-        {
-          "step_id": 2,
-          "action": "tool_call",
-          "duration_ms": 10.0,
-          "error": null
-        },
-        {
-          "step_id": 3,
-          "action": "tool_call",
-          "duration_ms": 25.0,
-          "error": null
-        },
-        {
-          "step_id": 4,
-          "action": "tool_call",
-          "duration_ms": 18.0,
-          "error": null
-        },
-        {
-          "step_id": 5,
-          "action": "error",
-          "duration_ms": 2.0,
-          "error": {
-            "message": "Context eviction triggered at 70% threshold",
-            "severity": "medium"
-          }
-        },
-        {
-          "step_id": 6,
-          "action": "respond",
-          "duration_ms": 3.5,
-          "error": null
-        }
-      ],
-      "tool_calls": [
-        {
-          "tool_name": "session_manager",
-          "arguments": {
-            "action": "init"
-          },
-          "duration_ms": 10.0,
-          "error": null,
-          "succeeded": true,
-          "step_id": 2,
-          "timestamp": 1784718959.7503035
-        },
-        {
-          "tool_name": "order_service",
-          "arguments": {
-            "action": "create"
-          },
-          "duration_ms": 25.0,
-          "error": null,
-          "succeeded": true,
-          "step_id": 3,
-          "timestamp": 1784718959.7503035
-        },
-        {
-          "tool_name": "payment_service",
-          "arguments": {
-            "action": "select"
-          },
-          "duration_ms": 18.0,
-          "error": null,
-          "succeeded": true,
-          "step_id": 4,
-          "timestamp": 1784718959.7503035
-        }
-      ],
-      "errors": [],
-      "state_changes": [
-        {
-          "key": "session",
-          "old_value": null,
-          "new_value": "sess_a1b2c3d4",
-          "step_id": 2,
-          "timestamp": 1784718959.7503035
-        },
-        {
-          "key": "order_id",
-          "old_value": null,
-          "new_value": "ORD-5521",
-          "step_id": 3,
-          "timestamp": 1784718959.7503035
-        },
-        {
-          "key": "payment_method",
-          "old_value": null,
-          "new_value": "credit_card",
-          "step_id": 4,
-          "timestamp": 1784718959.7503035
-        }
-      ],
-      "metadata": {}
-    }
-  },
-  {
-    "scenario_id": "rate-limit-retry",
-    "scenario_name": "Rate Limit Retry with Backoff",
-    "passed": true,
-    "duration_ms": 0.0,
-    "error": null,
-    "timestamp": 1784718959.751302,
-    "assertion_results": [
-      {
-        "assertion_name": "tool_fallback_used",
-        "passed": true,
-        "error_message": null,
-        "duration_ms": 1.2
-      },
-      {
-        "assertion_name": "graceful_degradation",
-        "passed": true,
-        "error_message": null,
-        "duration_ms": 0.8
-      },
-      {
-        "assertion_name": "error_handling",
-        "passed": true,
-        "error_message": null,
-        "duration_ms": 0.5
-      },
-      {
-        "assertion_name": "response_quality",
-        "passed": true,
-        "error_message": null,
-        "duration_ms": 0.3
-      }
-    ],
-    "trace": {
-      "total_steps": 7,
-      "total_tool_calls": 3,
-      "total_duration_ms": 0.0,
-      "tool_names_called": [
-        "search_api"
-      ],
-      "failed_tool_calls_count": 2,
-      "errors_count": 2,
-      "state_changes_count": 0,
-      "steps": [
-        {
-          "step_id": 1,
-          "action": "reason",
-          "duration_ms": 3.0,
-          "error": null
-        },
-        {
-          "step_id": 2,
-          "action": "tool_call",
-          "duration_ms": 50.0,
-          "error": null
-        },
-        {
-          "step_id": 3,
-          "action": "error",
-          "duration_ms": 2000.0,
-          "error": null
-        },
-        {
-          "step_id": 4,
-          "action": "tool_call",
-          "duration_ms": 45.0,
-          "error": null
-        },
-        {
-          "step_id": 5,
-          "action": "error",
-          "duration_ms": 4000.0,
-          "error": null
-        },
-        {
-          "step_id": 6,
-          "action": "tool_call",
-          "duration_ms": 120.0,
-          "error": null
-        },
-        {
-          "step_id": 7,
-          "action": "respond",
-          "duration_ms": 2.5,
-          "error": null
-        }
-      ],
-      "tool_calls": [
-        {
-          "tool_name": "search_api",
-          "arguments": {
-            "attempt": 1
-          },
-          "duration_ms": 50.0,
-          "error": "429 Rate Limited",
-          "succeeded": false,
-          "step_id": 2,
-          "timestamp": 1784718959.751302
-        },
-        {
-          "tool_name": "search_api",
-          "arguments": {
-            "attempt": 2
-          },
-          "duration_ms": 45.0,
-          "error": "429 Rate Limited",
-          "succeeded": false,
-          "step_id": 4,
-          "timestamp": 1784718959.751302
-        },
-        {
-          "tool_name": "search_api",
-          "arguments": {
-            "attempt": 3
-          },
-          "duration_ms": 120.0,
-          "error": null,
-          "succeeded": true,
-          "step_id": 6,
-          "timestamp": 1784718959.751302
-        }
-      ],
-      "errors": [
-        {
-          "message": "Rate limit exceeded",
-          "severity": "medium",
-          "recoverable": true,
-          "step_id": 2,
-          "timestamp": 1784718959.751302
-        },
-        {
-          "message": "Rate limit exceeded on retry",
-          "severity": "medium",
-          "recoverable": true,
-          "step_id": 4,
-          "timestamp": 1784718959.751302
-        }
-      ],
-      "state_changes": [],
-      "metadata": {}
-    }
-  },
-  {
-    "scenario_id": "rate-limit-retry",
-    "scenario_name": "Rate Limit Retry with Backoff",
-    "passed": true,
-    "duration_ms": 0.0,
-    "error": null,
-    "timestamp": 1784718959.751302,
-    "assertion_results": [
-      {
-        "assertion_name": "tool_fallback_used",
-        "passed": true,
-        "error_message": null,
-        "duration_ms": 1.5
-      },
-      {
-        "assertion_name": "graceful_degradation",
-        "passed": true,
-        "error_message": null,
-        "duration_ms": 0.9
-      },
-      {
-        "assertion_name": "error_handling",
-        "passed": true,
-        "error_message": null,
-        "duration_ms": 0.6
-      },
-      {
-        "assertion_name": "response_quality",
-        "passed": true,
-        "error_message": null,
-        "duration_ms": 0.4
-      }
-    ],
-    "trace": {
-      "total_steps": 7,
-      "total_tool_calls": 3,
-      "total_duration_ms": 0.0,
-      "tool_names_called": [
-        "search_api"
-      ],
-      "failed_tool_calls_count": 2,
-      "errors_count": 2,
-      "state_changes_count": 0,
-      "steps": [
-        {
-          "step_id": 1,
-          "action": "reason",
-          "duration_ms": 3.0,
-          "error": null
-        },
-        {
-          "step_id": 2,
-          "action": "tool_call",
-          "duration_ms": 50.0,
-          "error": null
-        },
-        {
-          "step_id": 3,
-          "action": "error",
-          "duration_ms": 2000.0,
-          "error": null
-        },
-        {
-          "step_id": 4,
-          "action": "tool_call",
-          "duration_ms": 45.0,
-          "error": null
-        },
-        {
-          "step_id": 5,
-          "action": "error",
-          "duration_ms": 4000.0,
-          "error": null
-        },
-        {
-          "step_id": 6,
-          "action": "tool_call",
-          "duration_ms": 120.0,
-          "error": null
-        },
-        {
-          "step_id": 7,
-          "action": "respond",
-          "duration_ms": 2.5,
-          "error": null
-        }
-      ],
-      "tool_calls": [
-        {
-          "tool_name": "search_api",
-          "arguments": {
-            "attempt": 1
-          },
-          "duration_ms": 50.0,
-          "error": "429 Rate Limited",
-          "succeeded": false,
-          "step_id": 2,
-          "timestamp": 1784718959.751302
-        },
-        {
-          "tool_name": "search_api",
-          "arguments": {
-            "attempt": 2
-          },
-          "duration_ms": 45.0,
-          "error": "429 Rate Limited",
-          "succeeded": false,
-          "step_id": 4,
-          "timestamp": 1784718959.751302
-        },
-        {
-          "tool_name": "search_api",
-          "arguments": {
-            "attempt": 3
-          },
-          "duration_ms": 120.0,
-          "error": null,
-          "succeeded": true,
-          "step_id": 6,
-          "timestamp": 1784718959.751302
-        }
-      ],
-      "errors": [
-        {
-          "message": "Rate limit exceeded",
-          "severity": "medium",
-          "recoverable": true,
-          "step_id": 2,
-          "timestamp": 1784718959.751302
-        },
-        {
-          "message": "Rate limit exceeded on retry",
-          "severity": "medium",
-          "recoverable": true,
-          "step_id": 4,
-          "timestamp": 1784718959.751302
-        }
-      ],
-      "state_changes": [],
-      "metadata": {}
-    }
-  },
-  {
-    "scenario_id": "rate-limit-retry",
-    "scenario_name": "Rate Limit Retry with Backoff",
-    "passed": false,
-    "duration_ms": 0.0,
-    "error": null,
-    "timestamp": 1784718959.7523015,
-    "assertion_results": [
-      {
-        "assertion_name": "tool_fallback_used",
-        "passed": false,
-        "error_message": "Fallback not triggered",
-        "duration_ms": 1.0
-      },
-      {
-        "assertion_name": "graceful_degradation",
-        "passed": false,
-        "error_message": "Agent crashed or hung",
-        "duration_ms": 0.8
-      },
-      {
-        "assertion_name": "error_handling",
-        "passed": false,
-        "error_message": "Error propagated unhandled",
-        "duration_ms": 0.5
-      },
-      {
-        "assertion_name": "response_quality",
-        "passed": false,
-        "error_message": "No useful response produced",
-        "duration_ms": 0.3
-      }
-    ],
-    "trace": {
-      "total_steps": 7,
-      "total_tool_calls": 3,
-      "total_duration_ms": 0.0,
-      "tool_names_called": [
-        "search_api"
-      ],
-      "failed_tool_calls_count": 2,
-      "errors_count": 2,
-      "state_changes_count": 0,
-      "steps": [
-        {
-          "step_id": 1,
-          "action": "reason",
-          "duration_ms": 3.0,
-          "error": null
-        },
-        {
-          "step_id": 2,
-          "action": "tool_call",
-          "duration_ms": 50.0,
-          "error": null
-        },
-        {
-          "step_id": 3,
-          "action": "error",
-          "duration_ms": 2000.0,
-          "error": null
-        },
-        {
-          "step_id": 4,
-          "action": "tool_call",
-          "duration_ms": 45.0,
-          "error": null
-        },
-        {
-          "step_id": 5,
-          "action": "error",
-          "duration_ms": 4000.0,
-          "error": null
-        },
-        {
-          "step_id": 6,
-          "action": "tool_call",
-          "duration_ms": 120.0,
-          "error": null
-        },
-        {
-          "step_id": 7,
-          "action": "respond",
-          "duration_ms": 2.5,
-          "error": null
-        }
-      ],
-      "tool_calls": [
-        {
-          "tool_name": "search_api",
-          "arguments": {
-            "attempt": 1
-          },
-          "duration_ms": 50.0,
-          "error": "429 Rate Limited",
-          "succeeded": false,
-          "step_id": 2,
-          "timestamp": 1784718959.7523015
-        },
-        {
-          "tool_name": "search_api",
-          "arguments": {
-            "attempt": 2
-          },
-          "duration_ms": 45.0,
-          "error": "429 Rate Limited",
-          "succeeded": false,
-          "step_id": 4,
-          "timestamp": 1784718959.7523015
-        },
-        {
-          "tool_name": "search_api",
-          "arguments": {
-            "attempt": 3
-          },
-          "duration_ms": 120.0,
-          "error": null,
-          "succeeded": true,
-          "step_id": 6,
-          "timestamp": 1784718959.7523015
-        }
-      ],
-      "errors": [
-        {
-          "message": "Rate limit exceeded",
-          "severity": "medium",
-          "recoverable": true,
-          "step_id": 2,
-          "timestamp": 1784718959.7523015
-        },
-        {
-          "message": "Rate limit exceeded on retry",
-          "severity": "medium",
-          "recoverable": true,
-          "step_id": 4,
-          "timestamp": 1784718959.7523015
-        }
-      ],
-      "state_changes": [],
-      "metadata": {}
-    }
-  },
-  {
-    "scenario_id": "multi-tool-resilience",
-    "scenario_name": "Multi-Tool Full Chaos Resilience",
-    "passed": true,
-    "duration_ms": 0.0,
-    "error": null,
-    "timestamp": 1784718959.7533011,
-    "assertion_results": [
-      {
-        "assertion_name": "tool_fallback_used",
-        "passed": true,
-        "error_message": null,
-        "duration_ms": 1.2
-      },
-      {
-        "assertion_name": "graceful_degradation",
-        "passed": true,
-        "error_message": null,
-        "duration_ms": 0.8
-      },
-      {
-        "assertion_name": "error_handling",
-        "passed": true,
-        "error_message": null,
-        "duration_ms": 0.5
-      },
-      {
-        "assertion_name": "response_quality",
-        "passed": true,
-        "error_message": null,
-        "duration_ms": 0.3
-      }
-    ],
-    "trace": {
-      "total_steps": 7,
-      "total_tool_calls": 5,
-      "total_duration_ms": 0.0,
-      "tool_names_called": [
-        "search",
-        "database",
-        "api_server",
-        "email",
-        "cache"
-      ],
-      "failed_tool_calls_count": 3,
-      "errors_count": 3,
-      "state_changes_count": 0,
-      "steps": [
-        {
-          "step_id": 1,
-          "action": "reason",
-          "duration_ms": 5.0,
-          "error": null
-        },
-        {
-          "step_id": 2,
-          "action": "tool_call",
-          "duration_ms": 10018.0,
-          "error": null
-        },
-        {
-          "step_id": 3,
-          "action": "tool_call",
-          "duration_ms": 8.0,
-          "error": null
-        },
-        {
-          "step_id": 4,
-          "action": "tool_call",
-          "duration_ms": 250.0,
-          "error": null
-        },
-        {
-          "step_id": 5,
-          "action": "tool_call",
-          "duration_ms": 50.0,
-          "error": null
-        },
-        {
-          "step_id": 6,
-          "action": "tool_call",
-          "duration_ms": 5.0,
-          "error": null
-        },
-        {
-          "step_id": 7,
-          "action": "respond",
-          "duration_ms": 3.2,
-          "error": null
-        }
-      ],
-      "tool_calls": [
-        {
-          "tool_name": "search",
-          "arguments": {
-            "query": "order ORD-7721"
-          },
-          "duration_ms": 10018.0,
-          "error": "Timeout",
-          "succeeded": false,
-          "step_id": 2,
-          "timestamp": 1784718959.7533011
-        },
-        {
-          "tool_name": "database",
-          "arguments": {
-            "query": "order ORD-7721"
-          },
-          "duration_ms": 8.0,
-          "error": "DB locked",
-          "succeeded": false,
-          "step_id": 3,
-          "timestamp": 1784718959.7533011
-        },
-        {
-          "tool_name": "api_server",
-          "arguments": {
-            "path": "/tracking/FX-9876543210"
-          },
-          "duration_ms": 250.0,
-          "error": null,
-          "succeeded": true,
-          "step_id": 4,
-          "timestamp": 1784718959.7533011
-        },
-        {
-          "tool_name": "email",
-          "arguments": {
-            "to": "alice@example.com"
-          },
-          "duration_ms": 50.0,
-          "error": "Rate limited",
-          "succeeded": false,
-          "step_id": 5,
-          "timestamp": 1784718959.7533011
-        },
-        {
-          "tool_name": "cache",
-          "arguments": {
-            "key": "recent_orders"
-          },
-          "duration_ms": 5.0,
-          "error": null,
-          "succeeded": true,
-          "step_id": 6,
-          "timestamp": 1784718959.7533011
-        }
-      ],
-      "errors": [
-        {
-          "message": "Search service timeout",
-          "severity": "high",
-          "recoverable": true,
-          "step_id": 2,
-          "timestamp": 1784718959.7533011
-        },
-        {
-          "message": "Database locked: too many connections",
-          "severity": "high",
-          "recoverable": true,
-          "step_id": 3,
-          "timestamp": 1784718959.7533011
-        },
-        {
-          "message": "Email service rate limited",
-          "severity": "medium",
-          "recoverable": true,
-          "step_id": 5,
-          "timestamp": 1784718959.7533011
-        }
-      ],
-      "state_changes": [],
-      "metadata": {}
-    }
-  },
-  {
-    "scenario_id": "multi-tool-resilience",
-    "scenario_name": "Multi-Tool Full Chaos Resilience",
-    "passed": true,
-    "duration_ms": 0.0,
-    "error": null,
-    "timestamp": 1784718959.754302,
-    "assertion_results": [
-      {
-        "assertion_name": "tool_fallback_used",
-        "passed": true,
-        "error_message": null,
-        "duration_ms": 1.5
-      },
-      {
-        "assertion_name": "graceful_degradation",
-        "passed": true,
-        "error_message": null,
-        "duration_ms": 0.9
-      },
-      {
-        "assertion_name": "error_handling",
-        "passed": true,
-        "error_message": null,
-        "duration_ms": 0.6
-      },
-      {
-        "assertion_name": "response_quality",
-        "passed": true,
-        "error_message": null,
-        "duration_ms": 0.4
-      }
-    ],
-    "trace": {
-      "total_steps": 7,
-      "total_tool_calls": 5,
-      "total_duration_ms": 0.0,
-      "tool_names_called": [
-        "search",
-        "database",
-        "api_server",
-        "email",
-        "cache"
-      ],
-      "failed_tool_calls_count": 3,
-      "errors_count": 3,
-      "state_changes_count": 0,
-      "steps": [
-        {
-          "step_id": 1,
-          "action": "reason",
-          "duration_ms": 5.0,
-          "error": null
-        },
-        {
-          "step_id": 2,
-          "action": "tool_call",
-          "duration_ms": 10018.0,
-          "error": null
-        },
-        {
-          "step_id": 3,
-          "action": "tool_call",
-          "duration_ms": 8.0,
-          "error": null
-        },
-        {
-          "step_id": 4,
-          "action": "tool_call",
-          "duration_ms": 250.0,
-          "error": null
-        },
-        {
-          "step_id": 5,
-          "action": "tool_call",
-          "duration_ms": 50.0,
-          "error": null
-        },
-        {
-          "step_id": 6,
-          "action": "tool_call",
-          "duration_ms": 5.0,
-          "error": null
-        },
-        {
-          "step_id": 7,
-          "action": "respond",
-          "duration_ms": 3.2,
-          "error": null
-        }
-      ],
-      "tool_calls": [
-        {
-          "tool_name": "search",
-          "arguments": {
-            "query": "order ORD-7721"
-          },
-          "duration_ms": 10018.0,
-          "error": "Timeout",
-          "succeeded": false,
-          "step_id": 2,
-          "timestamp": 1784718959.754302
-        },
-        {
-          "tool_name": "database",
-          "arguments": {
-            "query": "order ORD-7721"
-          },
-          "duration_ms": 8.0,
-          "error": "DB locked",
-          "succeeded": false,
-          "step_id": 3,
-          "timestamp": 1784718959.754302
-        },
-        {
-          "tool_name": "api_server",
-          "arguments": {
-            "path": "/tracking/FX-9876543210"
-          },
-          "duration_ms": 250.0,
-          "error": null,
-          "succeeded": true,
-          "step_id": 4,
-          "timestamp": 1784718959.754302
-        },
-        {
-          "tool_name": "email",
-          "arguments": {
-            "to": "alice@example.com"
-          },
-          "duration_ms": 50.0,
-          "error": "Rate limited",
-          "succeeded": false,
-          "step_id": 5,
-          "timestamp": 1784718959.754302
-        },
-        {
-          "tool_name": "cache",
-          "arguments": {
-            "key": "recent_orders"
-          },
-          "duration_ms": 5.0,
-          "error": null,
-          "succeeded": true,
-          "step_id": 6,
-          "timestamp": 1784718959.754302
-        }
-      ],
-      "errors": [
-        {
-          "message": "Search service timeout",
-          "severity": "high",
-          "recoverable": true,
-          "step_id": 2,
-          "timestamp": 1784718959.754302
-        },
-        {
-          "message": "Database locked: too many connections",
-          "severity": "high",
-          "recoverable": true,
-          "step_id": 3,
-          "timestamp": 1784718959.754302
-        },
-        {
-          "message": "Email service rate limited",
-          "severity": "medium",
-          "recoverable": true,
-          "step_id": 5,
-          "timestamp": 1784718959.754302
-        }
-      ],
-      "state_changes": [],
-      "metadata": {}
-    }
-  },
-  {
-    "scenario_id": "multi-tool-resilience",
-    "scenario_name": "Multi-Tool Full Chaos Resilience",
-    "passed": false,
-    "duration_ms": 0.0,
-    "error": null,
-    "timestamp": 1784718959.7553024,
-    "assertion_results": [
-      {
-        "assertion_name": "tool_fallback_used",
-        "passed": false,
-        "error_message": "Fallback not triggered",
-        "duration_ms": 1.0
-      },
-      {
-        "assertion_name": "graceful_degradation",
-        "passed": false,
-        "error_message": "Agent crashed or hung",
-        "duration_ms": 0.8
-      },
-      {
-        "assertion_name": "error_handling",
-        "passed": false,
-        "error_message": "Error propagated unhandled",
-        "duration_ms": 0.5
-      },
-      {
-        "assertion_name": "response_quality",
-        "passed": false,
-        "error_message": "No useful response produced",
-        "duration_ms": 0.3
-      }
-    ],
-    "trace": {
-      "total_steps": 7,
-      "total_tool_calls": 5,
-      "total_duration_ms": 0.0,
-      "tool_names_called": [
-        "search",
-        "database",
-        "api_server",
-        "email",
-        "cache"
-      ],
-      "failed_tool_calls_count": 3,
-      "errors_count": 3,
-      "state_changes_count": 0,
-      "steps": [
-        {
-          "step_id": 1,
-          "action": "reason",
-          "duration_ms": 5.0,
-          "error": null
-        },
-        {
-          "step_id": 2,
-          "action": "tool_call",
-          "duration_ms": 10018.0,
-          "error": null
-        },
-        {
-          "step_id": 3,
-          "action": "tool_call",
-          "duration_ms": 8.0,
-          "error": null
-        },
-        {
-          "step_id": 4,
-          "action": "tool_call",
-          "duration_ms": 250.0,
-          "error": null
-        },
-        {
-          "step_id": 5,
-          "action": "tool_call",
-          "duration_ms": 50.0,
-          "error": null
-        },
-        {
-          "step_id": 6,
-          "action": "tool_call",
-          "duration_ms": 5.0,
-          "error": null
-        },
-        {
-          "step_id": 7,
-          "action": "respond",
-          "duration_ms": 3.2,
-          "error": null
-        }
-      ],
-      "tool_calls": [
-        {
-          "tool_name": "search",
-          "arguments": {
-            "query": "order ORD-7721"
-          },
-          "duration_ms": 10018.0,
-          "error": "Timeout",
-          "succeeded": false,
-          "step_id": 2,
-          "timestamp": 1784718959.7553024
-        },
-        {
-          "tool_name": "database",
-          "arguments": {
-            "query": "order ORD-7721"
-          },
-          "duration_ms": 8.0,
-          "error": "DB locked",
-          "succeeded": false,
-          "step_id": 3,
-          "timestamp": 1784718959.7553024
-        },
-        {
-          "tool_name": "api_server",
-          "arguments": {
-            "path": "/tracking/FX-9876543210"
-          },
-          "duration_ms": 250.0,
-          "error": null,
-          "succeeded": true,
-          "step_id": 4,
-          "timestamp": 1784718959.7553024
-        },
-        {
-          "tool_name": "email",
-          "arguments": {
-            "to": "alice@example.com"
-          },
-          "duration_ms": 50.0,
-          "error": "Rate limited",
-          "succeeded": false,
-          "step_id": 5,
-          "timestamp": 1784718959.7553024
-        },
-        {
-          "tool_name": "cache",
-          "arguments": {
-            "key": "recent_orders"
-          },
-          "duration_ms": 5.0,
-          "error": null,
-          "succeeded": true,
-          "step_id": 6,
-          "timestamp": 1784718959.7553024
-        }
-      ],
-      "errors": [
-        {
-          "message": "Search service timeout",
-          "severity": "high",
-          "recoverable": true,
-          "step_id": 2,
-          "timestamp": 1784718959.7553024
-        },
-        {
-          "message": "Database locked: too many connections",
-          "severity": "high",
-          "recoverable": true,
-          "step_id": 3,
-          "timestamp": 1784718959.7553024
-        },
-        {
-          "message": "Email service rate limited",
-          "severity": "medium",
-          "recoverable": true,
-          "step_id": 5,
-          "timestamp": 1784718959.7553024
+          "message": "Agent execution failed: Booking service returned 503: Service temporarily unavailable",
+          "severity": "critical",
+          "recoverable": false,
+          "step_id": 0,
+          "timestamp": 1789691787.7890549
         }
       ],
       "state_changes": [],

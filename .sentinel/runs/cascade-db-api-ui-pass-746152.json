@@ -1,0 +1,141 @@
+{
+  "run_id": "cascade-db-api-ui-pass-746152",
+  "scenario_id": "cascade-db-api-ui",
+  "scenario_name": "Cascading Database and API Failure",
+  "status": "pass",
+  "started_at": "2026-09-18T00:20:27.759793+00:00",
+  "completed_at": "2026-09-18T00:20:27.760394+00:00",
+  "result": {
+    "scenario_id": "cascade-db-api-ui",
+    "scenario_name": "Cascading Database and API Failure",
+    "passed": true,
+    "duration_ms": 0.6008148193359375,
+    "error": null,
+    "timestamp": 1789691787.763123,
+    "assertion_results": [
+      {
+        "assertion_name": "tool_called(tool_name='database')",
+        "passed": true,
+        "error_message": null,
+        "duration_ms": 0.0050067901611328125
+      },
+      {
+        "assertion_name": "tool_called(tool_name='api_server')",
+        "passed": true,
+        "error_message": null,
+        "duration_ms": 0.00095367431640625
+      },
+      {
+        "assertion_name": "tool_called(tool_name='user_interface')",
+        "passed": true,
+        "error_message": null,
+        "duration_ms": 0.0
+      },
+      {
+        "assertion_name": "agent_recovers",
+        "passed": true,
+        "error_message": null,
+        "duration_ms": 0.0040531158447265625
+      },
+      {
+        "assertion_name": "chaos_resilience(chaos_budget='auto', max_failure_rate=0.7)",
+        "passed": true,
+        "error_message": null,
+        "duration_ms": 0.0030994415283203125
+      }
+    ],
+    "trace": {
+      "total_steps": 1,
+      "total_tool_calls": 3,
+      "total_duration_ms": 0.5819797515869141,
+      "tool_names_called": [
+        "database",
+        "api_server",
+        "user_interface"
+      ],
+      "failed_tool_calls": [
+        {
+          "tool_name": "database",
+          "arguments": {
+            "query": "user 789"
+          },
+          "result": null,
+          "duration_ms": 0.015974044799804688,
+          "error": "Database connection timeout after 5000ms",
+          "step_id": 0,
+          "timestamp": 1789691787.763084
+        },
+        {
+          "tool_name": "api_server",
+          "arguments": {
+            "path": "/user/789/orders"
+          },
+          "result": null,
+          "duration_ms": 0.005245208740234375,
+          "error": "API unavailable: upstream dependency failed",
+          "step_id": 0,
+          "timestamp": 1789691787.763097
+        },
+        {
+          "tool_name": "user_interface",
+          "arguments": {
+            "view": "dashboard"
+          },
+          "result": {
+            "fallback_message": "Dashboard partially loaded. Some data unavailable.",
+            "cached_profile": {
+              "name": "Jane Smith",
+              "tier": "premium"
+            }
+          },
+          "duration_ms": 0.0021457672119140625,
+          "error": null,
+          "step_id": 0,
+          "timestamp": 1789691787.763102
+        }
+      ],
+      "errors": [
+        {
+          "message": "Tool 'database' failed: Database connection timeout after 5000ms",
+          "severity": "high",
+          "step_id": 0,
+          "recoverable": true,
+          "timestamp": 1789691787.763088
+        },
+        {
+          "message": "Tool 'api_server' failed: API unavailable: upstream dependency failed",
+          "severity": "high",
+          "step_id": 0,
+          "recoverable": true,
+          "timestamp": 1789691787.763098
+        }
+      ],
+      "state_changes": [],
+      "steps": [
+        {
+          "step_id": 3,
+          "action": "tool_call",
+          "input": {
+            "tool": "user_interface",
+            "args": {
+              "view": "dashboard"
+            }
+          },
+          "output": {
+            "fallback_message": "Dashboard partially loaded. Some data unavailable.",
+            "cached_profile": {
+              "name": "Jane Smith",
+              "tier": "premium"
+            }
+          },
+          "duration_ms": 0.0,
+          "tool_calls": [],
+          "error": null
+        }
+      ],
+      "metadata": {},
+      "start_time": 1789691787.762523,
+      "end_time": 1789691787.763105
+    }
+  }
+}

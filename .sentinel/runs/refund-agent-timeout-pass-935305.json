@@ -1,0 +1,128 @@
+{
+  "run_id": "refund-agent-timeout-pass-935305",
+  "scenario_id": "refund-agent-timeout",
+  "scenario_name": "Refund Agent Timeout Handling",
+  "status": "pass",
+  "started_at": "2026-09-18T00:32:27.759793+00:00",
+  "completed_at": "2026-09-18T00:32:27.759907+00:00",
+  "result": {
+    "scenario_id": "refund-agent-timeout",
+    "scenario_name": "Refund Agent Timeout Handling",
+    "passed": true,
+    "duration_ms": 0.11396408081054688,
+    "error": null,
+    "timestamp": 1789691787.785481,
+    "assertion_results": [
+      {
+        "assertion_name": "tool_called(tool_name='search')",
+        "passed": true,
+        "error_message": null,
+        "duration_ms": 0.0021457672119140625
+      },
+      {
+        "assertion_name": "tool_called(tool_name='cache')",
+        "passed": true,
+        "error_message": null,
+        "duration_ms": 0.0
+      },
+      {
+        "assertion_name": "graceful_degradation",
+        "passed": true,
+        "error_message": null,
+        "duration_ms": 0.0040531158447265625
+      },
+      {
+        "assertion_name": "chaos_resilience(chaos_budget='auto')",
+        "passed": true,
+        "error_message": null,
+        "duration_ms": 0.0016689300537109375
+      },
+      {
+        "assertion_name": "no_silent_failure",
+        "passed": true,
+        "error_message": null,
+        "duration_ms": 0.0011920928955078125
+      }
+    ],
+    "trace": {
+      "total_steps": 1,
+      "total_tool_calls": 2,
+      "total_duration_ms": 0.10180473327636719,
+      "tool_names_called": [
+        "search",
+        "cache"
+      ],
+      "failed_tool_calls": [
+        {
+          "tool_name": "search",
+          "arguments": {
+            "query": "refund policy"
+          },
+          "result": null,
+          "duration_ms": 0.0050067901611328125,
+          "error": "Search API timed out after 10s",
+          "step_id": 0,
+          "timestamp": 1789691787.785463
+        },
+        {
+          "tool_name": "cache",
+          "arguments": {
+            "key": "order_12345"
+          },
+          "result": {
+            "refund_policy": "30-day return window for defective items",
+            "order_12345": {
+              "date": "2026-07-01",
+              "amount": 49.99,
+              "status": "delivered",
+              "product": "Wireless Mouse",
+              "defect_reported": true
+            }
+          },
+          "duration_ms": 0.00095367431640625,
+          "error": null,
+          "step_id": 0,
+          "timestamp": 1789691787.7854679
+        }
+      ],
+      "errors": [
+        {
+          "message": "Tool 'search' failed: Search API timed out after 10s",
+          "severity": "high",
+          "step_id": 0,
+          "recoverable": true,
+          "timestamp": 1789691787.785465
+        }
+      ],
+      "state_changes": [],
+      "steps": [
+        {
+          "step_id": 2,
+          "action": "tool_call",
+          "input": {
+            "tool": "cache",
+            "args": {
+              "key": "order_12345"
+            }
+          },
+          "output": {
+            "refund_policy": "30-day return window for defective items",
+            "order_12345": {
+              "date": "2026-07-01",
+              "amount": 49.99,
+              "status": "delivered",
+              "product": "Wireless Mouse",
+              "defect_reported": true
+            }
+          },
+          "duration_ms": 0.0,
+          "tool_calls": [],
+          "error": null
+        }
+      ],
+      "metadata": {},
+      "start_time": 1789691787.785367,
+      "end_time": 1789691787.7854688
+    }
+  }
+}

@@ -1,0 +1,169 @@
+{
+  "run_id": "spec-drift-pressure-pass-836060",
+  "scenario_id": "spec-drift-pressure",
+  "scenario_name": "Booking Service Failure Recovery",
+  "status": "pass",
+  "started_at": "2026-09-18T00:34:27.759793+00:00",
+  "completed_at": "2026-09-18T00:34:27.759955+00:00",
+  "result": {
+    "scenario_id": "spec-drift-pressure",
+    "scenario_name": "Booking Service Failure Recovery",
+    "passed": true,
+    "duration_ms": 0.1621246337890625,
+    "error": null,
+    "timestamp": 1789691787.7884731,
+    "assertion_results": [
+      {
+        "assertion_name": "tool_called(tool_name='availability_check')",
+        "passed": true,
+        "error_message": null,
+        "duration_ms": 0.0040531158447265625
+      },
+      {
+        "assertion_name": "tool_called(tool_name='booking_service')",
+        "passed": true,
+        "error_message": null,
+        "duration_ms": 0.0011920928955078125
+      },
+      {
+        "assertion_name": "tool_call_order(expected_order=['availability_check', 'booking_service'])",
+        "passed": true,
+        "error_message": null,
+        "duration_ms": 0.0026226043701171875
+      },
+      {
+        "assertion_name": "tool_not_called(tool_name='payment_processor')",
+        "passed": true,
+        "error_message": null,
+        "duration_ms": 0.0011920928955078125
+      },
+      {
+        "assertion_name": "agent_recovers",
+        "passed": true,
+        "error_message": null,
+        "duration_ms": 0.0030994415283203125
+      },
+      {
+        "assertion_name": "chaos_resilience(chaos_budget='auto')",
+        "passed": true,
+        "error_message": null,
+        "duration_ms": 0.0019073486328125
+      }
+    ],
+    "trace": {
+      "total_steps": 2,
+      "total_tool_calls": 3,
+      "total_duration_ms": 0.14591217041015625,
+      "tool_names_called": [
+        "availability_check",
+        "booking_service"
+      ],
+      "failed_tool_calls": [
+        {
+          "tool_name": "availability_check",
+          "arguments": {
+            "date_range": "2026-08"
+          },
+          "result": {
+            "available_slots": [
+              "2026-08-15",
+              "2026-08-22",
+              "2026-09-01"
+            ],
+            "venue": "Conference Room A"
+          },
+          "duration_ms": 0.0021457672119140625,
+          "error": null,
+          "step_id": 0,
+          "timestamp": 1789691787.78844
+        },
+        {
+          "tool_name": "booking_service",
+          "arguments": {
+            "date": "2026-08-15"
+          },
+          "result": null,
+          "duration_ms": 0.007152557373046875,
+          "error": "Booking service returned 503: Service temporarily unavailable",
+          "step_id": 0,
+          "timestamp": 1789691787.78845
+        },
+        {
+          "tool_name": "availability_check",
+          "arguments": {
+            "date_range": "2026-08"
+          },
+          "result": {
+            "available_slots": [
+              "2026-08-15",
+              "2026-08-22",
+              "2026-09-01"
+            ],
+            "venue": "Conference Room A"
+          },
+          "duration_ms": 0.00095367431640625,
+          "error": null,
+          "step_id": 0,
+          "timestamp": 1789691787.788456
+        }
+      ],
+      "errors": [
+        {
+          "message": "Tool 'booking_service' failed: Booking service returned 503: Service temporarily unavailable",
+          "severity": "high",
+          "step_id": 0,
+          "recoverable": true,
+          "timestamp": 1789691787.788453
+        }
+      ],
+      "state_changes": [],
+      "steps": [
+        {
+          "step_id": 1,
+          "action": "tool_call",
+          "input": {
+            "tool": "availability_check",
+            "args": {
+              "date_range": "2026-08"
+            }
+          },
+          "output": {
+            "available_slots": [
+              "2026-08-15",
+              "2026-08-22",
+              "2026-09-01"
+            ],
+            "venue": "Conference Room A"
+          },
+          "duration_ms": 0.0,
+          "tool_calls": [],
+          "error": null
+        },
+        {
+          "step_id": 3,
+          "action": "tool_call",
+          "input": {
+            "tool": "availability_check",
+            "args": {
+              "date_range": "2026-08"
+            }
+          },
+          "output": {
+            "available_slots": [
+              "2026-08-15",
+              "2026-08-22",
+              "2026-09-01"
+            ],
+            "venue": "Conference Room A"
+          },
+          "duration_ms": 0.0,
+          "tool_calls": [],
+          "error": null
+        }
+      ],
+      "metadata": {},
+      "start_time": 1789691787.788311,
+      "end_time": 1789691787.788457
+    }
+  }
+}

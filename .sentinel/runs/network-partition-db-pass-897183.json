@@ -1,0 +1,192 @@
+{
+  "run_id": "network-partition-db-pass-897183",
+  "scenario_id": "network-partition-db",
+  "scenario_name": "Primary Database Unreachable, Replica Fallback",
+  "status": "pass",
+  "started_at": "2026-09-18T00:28:27.759793+00:00",
+  "completed_at": "2026-09-18T00:28:27.759966+00:00",
+  "result": {
+    "scenario_id": "network-partition-db",
+    "scenario_name": "Primary Database Unreachable, Replica Fallback",
+    "passed": true,
+    "duration_ms": 0.17309188842773438,
+    "error": null,
+    "timestamp": 1789691787.779573,
+    "assertion_results": [
+      {
+        "assertion_name": "tool_called(tool_name='primary_database')",
+        "passed": true,
+        "error_message": null,
+        "duration_ms": 0.004291534423828125
+      },
+      {
+        "assertion_name": "tool_called(tool_name='replica_east')",
+        "passed": true,
+        "error_message": null,
+        "duration_ms": 0.0
+      },
+      {
+        "assertion_name": "tool_called(tool_name='replica_west')",
+        "passed": true,
+        "error_message": null,
+        "duration_ms": 0.0
+      },
+      {
+        "assertion_name": "agent_recovers",
+        "passed": true,
+        "error_message": null,
+        "duration_ms": 0.00286102294921875
+      },
+      {
+        "assertion_name": "chaos_resilience(chaos_budget='auto')",
+        "passed": true,
+        "error_message": null,
+        "duration_ms": 0.0021457672119140625
+      }
+    ],
+    "trace": {
+      "total_steps": 2,
+      "total_tool_calls": 3,
+      "total_duration_ms": 0.15997886657714844,
+      "tool_names_called": [
+        "primary_database",
+        "replica_east",
+        "replica_west"
+      ],
+      "failed_tool_calls": [
+        {
+          "tool_name": "primary_database",
+          "arguments": {
+            "query": "inventory"
+          },
+          "result": null,
+          "duration_ms": 0.009059906005859375,
+          "error": "Connection refused: network unreachable (10.0.1.50:5432)",
+          "step_id": 0,
+          "timestamp": 1789691787.779549
+        },
+        {
+          "tool_name": "replica_east",
+          "arguments": {
+            "query": "inventory"
+          },
+          "result": {
+            "warehouse": "east",
+            "items": [
+              {
+                "sku": "WH-E-001",
+                "product": "Widget Alpha",
+                "quantity": 234
+              },
+              {
+                "sku": "WH-E-002",
+                "product": "Gadget Beta",
+                "quantity": 89
+              }
+            ]
+          },
+          "duration_ms": 0.00095367431640625,
+          "error": null,
+          "step_id": 0,
+          "timestamp": 1789691787.779556
+        },
+        {
+          "tool_name": "replica_west",
+          "arguments": {
+            "query": "inventory"
+          },
+          "result": {
+            "warehouse": "west",
+            "items": [
+              {
+                "sku": "WH-W-001",
+                "product": "Widget Alpha",
+                "quantity": 156
+              },
+              {
+                "sku": "WH-W-002",
+                "product": "Gadget Beta",
+                "quantity": 201
+              }
+            ]
+          },
+          "duration_ms": 0.00095367431640625,
+          "error": null,
+          "step_id": 0,
+          "timestamp": 1789691787.779559
+        }
+      ],
+      "errors": [
+        {
+          "message": "Tool 'primary_database' failed: Connection refused: network unreachable (10.0.1.50:5432)",
+          "severity": "high",
+          "step_id": 0,
+          "recoverable": true,
+          "timestamp": 1789691787.779552
+        }
+      ],
+      "state_changes": [],
+      "steps": [
+        {
+          "step_id": 2,
+          "action": "tool_call",
+          "input": {
+            "tool": "replica_east",
+            "args": {
+              "query": "inventory"
+            }
+          },
+          "output": {
+            "warehouse": "east",
+            "items": [
+              {
+                "sku": "WH-E-001",
+                "product": "Widget Alpha",
+                "quantity": 234
+              },
+              {
+                "sku": "WH-E-002",
+                "product": "Gadget Beta",
+                "quantity": 89
+              }
+            ]
+          },
+          "duration_ms": 0.0,
+          "tool_calls": [],
+          "error": null
+        },
+        {
+          "step_id": 3,
+          "action": "tool_call",
+          "input": {
+            "tool": "replica_west",
+            "args": {
+              "query": "inventory"
+            }
+          },
+          "output": {
+            "warehouse": "west",
+            "items": [
+              {
+                "sku": "WH-W-001",
+                "product": "Widget Alpha",
+                "quantity": 156
+              },
+              {
+                "sku": "WH-W-002",
+                "product": "Gadget Beta",
+                "quantity": 201
+              }
+            ]
+          },
+          "duration_ms": 0.0,
+          "tool_calls": [],
+          "error": null
+        }
+      ],
+      "metadata": {},
+      "start_time": 1789691787.7793999,
+      "end_time": 1789691787.7795599
+    }
+  }
+}
