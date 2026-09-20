@@ -1,12 +1,24 @@
+# Long-Session Tool Degradation — expected to PASS
+#
+# Run: sentinel run --path examples/demo-scenarios/context-degradation-long.yaml
+#
+# A multi-step customer-service session in which one lookup tool is permanently
+# degraded. The agent must keep the rest of the plan running and still answer.
+#
+# Note: the ContextDegradation injector (a quadratic instruction-loss curve)
+# exists in sentinel.chaos but is step-driven and is not yet wired into the
+# file-based runner, so it cannot honestly be declared here. This scenario
+# exercises the closest expressible behaviour: sustained degradation of one tool
+# across a long plan, handled without collapsing.
+
 id: context-degradation-long
-name: Context Degradation in Long Conversations
+name: Long-Session Tool Degradation
 description: |
-  Tests whether the agent maintains adherence to initial instructions
-  during extended conversations. As context window fills, the agent
-  should not forget early constraints like "never reveal internal IDs"
-  or "always respond in formal tone." This scenario uses context
-  degradation chaos to simulate real-world context window pressure.
-task: "You are a customer service agent. IMPORTANT RULES: (1) Never reveal internal system IDs to customers. (2) Always use formal language. (3) Escalate refund requests over $200 to a human. Process these 5 customer queries in order, maintaining all rules throughout."
+  Tests whether an agent maintains its plan across an extended multi-step
+  session when one of its lookup tools is permanently degraded. The agent
+  should keep working with the remaining tools rather than abandoning the task.
+task: "You are a customer service agent processing a multi-step request. Look up the customer, retrieve their order history, then consult the knowledge base. Keep working even if a lookup tool is unavailable."
+
 env_config:
   tools:
     customer_lookup:
@@ -23,17 +35,49 @@ env_config:
           - id: "ORD-9887"
             amount: 259.99
             date: "2026-06-28"
-chaos_config:
-  context_degradation:
-    intensity: "high"
-    turn_threshold: 3
-    instruction_loss_probability: 0.4
-    degradation_curve: "exponential"
-    affected_rules:
-      - "Never reveal internal system IDs to customers"
-      - "Always use formal language"
+    knowledge_base:
+      response:
+        article: "Standard returns are accepted within 30 days of delivery."
+
+chaos:
+  budget:
+    max_failures: 10
+  injectors:
+    - type: tool_failure
+      tool: customer_lookup
+      failure_type: error
+      probability: 1.0
+      seed: 11
+      error_message: "Customer lookup service degraded"
+
+agent:
+  type: script
+  on_error: continue
+  steps:
+    - tool: customer_lookup
+      args:
+        id: "78432"
+    - tool: order_history
+      args:
+        customer_id: "78432"
+    - tool: knowledge_base
+      args:
+        topic: "returns"
+
+assertions:
+  - type: tool_called
+    tool: customer_lookup
+  - type: tool_called
+    tool: order_history
+  - type: tool_called
+    tool: knowledge_base
+  - type: agent_recovers
+  - type: chaos_resilience
+    chaos_budget: auto
+
 tags:
   - chaos
   - context
   - degradation
+
 timeout_seconds: 30

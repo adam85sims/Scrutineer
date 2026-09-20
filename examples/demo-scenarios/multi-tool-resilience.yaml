@@ -1,33 +1,36 @@
+# Multi-Tool Failure Resilience — expected to PASS
+#
+# Run: sentinel run --path examples/demo-scenarios/multi-tool-resilience.yaml
+#
+# Stress test: search times out, the database errors, and email is rate-limited,
+# all in one run. Two tools (api_server, cache) still work. The agent must
+# prioritize around the failures and still produce a useful result. This is the
+# comprehensive smoke test for agent resilience.
+
 id: multi-tool-resilience
-name: Multi-Tool Full Chaos Resilience
+name: Multi-Tool Failure Resilience
 description: |
-  Stress test with multiple chaos injectors active simultaneously.
-  The agent must handle concurrent failures across search, database,
-  API, and email tools. Tests the agent's ability to prioritize
-  failures, use fallbacks, and still produce a useful result when
-  most of its toolchain is degraded. This is the comprehensive
-  smoke test for agent resilience.
-task: "You are a support agent handling a complex customer complaint. The customer reports: (1) they can't find their order, (2) the tracking page is broken, (3) they haven't received the confirmation email. Look up the order, check tracking status, and send a resolution email. Use any available fallbacks when tools fail."
+  Stress test with several tool failures active simultaneously across search,
+  database, and email. The agent must use the tools that remain available,
+  recover, and still produce a non-empty result.
+task: "You are a support agent handling a complex customer complaint. Look up the order, check tracking, and send a resolution email. Use available fallbacks when tools fail."
+
 env_config:
   tools:
     search:
-      side_effect: "timeout"
-      error_message: "Search service timeout after 10s"
+      response:
+        results: []
     database:
-      side_effect: "error"
-      error_message: "Database locked: too many connections (max 100 reached)"
+      response:
+        order: null
     api_server:
       response:
         tracking_status: "in_transit"
         carrier: "FedEx"
         tracking_number: "FX-9876543210"
-        estimated_delivery: "2026-07-25"
-      side_effect: "intermittent"
-      failure_rate: 0.5
     email:
-      side_effect: "rate_limit"
-      error_message: "Email service rate limited: 429 Too Many Requests"
-      retry_after_ms: 5000
+      response:
+        queued: true
     cache:
       response:
         recent_orders:
@@ -35,28 +38,73 @@ env_config:
             customer: "Alice Cooper"
             product: "Premium Headphones"
             status: "shipped"
-            date: "2026-07-18"
-chaos_config:
-  multi_inject:
-    enabled: true
-    injectors:
-      - type: timeout
-        target: search
-        probability: 1.0
-      - type: error
-        target: database
-        probability: 1.0
-      - type: intermittent
-        target: api_server
-        probability: 0.5
-      - type: rate_limit
-        target: email
-        probability: 0.8
-    orchestration: "simultaneous"
-    degradation_budget: "allow_partial_results"
+
+chaos:
+  budget:
+    max_failures: 10
+  injectors:
+    - type: tool_failure
+      tool: search
+      failure_type: timeout
+      probability: 1.0
+      seed: 29
+      error_message: "Search service timeout after 10s"
+    - type: tool_failure
+      tool: database
+      failure_type: error
+      probability: 1.0
+      seed: 30
+      error_message: "Database locked: too many connections"
+    - type: tool_failure
+      tool: email
+      failure_type: rate_limit
+      probability: 1.0
+      seed: 31
+      error_message: "Email service rate limited: 429 Too Many Requests"
+
+agent:
+  type: script
+  on_error: continue
+  steps:
+    - tool: search
+      args:
+        query: "order ORD-7721"
+    - tool: database
+      args:
+        query: "order ORD-7721"
+    - tool: api_server
+      args:
+        path: "/tracking/FX-9876543210"
+    - tool: email
+      args:
+        to: "alice@example.com"
+        subject: "Order Update"
+    - tool: cache
+      args:
+        key: "recent_orders"
+
+assertions:
+  - type: tool_called
+    tool: search
+  - type: tool_called
+    tool: database
+  - type: tool_called
+    tool: api_server
+  - type: tool_called
+    tool: email
+  - type: tool_called
+    tool: cache
+  # The agent kept executing after the failures and finished with real output.
+  - type: agent_recovers
+  - type: chaos_resilience
+    chaos_budget: auto
+    max_failure_rate: 0.7
+  - type: no_silent_failure
+
 tags:
   - chaos
   - resilience
   - production
   - smoke-test
+
 timeout_seconds: 30

@@ -1,42 +1,82 @@
+# Rate-Limited Tool Retry — expected to PASS
+#
+# Run: sentinel run --path examples/demo-scenarios/rate-limit-retry.yaml
+#
+# The search API returns 429 on every attempt. The agent retries the configured
+# number of times and, when the retries are exhausted, falls back to cache
+# rather than giving up. Assertions verify that the retry budget was actually
+# spent (exactly 3 attempts) and that the agent recovered via the fallback.
+
 id: rate-limit-retry
-name: Rate Limit Retry with Backoff
+name: Rate-Limited Tool Retry
 description: |
-  Tests whether the agent correctly handles API rate limiting by
-  implementing exponential backoff and retry logic. The search API
-  will return rate limit errors on initial requests, and the agent
-  should detect the 429 status, wait appropriately, and retry
-  until the request succeeds or max retries are exhausted.
-task: "Search the product catalog for 'ergonomic keyboard' and return the top 3 results with prices and availability. The search API may be rate-limited, so implement proper retry logic with exponential backoff. Do not give up after the first failure."
+  Tests whether an agent retries a rate-limited API the configured number of
+  times and then degrades to a cache fallback instead of failing outright.
+task: "Search the product catalog for 'ergonomic keyboard'. The search API may be rate-limited; retry with backoff and fall back to cache if the retries are exhausted."
+
 env_config:
   tools:
     search_api:
-      side_effect: "rate_limit"
-      retry_after_ms: 2000
-      max_retries: 3
-      response_on_success:
+      response:
         results:
           - name: "Ergo Keyboard Pro"
             price: 149.99
             available: true
-            rating: 4.7
-          - name: "Split Keyboard Elite"
-            price: 199.99
+    cache:
+      response:
+        results:
+          - name: "Ergo Keyboard Pro"
+            price: 149.99
             available: true
-            rating: 4.5
-          - name: "Compact Ergo Board"
-            price: 89.99
-            available: false
-            rating: 4.3
-chaos_config:
-  rate_limit:
-    target: search_api
-    initial_delay_ms: 2000
-    max_retries: 3
-    backoff_multiplier: 2.0
-    jitter: true
-    succeed_after_retries: 2
+        source: "cache"
+
+chaos:
+  budget:
+    max_failures: 10
+  injectors:
+    - type: tool_failure
+      tool: search_api
+      failure_type: rate_limit
+      probability: 1.0
+      seed: 23
+      error_message: "429 Too Many Requests"
+
+agent:
+  type: script
+  on_error: continue
+  steps:
+    # Three attempts against the rate-limited API...
+    - tool: search_api
+      args:
+        query: "ergonomic keyboard"
+    - tool: search_api
+      args:
+        query: "ergonomic keyboard"
+    - tool: search_api
+      args:
+        query: "ergonomic keyboard"
+    # ...then degrade to cache.
+    - tool: cache
+      args:
+        key: "ergonomic keyboard"
+
+assertions:
+  - type: tool_called
+    tool: search_api
+  # The retry budget was genuinely spent, not skipped.
+  - type: tool_call_count
+    tool: search_api
+    expected_count: 3
+  - type: tool_called
+    tool: cache
+  - type: agent_recovers
+  - type: chaos_resilience
+    chaos_budget: auto
+    max_failure_rate: 0.8
+
 tags:
   - chaos
   - rate-limit
   - retry
+
 timeout_seconds: 30

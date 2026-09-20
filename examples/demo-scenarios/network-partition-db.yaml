@@ -1,17 +1,29 @@
+# Primary Database Unreachable, Replica Fallback — expected to PASS
+#
+# Run: sentinel run --path examples/demo-scenarios/network-partition-db.yaml
+#
+# The primary database is unreachable (network partition). The agent must
+# detect the failure and aggregate data from the regional replicas instead of
+# giving up. Both replicas are used so the aggregate is as complete as possible.
+#
+# Note: the NetworkPartition injector returns a ChaosToolWrapper that must be
+# substituted into the environment; the file-based runner does not support that
+# yet, so the partition is applied as a tool_failure on the primary database.
+
 id: network-partition-db
-name: Network Partition Database Recovery
+name: Primary Database Unreachable, Replica Fallback
 description: |
-  Simulates a network partition that makes the primary database
-  unreachable. The agent should detect the partition, switch to
-  a read-only replica or local cache, and complete the query with
-  degraded but available data. Tests resilience against network-level
-  failures in distributed systems.
-task: "Retrieve the current inventory status for warehouse locations. The system has multiple warehouses and should aggregate data from all available sources. If primary database is unreachable, use regional replicas or cached inventory counts."
+  Simulates a network partition that makes the primary database unreachable.
+  The agent should detect the failure, fall back to the regional replicas, and
+  return an aggregated result rather than no result.
+task: "Retrieve the current inventory status. The system has multiple warehouses and should aggregate data from all available sources. If the primary database is unreachable, use the regional replicas."
+
 env_config:
   tools:
     primary_database:
-      side_effect: "error"
-      error_message: "Connection refused: network unreachable (10.0.1.50:5432)"
+      response:
+        warehouse: "primary"
+        items: []
     replica_east:
       response:
         warehouse: "east"
@@ -32,23 +44,46 @@ env_config:
           - sku: "WH-W-002"
             product: "Gadget Beta"
             quantity: 201
-    cache:
-      response:
-        last_updated: "2026-07-22T08:00:00Z"
-        stale: true
-        items:
-          - sku: "WH-E-001"
-            product: "Widget Alpha"
-            quantity: 240
-chaos_config:
-  network_partition:
-    target: primary_database
-    partition_duration_s: 30
-    affect_replicas: false
-    include_cached_data: true
-    partition_type: "full"
+
+chaos:
+  budget:
+    max_failures: 10
+  injectors:
+    - type: tool_failure
+      tool: primary_database
+      failure_type: error
+      probability: 1.0
+      seed: 17
+      error_message: "Connection refused: network unreachable (10.0.1.50:5432)"
+
+agent:
+  type: script
+  on_error: continue
+  steps:
+    - tool: primary_database
+      args:
+        query: "inventory"
+    - tool: replica_east
+      args:
+        query: "inventory"
+    - tool: replica_west
+      args:
+        query: "inventory"
+
+assertions:
+  - type: tool_called
+    tool: primary_database
+  - type: tool_called
+    tool: replica_east
+  - type: tool_called
+    tool: replica_west
+  - type: agent_recovers
+  - type: chaos_resilience
+    chaos_budget: auto
+
 tags:
   - chaos
   - network
   - partition
+
 timeout_seconds: 30

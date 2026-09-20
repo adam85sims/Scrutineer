@@ -1,16 +1,30 @@
+# Refund Agent Timeout Handling — expected to PASS
+#
+# Run: sentinel run --path examples/demo-scenarios/refund-agent-timeout.yaml
+#
+# The search tool times out on every call. A resilient refund agent degrades to
+# the cache and still completes the lookup. The assertions verify that the
+# failure genuinely happened, that the fallback was used, and that the agent did
+# not silently fail.
+#
+# This is the reference-agent pattern: 'script' runs a declared plan with a
+# declared error policy. Same chaos with on_error: fail would crash — that
+# falsifiable difference is what makes the scenario worth running.
+
 id: refund-agent-timeout
 name: Refund Agent Timeout Handling
 description: |
-  Tests whether a refund processing agent can gracefully handle
-  a search API timeout when looking up refund policies. The agent
-  should detect the timeout, use cached fallback data, and still
-  complete the refund request without failing completely.
-task: "Process a refund request for order #12345. The customer wants a full refund for a defective product. Look up the refund policy, verify the order is within the return window, and initiate the refund."
+  Tests whether a refund processing agent can gracefully handle a search API
+  timeout when looking up refund policies. The agent should detect the timeout,
+  use cached fallback data, and still complete the refund request.
+task: "Process a refund request for order #12345. Look up the refund policy, verify the order is within the return window, and initiate the refund."
+
 env_config:
   tools:
     search:
-      side_effect: "timeout"
-      error_message: "Search API timed out after 10s"
+      response:
+        results:
+          - "Refund policy: 30-day return window for defective items"
     cache:
       response:
         refund_policy: "30-day return window for defective items"
@@ -20,14 +34,46 @@ env_config:
           status: "delivered"
           product: "Wireless Mouse"
           defect_reported: true
-chaos_config:
-  timeout:
-    target: search
-    delay_ms: 15000
-    probability: 1.0
+
+chaos:
+  budget:
+    max_failures: 10
+  injectors:
+    - type: tool_failure
+      tool: search
+      failure_type: timeout
+      probability: 1.0
+      seed: 42
+      error_message: "Search API timed out after 10s"
+
+agent:
+  type: script
+  on_error: fallback
+  steps:
+    - tool: search
+      args:
+        query: "refund policy"
+  fallback:
+    tool: cache
+    args:
+      key: order_12345
+
+assertions:
+  # The primary tool was genuinely attempted, so the chaos was exercised...
+  - type: tool_called
+    tool: search
+  # ...and the agent degraded to the cache instead of giving up.
+  - type: tool_called
+    tool: cache
+  - type: graceful_degradation
+  - type: chaos_resilience
+    chaos_budget: auto
+  - type: no_silent_failure
+
 tags:
   - chaos
   - timeout
   - refund
   - production
+
 timeout_seconds: 30
