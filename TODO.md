@@ -87,6 +87,10 @@
       — the two YAML edge-case tests raise `ModuleNotFoundError: No module named 'yaml'` on a
       `.[dev]`-only install (4 failures). Same class as the e2e collection abort fixed in c98109f:
       a missing extra should skip, not fail. Not a CI blocker (CI installs `.[all,dev]`).
+- [ ] Give `sentinel/adapters/openai.py` the same treatment as the LangChain adapter:
+      its `wrap_openai_agent` builds adapters and `invoke()` delegates, so it is still
+      fail-OPEN — the agent's real FunctionTools run while the trace stays empty and the run
+      reports success. §4.3 fixed this for LangChain only (see commit 1ab62c0).
 
 ---
 
