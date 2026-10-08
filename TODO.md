@@ -96,7 +96,8 @@
 
 ## Done
 
-All 6 phases complete. 519 tests passing.
+All 6 phases complete. **647 tests passing** (656 collected incl. the 9 browser e2e tests,
+which run in their own CI job).
 
 - [x] Phase 1: LangChain integration tests (16 tests)
 - [x] Phase 2: Package & distribution (build, install, version bump)
@@ -104,13 +105,53 @@ All 6 phases complete. 519 tests passing.
 - [x] Phase 4: Governance resolution (deterministic auditor)
 - [x] Phase 5: Polish (__all__ exports, API ref, 32 edge case tests)
 - [x] Phase 6: Advanced chaos (3 new injectors, 7 presets, benchmark doc)
+- [x] CI green on `main` (2026-10-08) — `test` (3.11/3.12/3.13) + `e2e (browser)` + `lint`
+- [x] LangChain `wrap_agent` genuinely intercepts, and fails closed (§4.3)
+- [x] Wrapper-based chaos injectors reachable from a scenario file, and working at all (§4.10)
 
 ## Blocked
 
-(empty)
+- [ ] **Product/brand name — PAUSED (2026-10-08, pending Adam).** Blocks the first PyPI
+      upload, and therefore Gate 3 and the whole "release → case study → outreach" sequence.
+      `pyproject.toml` currently says `sentinel-agents`, which is **PROVISIONAL**.
+
+      Known constraints, so this doesn't restart from zero: PyPI `sentinel`, `sentinel-ai`,
+      `agent-sentinel` and `sentinel-harness` are all taken; and `sentinel` collides with
+      Microsoft Sentinel, SentinelOne and Whitehat Sentinel — three security vendors in this
+      exact market, which is the real argument against it. A Nova-flavoured name is under
+      consideration (working name *Overseer*; it is on-message for a governance instrument):
+      bare `overseer` is taken on both PyPI and npm, but `overseer-agents`, `agent-overseer`,
+      `nova-overseer`, `overseer-harness` and `overseer-py` are all free. Note `overseer` is
+      already a generic term of art for "the agent that watches the other agents", so it is a
+      role word like Sentinel — findable, but hard to own.
+
+      **Decide before any upload.** The rename is free today and effectively permanent after
+      (a rename means a new project and a dead namesake). The import package (`sentinel`) and
+      the CLI (`sentinel serve`) are the user-visible surface and renaming those is a breaking
+      change, so the brand should land before anyone depends on them.
+
+## Open Questions
+
+- Phase 7's queue is ~half stale: of its 11 pending items, **5 are already built** (WebUI
+  dashboard, model-endpoint selector, chaos config builder, SSE streaming, trace/baseline
+  diff UI). Only four features are genuinely unstarted: pytest plugin, async chaos, retry
+  assertions, Prometheus exporter. Worth re-cutting the queue by gate (Gate 0 "not lying" →
+  Gate 4 "sellable") instead of by phase, so correctness defects stop queueing behind
+  telemetry.
+- Pricing signed off line by line, and the pilot-discount rule decided (readiness §7 item 10).
+- `pattern-memory/` (v0.13.0) has never had a release/CI assessment, yet the offer plan treats
+  it as a second instrument of the service (readiness §4.9).
+- Docker for the WebUI: secondary distribution channel, not launch-blocking.
+- The governance diary is stale (claims 521 tests; the real count is 656). That is why the
+  audit FAILs on its own repo and the on-file PASS case study no longer reproduces. Refresh
+  the diary and regenerate the case study before anything is published.
 
 ## Notes
 
 - Repo at https://github.com/adam85sims/Sentinel
 - Governance default is deterministic-only (no LLM required)
-- All phases complete — ready for production use
+- The five shipped Phase 7 items above are marked `[ ]` here despite existing — this file
+  overstates remaining work, and its `Done`/`Notes` sections understated test counts until
+  2026-10-08. Keep both honest; the governance audit reads this file.
+- Not production-ready: §4.4 (no real agent under test) and §4.7 (auditor not client-grade)
+  are both open. Do not take a paid engagement before Gate 1 and Gate 2 pass.
