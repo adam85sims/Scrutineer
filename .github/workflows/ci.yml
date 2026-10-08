@@ -8,6 +8,15 @@ on:
 
 jobs:
   test:
+    # Unit/integration suite. Browser e2e is deliberately excluded here:
+    # playwright's sync fixtures keep a long-lived asyncio loop alive, and
+    # running them alongside `@pytest.mark.asyncio` tests raises
+    # "Runner.run() cannot be called from a running event loop". Worse, when
+    # the browser is missing the 9 e2e tests ERROR and leave that loop in the
+    # test process, which fails the only async test in the suite — so a
+    # missing browser used to red the whole matrix. e2e has its own job below.
+    # Do not remove -m "not e2e" from this job.
+    name: test (py${{ matrix.python-version }})
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -21,13 +30,31 @@ jobs:
       - name: Install package (dev + all extras)
         run: pip install -e ".[all,dev]"
       - name: Run tests
-        run: python -m pytest tests/ -v --cov=sentinel --cov-report=xml --cov-report=term-missing
+        run: python -m pytest tests/ -v -m "not e2e" --cov=sentinel --cov-report=xml --cov-report=term-missing
       - name: Upload coverage
         uses: codecov/codecov-action@v4
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           fail_ci_if_error: false
           files: coverage.xml
+
+  e2e:
+    # Browser suite, in its own job so a browser/download problem cannot red
+    # the main matrix. Runs on one Python version: the browser tests exercise
+    # the WebUI over HTTP, not interpreter-version-specific behaviour.
+    name: e2e (browser)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install package (dev + all extras)
+        run: pip install -e ".[all,dev]"
+      - name: Install Playwright browsers
+        run: python -m playwright install --with-deps chromium
+      - name: Run browser e2e tests
+        run: python -m pytest tests/ -v -m e2e
 
   lint:
     runs-on: ubuntu-latest
