@@ -83,6 +83,10 @@
 - [ ] Add asynchronous chaos injection support for native async agent frameworks
 - [ ] Implement built-in retry assertions (e.g., `assert_retried_after_failure(tool_name, max_retries=3)`)
 - [ ] Implement Prometheus metrics exporter for CI/CD run dashboards
+- [ ] Guard optional deps with `pytest.importorskip` in `tests/sentinel/test_edge_cases.py`
+      — the two YAML edge-case tests raise `ModuleNotFoundError: No module named 'yaml'` on a
+      `.[dev]`-only install (4 failures). Same class as the e2e collection abort fixed in c98109f:
+      a missing extra should skip, not fail. Not a CI blocker (CI installs `.[all,dev]`).
 
 ---
 

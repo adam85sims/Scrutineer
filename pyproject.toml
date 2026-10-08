@@ -67,6 +67,11 @@ dev = [
 ]
 
 # Everything
+# Keep in sync with the extras above: this extra is advertised as "Everything",
+# and it previously omitted the WebUI deps, so `pip install -e ".[all,dev]"`
+# could not import sentinel.web at all. In CI that silently skipped every
+# WebUI API test (importorskip) and aborted collection on the e2e module
+# (ModuleNotFoundError: No module named 'fastapi').
 all = [
     "langchain-core>=0.3.0",
     "crewai>=0.10.0",
@@ -74,6 +79,10 @@ all = [
     "pyyaml>=6.0",
     "opentelemetry-sdk>=1.0.0",
     "opentelemetry-exporter-otlp>=1.0.0",
+    "fastapi>=0.115.0",
+    "uvicorn[standard]>=0.34.0",
+    "sse-starlette>=2.0.0",
+    "httpx>=0.27.0",
     "pytest>=7.0",
     "pytest-cov>=4.0",
     "pytest-asyncio",

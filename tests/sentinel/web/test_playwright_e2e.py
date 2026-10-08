@@ -12,8 +12,14 @@ from unittest.mock import patch
 
 import pytest
 
-# Skip this module if playwright is not installed
+# Skip this module if its optional dependencies are not installed. A failing
+# module-level import is a COLLECTION ERROR, which aborts the entire run before
+# markers can deselect anything — so every optional import below must be guarded
+# (test_api.py guards fastapi/httpx the same way). A missing extra should skip
+# this module, never interrupt the suite.
 pytest.importorskip("playwright", reason="playwright library not installed")
+pytest.importorskip("fastapi", reason="Web deps not installed")
+pytest.importorskip("uvicorn", reason="Web deps not installed")
 
 # Mark every test in this module as e2e so they can be deselected with
 # `-m "not e2e"`. pytest-playwright creates a long-lived asyncio loop
