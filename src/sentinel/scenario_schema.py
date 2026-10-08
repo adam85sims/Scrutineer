@@ -85,14 +85,23 @@ _CHAOS_TYPES: dict[str, type] = {
 
 #: Injectors the file-based runner can genuinely apply today.
 #:
-#: Only ``tool_failure`` qualifies: ``ToolFailureInjector.wrap(tool)`` configures the
-#: tool in place. ``NetworkPartition``, ``ClockSkew`` and ``MemoryPressure`` return a
-#: ``ChaosToolWrapper`` that must be *substituted into the environment*, and
-#: ``ContextDegradation`` / ``SpecDrift`` / ``CascadingFailures`` are step-driven
-#: (``on_step`` / ``on_failure``). None of those paths exist yet, so declaring them in
-#: a scenario file raises rather than being silently dropped — a chaos injector that
-#: quietly does nothing is worse than one that refuses to load.
-_WRAPPABLE_INJECTORS = frozenset({"tool_failure"})
+#: Two mechanisms qualify, because ``_apply_chaos`` implements both:
+#:
+#: * ``tool_failure`` — ``wrap()`` installs a call handler on the tool in place;
+#: * ``network_partition`` / ``clock_skew`` / ``memory_pressure`` — ``wrap()`` returns a
+#:   ``ChaosToolWrapper``, which the runner substitutes into the environment.
+#:
+#: Both need the scenario to name a target tool (``tool: <name>``), since the runner has
+#: to know which tool to wire.
+#:
+#: Still rejected, loudly: ``context_degradation``, ``spec_drift`` and
+#: ``cascading_failures``. These are step-driven (``on_step`` / ``on_failure``) and
+#: operate on an agent's *context* — which the scripted reference agent does not have, so
+#: wiring them to it would compute a degradation curve and throw it away. They need a real
+#: agent (see planning/COMMERCIAL_READINESS_2026-09-13.md §4.4), not a harness change.
+_WRAPPABLE_INJECTORS = frozenset(
+    {"tool_failure", "network_partition", "clock_skew", "memory_pressure"}
+)
 
 #: Friendly YAML key aliases. ``tool: search`` is the natural spelling in a file;
 #: the Python API calls the parameter ``tool_name``.

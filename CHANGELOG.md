@@ -7,6 +7,10 @@ All notable changes to **Sentinel** are documented here. Format follows
 ## [Unreleased]
 
 ### Added
+- **Wrapper-based chaos injectors are reachable from a scenario file.** `network_partition`,
+  `clock_skew` and `memory_pressure` now load, inject and are falsifiable from YAML. The
+  runner substitutes each injector's `ChaosToolWrapper` into the environment (§4.10). New
+  demo: `examples/demo-scenarios/network-partition-cache-fallback.yaml`.
 - CI pipeline (pytest + ruff) for Sentinel and pattern-memory.
 - LICENSE file (MIT).
 - **Declarative scenario schema** (`sentinel.scenario_schema`): scenario files can now
@@ -37,6 +41,13 @@ All notable changes to **Sentinel** are documented here. Format follows
   and reports a malformed scenario as a scenario error rather than a traceback.
 
 ### Fixed
+- **Three of the five chaos injectors crashed the moment they fired.**
+  `NetworkPartition`, `ClockSkew` and `MemoryPressure` all hand out a `ChaosToolWrapper`, whose
+  first line reads `injector.tool_name` and which later reads `injector.failure_type` — neither
+  of which those classes defined, so each raised `AttributeError` inside its own wrapper on the
+  first call that should have injected. They now define both, the contract is written down on
+  `ChaosToolWrapper`, and `tests/sentinel/test_chaos_wrapper_contract.py` pins it. The
+  `_WRAPPABLE_INJECTORS` gate had been hiding this by refusing to load them.
 - **LangChain `wrap_agent` did not intercept — it delegated to the real agent, which
   called its real tools, while recording nothing and reporting success.** It now replaces
   each of the agent's tools (`agent.tools`) with a mock-backed LangChain tool, and raises

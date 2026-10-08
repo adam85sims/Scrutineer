@@ -166,9 +166,24 @@ class ChaosToolWrapper:
     """Callable wrapper that intercepts tool calls for failure injection.
 
     Since Python's special method lookup for ``__call__`` goes to the type
-    (not the instance), we cannot monkey-patch ``tool.__call__``. Instead,
-    ``ToolFailureInjector.wrap()`` returns one of these wrappers that the
-    test harness uses in place of the raw MockTool.
+    (not the instance), we cannot monkey-patch ``tool.__call__``. Injectors that
+    must *replace* a tool return one of these; the runner substitutes it into the
+    environment in place of the raw MockTool.
+
+    **Injector contract.** The injector handed to this wrapper must define:
+
+    * ``tool_name: str | None`` — None means "whatever tool this wrapper is on";
+      a name limits injection to that tool.
+    * ``failure_type`` — an enum with ``.value``, used to label the audit record.
+    * ``_should_inject()`` / ``_create_failure(kwargs)`` — the decision and the error.
+    * ``_injection_count`` / ``_records`` — mutated to keep the audit trail.
+
+    ``NetworkPartition``, ``ClockSkew`` and ``MemoryPressure`` all satisfy it.
+    (``ToolFailureInjector`` does **not** use this wrapper — its ``wrap()`` installs a
+    ``call_handler`` on the tool in place.) An injector missing any of the above raised
+    ``AttributeError`` on the first call that should have injected, which is why the
+    contract is written down here and pinned by
+    ``tests/sentinel/test_chaos_wrapper_contract.py``.
 
     The wrapper delegates to the original tool when no injection occurs,
     preserving call recording and response behavior.
@@ -1390,11 +1405,19 @@ class NetworkPartition:
         partition_probability: float = 1.0,
         seed: int | None = None,
         heal_after_calls: int | None = None,
+        tool_name: str | None = None,
     ) -> None:
         self.connectivity = connectivity
         self.partition_probability = partition_probability
         self._rng = random.Random(seed)
         self.heal_after_calls = heal_after_calls
+
+        # Contract required by ChaosToolWrapper: it reads `tool_name` (to decide
+        # whether this wrapper targets the tool being called) and `failure_type`
+        # (to label the InjectionRecord). Without both, the wrapper raised
+        # AttributeError the first time the injector actually fired.
+        self.tool_name = tool_name
+        self.failure_type = ToolFailureType.TIMEOUT
 
         self._call_count: int = 0
         self._injection_count: int = 0
@@ -1494,11 +1517,19 @@ class ClockSkew:
         drift_rate: float = 0.0,
         affected_tools: list[str] | None = None,
         seed: int | None = None,
+        tool_name: str | None = None,
     ) -> None:
         self.skew_seconds = skew_seconds
         self.drift_rate = drift_rate
         self.affected_tools = affected_tools
         self._rng = random.Random(seed)
+
+        # Contract required by ChaosToolWrapper: it reads `tool_name` (to decide
+        # whether this wrapper targets the tool being called) and `failure_type`
+        # (to label the InjectionRecord). Without both, the wrapper raised
+        # AttributeError the first time the injector actually fired.
+        self.tool_name = tool_name
+        self.failure_type = ToolFailureType.ERROR
 
         self._call_count: int = 0
         self._injection_count: int = 0
@@ -1601,6 +1632,7 @@ class MemoryPressure:
         gc_pause_ms: float = 0.0,
         oom_probability: float = 0.0,
         seed: int | None = None,
+        tool_name: str | None = None,
     ) -> None:
         self.max_context_tokens = max_context_tokens
         self.pressure_threshold = pressure_threshold
@@ -1608,6 +1640,13 @@ class MemoryPressure:
         self.gc_pause_ms = gc_pause_ms
         self.oom_probability = oom_probability
         self._rng = random.Random(seed)
+
+        # Contract required by ChaosToolWrapper: it reads `tool_name` (to decide
+        # whether this wrapper targets the tool being called) and `failure_type`
+        # (to label the InjectionRecord). Without both, the wrapper raised
+        # AttributeError the first time the injector actually fired.
+        self.tool_name = tool_name
+        self.failure_type = ToolFailureType.ERROR
 
         self._current_usage: int = 0
         self._call_count: int = 0

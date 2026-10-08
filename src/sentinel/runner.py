@@ -518,29 +518,49 @@ def sentinel_test(
 def _apply_chaos(chaos: Any, env: Environment) -> None:
     """Wire chaos injectors into the environment's tools.
 
-    Only ``ToolFailureInjector`` can be applied here: its ``wrap()`` configures the
-    mock tool in place. Anything else raises rather than being silently skipped — an
-    injector that quietly does nothing would let a resilience scenario pass with no
-    chaos applied at all.
+    Two mechanisms, both real and both verified by tests:
+
+    * ``ToolFailureInjector.wrap(tool)`` installs a call handler on the mock tool
+      **in place**;
+    * ``NetworkPartition`` / ``ClockSkew`` / ``MemoryPressure`` ``wrap(tool)`` return a
+      ``ChaosToolWrapper`` that must be **substituted** into the environment — which is
+      what this function does with the return value.
+
+    Anything else raises rather than being silently skipped — an injector that quietly
+    does nothing would let a resilience scenario pass with no chaos applied at all.
     """
-    from sentinel.chaos import ChaosBudget, ToolFailureInjector
+    from sentinel.chaos import ChaosBudget, ChaosToolWrapper
 
     if not isinstance(chaos, ChaosBudget):
         raise TypeError(f"chaos must be a ChaosBudget, got {type(chaos).__name__}")
 
     for injector in chaos.get_injectors():
-        if not isinstance(injector, ToolFailureInjector):
+        if not hasattr(injector, "wrap"):
             raise NotImplementedError(
-                f"{type(injector).__name__} cannot be applied by this path yet "
-                "(only ToolFailureInjector can). It would otherwise be silently "
-                "skipped and inject nothing."
+                f"{type(injector).__name__} cannot be applied by this path yet. It is "
+                "step-driven (on_step/on_failure) and needs an agent loop this runner "
+                "does not provide. It would otherwise be silently skipped and inject "
+                "nothing."
             )
 
-        tool = env.get_tool(injector.tool_name)
+        tool_name = getattr(injector, "tool_name", None)
+        if not tool_name:
+            raise ValueError(
+                f"{type(injector).__name__} does not name a target tool, so the runner "
+                "cannot know which tool to wire. Give it one in the scenario "
+                "(`tool: <name>`)."
+            )
+
+        tool = env.get_tool(tool_name)
         if tool is None:
             available = sorted(env.get_tools())
             raise ValueError(
-                f"chaos targets tool {injector.tool_name!r}, which is not in the "
+                f"chaos targets tool {tool_name!r}, which is not in the "
                 f"environment. Available tools: {available or '(none)'}"
             )
-        injector.wrap(tool)
+
+        wrapped = injector.wrap(tool)
+        # A wrapper has to replace the tool in the environment; an in-place injector
+        # returns the same tool it was handed and needs no substitution.
+        if isinstance(wrapped, ChaosToolWrapper):
+            env.tools[tool_name] = wrapped

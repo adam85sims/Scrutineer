@@ -1,0 +1,73 @@
+# Network Partition — expected to PASS
+#
+# Run: sentinel run --path examples/demo-scenarios/network-partition-cache-fallback.yaml
+#
+# A network partition cuts the agent off from `search`. A resilient agent
+# degrades to the cache and still answers. The assertions verify that the
+# primary tool was really attempted, that the fallback was used, and that
+# nothing failed silently.
+#
+# This is the reference-agent pattern: 'script' runs a declared plan with a
+# declared error policy. The same file with `on_error: fail` crashes instead —
+# that falsifiable difference is what makes the scenario worth running.
+#
+# This scenario also exercises the wrapper-based chaos path: NetworkPartition
+# is not applied in place, it returns a ChaosToolWrapper that the runner
+# substitutes into the environment for the named tool.
+
+id: network-partition-cache-fallback
+name: Search behind a network partition, with a cache fallback
+description: |
+  The agent's search tool is unreachable (network partition). It must detect the
+  failure, fall back to cached data, and still complete the lookup.
+task: "Look up the refund policy while the search service is unreachable."
+
+env_config:
+  tools:
+    search:
+      response:
+        results:
+          - "Refund policy: 30-day return window"
+    cache:
+      response:
+        policy: "30-day return window"
+
+chaos:
+  budget:
+    max_failures: 5
+  injectors:
+    - type: network_partition
+      tool: search
+      connectivity:
+        agent: []
+      partition_probability: 1.0
+      seed: 7
+
+agent:
+  type: script
+  on_error: fallback
+  steps:
+    - tool: search
+      args:
+        query: "refund policy"
+  fallback:
+    tool: cache
+    args:
+      key: policy
+
+assertions:
+  # The primary tool was genuinely attempted, so the partition was exercised...
+  - type: tool_called
+    tool: search
+  # ...and the agent degraded to the cache instead of giving up.
+  - type: tool_called
+    tool: cache
+  - type: no_silent_failure
+
+tags:
+  - chaos
+  - network
+  - partition
+  - production
+
+timeout_seconds: 30
