@@ -37,6 +37,12 @@ All notable changes to **Sentinel** are documented here. Format follows
   and reports a malformed scenario as a scenario error rather than a traceback.
 
 ### Fixed
+- **LangChain `wrap_agent` did not intercept — it delegated to the real agent, which
+  called its real tools, while recording nothing and reporting success.** It now replaces
+  each of the agent's tools (`agent.tools`) with a mock-backed LangChain tool, and raises
+  `AgentInterceptionError` if the tools cannot be rebound rather than failing open. Tools
+  left real are reported on `AgentWrapper.unintercepted_tools`. Pass `intercept=False` for
+  the old adapter-only construction (see planning/COMMERCIAL_READINESS_2026-09-13.md §4.3).
 - `_build_env` silently dropped unsupported `env_config` tool keys (including
   `side_effect`); it now rejects them with guidance pointing at the `chaos:` block.
 - `_apply_chaos` silently skipped an injector whose target tool did not exist; it now

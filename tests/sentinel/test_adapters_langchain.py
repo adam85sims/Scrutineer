@@ -124,7 +124,11 @@ class TestSentinelToolAdapter:
 
 class TestAgentWrapper:
     def test_wrap_agent_creates_adapters(self):
-        """wrap_agent creates adapters for each mock tool."""
+        """wrap_agent creates adapters for each mock tool.
+
+        ``intercept=False`` because this asserts adapter construction only; a
+        bare ``object()`` has no tools for Sentinel to rebind.
+        """
         trace = AgentTrace()
         agent = object()  # Dummy agent
 
@@ -135,6 +139,7 @@ class TestAgentWrapper:
             agent=agent,
             tool_map={"search": mock_search, "email": mock_email},
             trace=trace,
+            intercept=False,
         )
 
         assert len(wrapper.adapters) == 2
@@ -145,7 +150,9 @@ class TestAgentWrapper:
         """get_mock returns the underlying MockTool."""
         trace = AgentTrace()
         mock = MockTool("tool", response="ok")
-        wrapper = wrap_agent(agent=None, tool_map={"tool": mock}, trace=trace)
+        wrapper = wrap_agent(
+            agent=None, tool_map={"tool": mock}, trace=trace, intercept=False
+        )
 
         assert wrapper.get_mock("tool") is mock
         assert wrapper.get_mock("nonexistent") is None
@@ -157,6 +164,7 @@ class TestAgentWrapper:
             agent="dummy",
             tool_map={"a": MockTool("a"), "b": MockTool("b")},
             trace=trace,
+            intercept=False,
         )
         r = repr(wrapper)
         assert "AgentWrapper" in r

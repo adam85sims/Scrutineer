@@ -43,6 +43,24 @@ result = wrapped.invoke({"messages": [HumanMessage(content="Find info")]})
 - Tool execution → delegated to sentinel MockTools
 - External API calls → mocked responses
 
+**How interception actually works.** `wrap_agent` replaces each of the agent's
+own tools (`agent.tools`) whose name appears in `tool_map` with a mock-backed
+LangChain tool, so the agent's own tool-calling path reaches the mock and the
+real implementation is never called. Tools you do not supply a mock for are left
+real, and listed on `wrapped.unintercepted_tools` so a partially-mocked agent is
+visible rather than silently half-real.
+
+If the agent exposes no rebindable `tools` list — a `create_react_agent` Runnable,
+for example — `wrap_agent` raises `AgentInterceptionError`. It deliberately does
+not fall back to delegating: a wrapper that intercepts nothing while reporting
+success is worse than no wrapper, because the real tool still runs and the trace
+stays empty. For those agents, build the agent against the mocked tools:
+
+```python
+wrapped = wrap_agent(agent=None, tool_map=MOCKS, trace=trace, intercept=False)
+agent = create_react_agent(model, wrapped.tools.values())
+```
+
 ### CrewAI
 
 ```python

@@ -134,12 +134,18 @@ sentinel serve --port 9090       # Custom port
 
 ## Framework Adapters
 
-Sentinel works with any agent framework through optional adapters:
+Sentinel ships adapters for specific frameworks, plus a generic hook adapter for anything else:
 
 ```python
-# LangChain
+# LangChain — rebinds your_agent.tools so the agent's own call path hits the mocks
 from sentinel.adapters.langchain import wrap_agent
 wrapped = wrap_agent(your_agent, tool_map={...}, trace=trace)
+
+# Agents whose tools are bound internally (a create_react_agent Runnable, say)
+# cannot be rebound. wrap_agent raises AgentInterceptionError rather than
+# quietly letting the real tools run — build the agent against the mocks instead:
+wrapped = wrap_agent(agent=None, tool_map={...}, trace=trace, intercept=False)
+agent = create_react_agent(model, wrapped.tools.values())
 
 # CrewAI
 from sentinel.adapters.crewai import wrap_crew_agent

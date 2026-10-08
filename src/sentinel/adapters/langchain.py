@@ -42,6 +42,105 @@ except ImportError:
     BaseTool = None  # type: ignore[misc,assignment]
 
 
+class AgentInterceptionError(RuntimeError):
+    """Raised when Sentinel cannot replace an agent's tools with mocks.
+
+    Sentinel must never fall back to letting a wrapped agent call its real
+    tools. That is the failure mode where a production API or database write
+    happens while the run reports success and the trace stays empty — see
+    planning/COMMERCIAL_READINESS_2026-09-13.md §4.3. If the tools cannot be
+    rebound, the run stops instead.
+    """
+
+
+def _record_mock_call(mock: MockTool, trace: AgentTrace, kwargs: dict[str, Any]) -> Any:
+    """Execute a mock tool and record the call into the trace.
+
+    Shared by the duck-typed adapter and the real LangChain tool, so both
+    interception paths produce identical traces.
+    """
+    start = time.time()
+    result = None
+    error_msg = None
+
+    try:
+        result = mock(**kwargs)
+    except Exception as exc:
+        error_msg = str(exc)
+        raise
+    finally:
+        duration_ms = (time.time() - start) * 1000
+        tool_call = ToolCall(
+            tool_name=mock.name,
+            arguments=kwargs,
+            result=result,
+            duration_ms=duration_ms,
+            error=error_msg,
+        )
+        trace.add_tool_call(tool_call)
+
+    return result
+
+
+if BaseTool is not None:
+
+    class MockBackedTool(BaseTool):
+        """A real LangChain tool whose implementation is a sentinel MockTool.
+
+        This is the object substituted into the agent's tool list, so the
+        agent's own call path reaches sentinel instead of the real
+        implementation. ``args_schema`` is deliberately left unset: a mock
+        accepts whatever the scenario passes and decides its own response, so
+        there is nothing to validate.
+        """
+
+        name: str = "mock"
+        description: str = ""
+        sentinel_mock: Any = None
+        sentinel_trace: Any = None
+
+        def _run(self, *args: Any, **kwargs: Any) -> Any:
+            return self._sentinel_call(args, kwargs)
+
+        async def _arun(self, *args: Any, **kwargs: Any) -> Any:
+            return self._sentinel_call(args, kwargs)
+
+        def _sentinel_call(self, args: tuple, kwargs: dict[str, Any]) -> Any:
+            # LangChain calls _run(**tool_input) for a mapping input, but some
+            # paths pass the mapping positionally — accept both.
+            call_kwargs = dict(kwargs)
+            if len(args) == 1 and isinstance(args[0], dict):
+                call_kwargs = {**args[0], **call_kwargs}
+            elif args:
+                call_kwargs["input"] = args[0] if len(args) == 1 else list(args)
+
+            return _record_mock_call(self.sentinel_mock, self.sentinel_trace, call_kwargs)
+
+
+def build_mock_tool(mock: MockTool, trace: AgentTrace) -> Any:
+    """Build a real LangChain tool backed by ``mock``.
+
+    This is what gets substituted into an agent's tool list. It raises rather
+    than returning a stand-in if langchain-core is unavailable, because a
+    non-LangChain object in a LangChain agent's tool list does not intercept
+    anything.
+    """
+    if BaseTool is None:
+        raise AgentInterceptionError(
+            "cannot intercept: langchain-core is not installed, so Sentinel cannot "
+            "build a LangChain tool to substitute for the agent's real one. Install "
+            "with `pip install sentinel-agents[langchain]`, or pass intercept=False "
+            "if you only want the adapters."
+        )
+
+    return MockBackedTool(
+        name=mock.name,
+        description=getattr(mock, "description", None) or f"Sentinel mock tool: {mock.name}",
+        sentinel_mock=mock,
+        sentinel_trace=trace,
+    )
+
+
 class SentinelToolAdapter:
     """Wraps a LangChain BaseTool with a sentinel MockTool.
 
@@ -118,27 +217,7 @@ class SentinelToolAdapter:
 
     def _call_mock(self, kwargs: dict[str, Any]) -> Any:
         """Execute the mock tool and record the call into the trace."""
-        start = time.time()
-        result = None
-        error_msg = None
-
-        try:
-            result = self._mock(**kwargs)
-        except Exception as exc:
-            error_msg = str(exc)
-            raise
-        finally:
-            duration_ms = (time.time() - start) * 1000
-            tool_call = ToolCall(
-                tool_name=self._mock.name,
-                arguments=kwargs,
-                result=result,
-                duration_ms=duration_ms,
-                error=error_msg,
-            )
-            self._trace.add_tool_call(tool_call)
-
-        return result
+        return _record_mock_call(self._mock, self._trace, kwargs)
 
     def reset_calls(self) -> None:
         """Clear recorded calls on the mock tool."""
@@ -175,6 +254,7 @@ def wrap_agent(
     agent: Any,
     tool_map: dict[str, MockTool],
     trace: AgentTrace,
+    intercept: bool = True,
 ) -> AgentWrapper:
     """Wrap an entire LangChain agent, replacing its tools with mocks.
 
@@ -183,14 +263,34 @@ def wrap_agent(
     2. Records every call into the AgentTrace
     3. Preserves the agent's ``invoke`` / ``__call__`` interface
 
+    By default this **rebinds the agent's tools in place**: every entry in
+    ``agent.tools`` whose name appears in ``tool_map`` is replaced with a
+    mock-backed LangChain tool, so the agent's own call path reaches the mock.
+    Tools Sentinel does not have a mock for are left alone (and listed on
+    ``AgentWrapper.unintercepted_tools``) — those can still reach the real
+    world, so pass a mock for every tool you need to contain.
+
+    If the agent's tools cannot be rebound, this raises
+    ``AgentInterceptionError`` rather than wrapping the agent in a no-op that
+    delegates to real tools while reporting success. Agents whose tools are
+    bound internally (for example a ``create_react_agent`` Runnable) should be
+    built against ``wrapper.tools`` instead.
+
     Args:
-        agent: A LangChain agent (any Runnable with tools).
+        agent: A LangChain agent exposing a rebindable ``tools`` list.
         tool_map: Mapping of tool name → sentinel MockTool.
         trace: AgentTrace to record all calls into.
+        intercept: Set False to build the adapters without touching the agent
+            (explicit opt-in for adapter-only use; the agent keeps its real
+            tools).
 
     Returns:
         AgentWrapper that behaves like the original agent but routes
         tool calls through sentinel.
+
+    Raises:
+        AgentInterceptionError: ``intercept`` is True and the agent's tools
+            could not be replaced.
 
     Example:
         agent = create_react_agent(model, tools, prompt)
@@ -208,6 +308,7 @@ def wrap_agent(
         agent=agent,
         tool_map=tool_map,
         trace=trace,
+        intercept=intercept,
     )
 
 
@@ -218,6 +319,10 @@ class AgentWrapper:
     all tool calls with sentinel MockTools. The agent's core LLM reasoning
     loop is untouched — only the tool layer is replaced.
 
+    Replacement happens by rebinding the agent's ``tools`` list in place, so
+    it works for any agent that keeps its tools there. Agents that bind tools
+    internally must be constructed against ``AgentWrapper.tools`` instead.
+
     The wrapper implements both ``invoke()`` and ``__call__()`` for
     compatibility with different LangChain usage patterns.
     """
@@ -227,22 +332,91 @@ class AgentWrapper:
         agent: Any,
         tool_map: dict[str, MockTool],
         trace: AgentTrace,
+        intercept: bool = True,
     ) -> None:
         self._agent = agent
         self._trace = trace
         self._adapters: dict[str, SentinelToolAdapter] = {}
+        self._tools: dict[str, Any] = {}
+        self._unintercepted: list[str] = []
 
-        # Create an adapter for each mock tool
+        # Create an adapter (and a real, substitutable tool) per mock tool
         for name, mock in tool_map.items():
             self._adapters[name] = SentinelToolAdapter(
                 mock=mock,
                 trace=trace,
             )
+            if intercept:
+                self._tools[name] = build_mock_tool(mock, trace)
+
+        if intercept and self._adapters:
+            self._rebind_agent_tools()
+
+    def _rebind_agent_tools(self) -> None:
+        """Replace the agent's own tools with mock-backed tools, in place.
+
+        Raises:
+            AgentInterceptionError: the agent exposes no ``tools`` list, or
+                none of the mocked tools are present on it. Both cases mean
+                Sentinel would intercept nothing while reporting success.
+        """
+        raw = getattr(self._agent, "tools", None)
+
+        if not isinstance(raw, (list, tuple)):
+            raise AgentInterceptionError(
+                f"cannot intercept: agent {type(self._agent).__name__} exposes no "
+                f"rebindable `tools` list, so Sentinel cannot replace its tools "
+                f"(mocks={sorted(self._adapters)}). Build the agent against the "
+                "mocked tools via `wrap_agent(...).tools`, or pass intercept=False "
+                "to build the adapters only."
+            )
+
+        rebuilt: list[Any] = []
+        rebound = 0
+        leftover: list[str] = []
+
+        for tool in raw:
+            name = getattr(tool, "name", None)
+            if isinstance(name, str) and name in self._tools:
+                rebuilt.append(self._tools[name])
+                rebound += 1
+            else:
+                rebuilt.append(tool)
+                leftover.append(name if isinstance(name, str) else repr(tool))
+
+        if rebound == 0:
+            raise AgentInterceptionError(
+                f"cannot intercept: none of the mocked tools are present on agent "
+                f"{type(self._agent).__name__} (mocks={sorted(self._adapters)}, "
+                f"agent tools={leftover}). Sentinel would leave the real tools in "
+                "place and report success."
+            )
+
+        setattr(
+            self._agent,
+            "tools",
+            tuple(rebuilt) if isinstance(raw, tuple) else rebuilt,
+        )
+        self._unintercepted = leftover
 
     @property
     def adapters(self) -> dict[str, SentinelToolAdapter]:
         """Get all tool adapters by name."""
         return dict(self._adapters)
+
+    @property
+    def tools(self) -> dict[str, Any]:
+        """The mock-backed LangChain tools, for rebuilding an agent against them.
+
+        Use this when the agent's tools cannot be rebound (for example
+        ``create_react_agent(model, wrapper.tools.values())``).
+        """
+        return dict(self._tools)
+
+    @property
+    def unintercepted_tools(self) -> list[str]:
+        """Names of the agent's tools that were left real (no mock supplied)."""
+        return list(self._unintercepted)
 
     @property
     def trace(self) -> AgentTrace:
@@ -257,14 +431,12 @@ class AgentWrapper:
     def invoke(self, input: Any = None, **kwargs: Any) -> Any:
         """Invoke the wrapped agent.
 
-        For a fully integration-tested agent, this delegates to the original
-        agent's invoke and the tool mocking happens via the adapters. For
-        a standalone mock-only test, this provides a simpler path.
+        Delegates to the original agent. Interception happened at wrap time by
+        substituting its tools, so the agent's own tool-calling path reaches
+        the mocks.
 
         Returns the agent's response.
         """
-        # Delegate to the original agent — tool interception happens
-        # when the agent calls tools through the adapters
         if hasattr(self._agent, "invoke"):
             return self._agent.invoke(input, **kwargs)
         return self._agent(input, **kwargs)
@@ -276,5 +448,6 @@ class AgentWrapper:
     def __repr__(self) -> str:
         return (
             f"AgentWrapper(agent={type(self._agent).__name__}, "
-            f"tools={list(self._adapters.keys())})"
+            f"tools={list(self._adapters.keys())}, "
+            f"unintercepted={self._unintercepted})"
         )
