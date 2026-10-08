@@ -32,6 +32,11 @@ Sentinel fills that gap. It's a behavioral testing platform that:
 
 ## Quick Start
 
+> **Distribution name:** this project publishes to PyPI as **`sentinel-agents`**.
+> Do **not** run `pip install sentinel` — that name belongs to an unrelated project and
+> installs a different library. The import package and the console script are both
+> `sentinel`. The PyPI release is not out yet; install from git for now.
+
 ```bash
 # Install (zero dependencies by default)
 pip install git+https://github.com/adam85sims/Sentinel.git

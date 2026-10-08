@@ -4,6 +4,9 @@
 
 ## Install
 
+> Published to PyPI as **`sentinel-agents`** (release pending). Do not `pip install sentinel`
+> — that name belongs to an unrelated project. The import package and the CLI are `sentinel`.
+
 ```bash
 # Basic install (zero dependencies)
 pip install git+https://github.com/adam85sims/Sentinel.git

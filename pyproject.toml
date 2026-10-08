@@ -3,7 +3,12 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "sentinel"
+# Distribution name. The PyPI name `sentinel` belongs to an unrelated project (a
+# sentinel-object library), so `pip install sentinel` silently installs THAT package —
+# a supply-chain trap rather than a typo. The import package stays `sentinel` and the
+# console script stays `sentinel`, so nothing user-facing changes. See
+# planning/COMMERCIAL_READINESS_2026-09-13.md §4.5.
+name = "sentinel-agents"
 version = "0.2.0"
 description = "Agent Behavioral Testing Platform — tests what agents DO, not just what they SAY"
 readme = "README.md"

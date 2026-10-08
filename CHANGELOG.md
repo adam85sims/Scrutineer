@@ -22,6 +22,10 @@ All notable changes to **Sentinel** are documented here. Format follows
   fallback, expected to FAIL.
 
 ### Changed
+- **Distribution renamed to `sentinel-agents`.** The PyPI name `sentinel` is owned by an
+  unrelated project, so the `pip install sentinel` line shipped in earlier READMEs installed
+  a different library, with no error. The import package remains `sentinel` and the CLI
+  remains `sentinel`; only the distribution name changes. Not yet published to PyPI.
 - **A scenario that declares no assertions now FAILS.** Previously `ScenarioRunner.run()`
   returned `passed=True` after iterating zero assertions, so every file-based scenario
   reported a green it had not earned. The run now fails with a `no_assertions_declared`
