@@ -15,12 +15,24 @@ build a proof-of-concept. In a single day it went from blank folder to a
 10-phase platform.
 
 The application is **Scrutineer** — an Agent Behavioral Testing Platform. The
-thesis: 88% of AI agents fail in production, and the dominant failure modes
-are operational (tool errors 28%, memory/state 22%, edge cases 18%), NOT
-hallucination (12%). Yet the entire evaluation ecosystem (DeepEval, LangSmith,
-MS AGT) focuses on output quality or observability — nobody tests agent
-BEHAVIOR in production-like environments before deployment. Scrutineer fills
-that gap.
+thesis: most AI projects do not survive production. RAND's analysis of AI project
+failures cites estimates that more than 80% of AI projects fail — twice the rate of non-AI
+IT projects ([RAND RR-A2680-1, 2024](https://www.rand.org/pubs/research_reports/RRA2680-1.html)) — and PwC's 2026 study of 1,217 executives found 74% of AI's economic
+value captured by 20% of organisations, with pilots failing to convert into measurable
+returns ([PwC AI Performance Study, 2026](https://www.pwc.com/gx/en/news-room/press-releases/2026/pwc-2026-ai-performance-study.html)). The dominant failure modes are operational — tool errors, state and memory
+problems, unhandled edge cases — not hallucination. Yet the evaluation ecosystem
+(DeepEval, LangSmith, MS AGT) focuses on output quality or observability, and nobody tests
+agent BEHAVIOR in production-like environments before deployment. Scrutineer fills that gap.
+
+> **Provenance note (2026-10-09).** Earlier drafts led with "88% of AI agents fail in
+> production" and a failure-mode breakdown (tool errors 28%, memory/state 22%, edge cases
+> 18%, hallucination 12%). The 88% has no primary source: it is 100% minus the 11-14% of
+> pilots that reach production across various vendor surveys, and the blogs repeating it
+> attribute it inconsistently (PwC, Composio, Bonjoy, RAND) — one cites 88% in its headline
+> while computing 86% in its body. The breakdown is unsourced and sums to 80%; it appears to
+> have been relabelled from the unverified figures in `CHAOS_BENCHMARK.md`. Both were
+> replaced rather than cited: a product that sells verifiable claims cannot lead with a
+> number it cannot defend.
 
 ## 2. By the Numbers
 

@@ -176,6 +176,26 @@ empty cwd — not against the repo checkout:
       wheel and sdist; CI green on the renamed tree (all five jobs, `dc0e692`); published
       project URLs resolve 200.
 
+## Docs truth pass (2026-10-09)
+
+- [x] **The uncited "88% of AI agents fail in production" headline is gone.** Replaced in
+      README, `docs/CHAOS_GUIDE.md` and `docs/PROJECT_REVIEW.md` with two verified primaries:
+      RAND RR-A2680-1 (2024) for ">80% of AI projects fail, twice the rate of non-AI IT
+      projects", and the PwC 2026 AI Performance Study (1,217 executives; 74% of value to
+      20% of organisations) for the pilot-to-value gap. No primary source for 88% exists — it
+      is 100% minus the 11-14% of pilots reaching production in vendor surveys, and the copies
+      that repeat it attribute it inconsistently (PwC / Composio / Bonjoy / RAND); one states
+      88% in the headline and computes 86% in the body. The failure-mode breakdown was dropped
+      entirely: unsourced, and it sums to 80%.
+- [ ] 🔴 **`docs/CHAOS_BENCHMARK.md` presents invented numbers as real-world sources.** Its
+      table asserted "PagerDuty: 28% of incidents", "RAG systems: 15-30% irrelevant
+      retrieval", "Microservices: 60% of outages cascade" and a dozen more with no citation,
+      date or report name, and its "Correlation Evidence" section claimed a production
+      distribution that was never measured — the doc's own method section lists collecting
+      production logs as a future step. These are the figures the README breakdown was
+      relabelled from. Column retitled and flagged 2026-10-09; **each row still needs a real
+      source or removal.** The file ships in the sdist, so a prospect can read it.
+
 ## Open Questions
 
 - Phase 7's queue is ~half stale: of its 11 pending items, **5 are already built** (WebUI
@@ -206,8 +226,6 @@ empty cwd — not against the repo checkout:
 - **Published 2026-10-09:** `scrutineer-agents 0.3.0` on PyPI
   (https://pypi.org/project/scrutineer-agents/0.3.0/); GitHub repo renamed to
   `adam85sims/Scrutineer` (old URL 301-redirects). Installed from PyPI and smoke-tested.
-- README badge corrected 520 → 647. The uncited "88% of AI agents fail in production" claim
-  still stands in README/docs/CHAOS_GUIDE/PROJECT_REVIEW — deliberately left for Adam to
-  cite or cut, because it is a marketing decision, not a typo.
+- README badge corrected 520 → 647.
 - Not production-ready: §4.4 (no real agent under test) and §4.7 (auditor not client-grade)
   are both open. Do not take a paid engagement before Gate 1 and Gate 2 pass.

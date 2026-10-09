@@ -5,9 +5,11 @@
 
 ## Why Chaos?
 
-88% of AI agents fail in production. The dominant failure modes are
-operational — tool errors, memory issues, edge cases — NOT hallucination.
-Yet no testing tool simulates these failures before deployment.
+Most agent projects never reach production: RAND's analysis of AI project failures
+cites estimates that more than 80% of AI projects fail, twice the rate of non-AI IT
+projects ([RAND RR-A2680-1, 2024](https://www.rand.org/pubs/research_reports/RRA2680-1.html)). The failures that stop them are operational — tool errors, timeouts,
+state and memory problems, unhandled edge cases — not hallucination. Yet no testing tool
+simulates those conditions before deployment.
 
 Scrutineer's chaos module fills that gap.
 

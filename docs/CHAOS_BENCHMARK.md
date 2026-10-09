@@ -1,11 +1,16 @@
 # Chaos Benchmark — Scrutineer vs Real Production Failures
 
 > How well does Scrutineer's chaos module simulate actual production failure modes?
-> This document maps each injector to real-world failure data.
+> This document maps each injector to the kind of production failure it targets.
+>
+> **Every percentage below is illustrative, not measured.** The numbers have no citation,
+> date or report name, and are not used to derive any default. The comparison against real
+> incident data described under "How to reproduce" has **not** been performed. Sourcing or
+> removing each figure is tracked in `TODO.md`.
 
 ## Failure Mode Coverage
 
-| Production Failure | Injector | Real-World Source | Simulation Fidelity |
+| Failure Mode | Injector | Why This Injector Exists (motivation, not evidence) | Simulation Fidelity |
 |-------------------|----------|-------------------|---------------------|
 | Tool API timeout | ToolFailureInjector (timeout) | PagerDuty: 28% of incidents | High — matches timeout semantics |
 | Tool API error | ToolFailureInjector (error) | AWS: 500/502/503 patterns | High — status code matching |
@@ -69,7 +74,7 @@ To validate simulation fidelity against real production data:
 ## Correlation Evidence
 
 ### Tool Failures
-- **Production:** 28% timeout, 22% rate_limit, 18% error, 12% partial
+- **Illustrative mix (unverified):** 28% timeout, 22% rate_limit, 18% error, 12% partial
 - **Scrutineer:** Configurable via probability — can match any distribution
 - **Validation:** ToolFailureInjector with probability=0.28 timeout,
   0.22 rate_limit, 0.18 error, 0.12 partial matches production

@@ -9,10 +9,13 @@
 
 ## The Problem
 
-88% of AI agents fail in production. The dominant failure modes are operational:
-- Tool errors (28%)
-- Memory/state issues (22%)
-- Edge cases (18%)
+Most AI projects do not survive contact with production. RAND's analysis of AI project
+failures — 65 interviews with experienced AI/ML engineers — cites estimates that
+**more than 80% of AI projects fail: twice the rate of non-AI IT projects** ([RAND RR-A2680-1, 2024](https://www.rand.org/pubs/research_reports/RRA2680-1.html)).
+PwC's study of 1,217 senior executives puts the same gap in financial terms: **74% of
+AI's economic value is captured by just 20% of organisations**, and "many companies are
+busy rolling out AI pilots, but only a minority are converting that activity into
+measurable financial returns" ([PwC AI Performance Study, 2026](https://www.pwc.com/gx/en/news-room/press-releases/2026/pwc-2026-ai-performance-study.html)).
 
 Yet the entire evaluation ecosystem (DeepEval, LangSmith, MS AGT) focuses on
 output quality or observability. Nobody tests agent **behavior** in production-like
