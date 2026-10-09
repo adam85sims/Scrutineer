@@ -1,6 +1,6 @@
 # Chaos Guide — Failure Injection Patterns
 
-> Sentinel's chaos module is the commercial differentiator.
+> Scrutineer's chaos module is the commercial differentiator.
 > It simulates real production failure modes that no other tool tests.
 
 ## Why Chaos?
@@ -9,7 +9,7 @@
 operational — tool errors, memory issues, edge cases — NOT hallucination.
 Yet no testing tool simulates these failures before deployment.
 
-Sentinel's chaos module fills that gap.
+Scrutineer's chaos module fills that gap.
 
 ## The Injectors
 
@@ -19,8 +19,8 @@ Simulates tool-level failures: timeouts, errors, rate limits, malformed
 responses, and partial failures.
 
 ```python
-from sentinel.chaos import ToolFailureInjector
-from sentinel.env import MockTool
+from scrutineer.chaos import ToolFailureInjector
+from scrutineer.env import MockTool
 
 mock = MockTool("search", response="ok")
 
@@ -55,7 +55,7 @@ Simulates LLM-level failures: rate limits, timeouts, partial responses,
 stream interrupts.
 
 ```python
-from sentinel.chaos import LLMFailureInjector
+from scrutineer.chaos import LLMFailureInjector
 
 injector = LLMFailureInjector(
     failure_type="stream_interrupt",
@@ -68,7 +68,7 @@ injector = LLMFailureInjector(
 Simulates context window pressure with three strategies:
 
 ```python
-from sentinel.chaos import ContextDegradation, DegradationStrategy
+from scrutineer.chaos import ContextDegradation, DegradationStrategy
 
 # Truncation — oldest messages dropped first
 degradation = ContextDegradation(
@@ -99,7 +99,7 @@ realistic simulation of production behavior.
 Simulates multi-agent error propagation:
 
 ```python
-from sentinel.chaos import CascadingFailures
+from scrutineer.chaos import CascadingFailures
 
 cascade = CascadingFailures(
     cascade_probability=0.7,  # 70% chance error propagates
@@ -116,7 +116,7 @@ cascade = CascadingFailures(
 Simulates agent improvisation under pressure:
 
 ```python
-from sentinel.chaos import SpecDrift, DriftIntensity
+from scrutineer.chaos import SpecDrift, DriftIntensity
 
 drift = SpecDrift(
     intensity=DriftIntensity.MODERATE,
@@ -134,7 +134,7 @@ drift = SpecDrift(
 Hard cap on total failures per test run:
 
 ```python
-from sentinel.chaos import ChaosBudget
+from scrutineer.chaos import ChaosBudget
 
 budget = ChaosBudget(max_failures=10)
 
@@ -147,7 +147,7 @@ budget = ChaosBudget(max_failures=10)
 Real production failures are rarely single-injector. Combine them:
 
 ```python
-from sentinel.chaos import (
+from scrutineer.chaos import (
     ToolFailureInjector,
     ContextDegradation,
     CascadingFailures,
@@ -187,8 +187,8 @@ search_injector.wrap(search_mock)
 Every chaos injector produces a validator that plugs into assertions:
 
 ```python
-from sentinel.chaos import ToolFailureInjector
-from sentinel.assertions import assert_no_silent_failure
+from scrutineer.chaos import ToolFailureInjector
+from scrutineer.assertions import assert_no_silent_failure
 
 injector = ToolFailureInjector(
     tool_name="search",
@@ -268,7 +268,7 @@ failure patterns across runs.
 Simulates partial network connectivity between services:
 
 ```python
-from sentinel.chaos import NetworkPartition
+from scrutineer.chaos import NetworkPartition
 
 partition = NetworkPartition(
     connectivity={
@@ -292,7 +292,7 @@ wrapper = partition.wrap(api_mock)
 Simulates time synchronization issues:
 
 ```python
-from sentinel.chaos import ClockSkew
+from scrutineer.chaos import ClockSkew
 
 skew = ClockSkew(
     skew_seconds=-300,  # Agent clock is 5 minutes behind
@@ -311,7 +311,7 @@ ts = skew.get_skewed_timestamp(tool_name="auth")  # Behind by 300s + drift
 Simulates context window exhaustion:
 
 ```python
-from sentinel.chaos import MemoryPressure
+from scrutineer.chaos import MemoryPressure
 
 pressure = MemoryPressure(
     max_context_tokens=4096,
@@ -333,7 +333,7 @@ result = pressure.simulate_token_usage(3000)  # May trigger eviction
 Ready-made configurations for common scenarios:
 
 ```python
-from sentinel.chaos_presets import (
+from scrutineer.chaos_presets import (
     PRODUCTION_INCIDENT,  # Database down + cascading failures
     DEPLOY_FRIDAY,        # Everything breaks at once
     TRAFFIC_SPIKE,        # Rate limits + timeouts under load

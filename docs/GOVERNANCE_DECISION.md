@@ -1,11 +1,11 @@
 # Governance Model Decision
 
-> Which model/approach should Sentinel use for its governance audit?
+> Which model/approach should Scrutineer use for its governance audit?
 > This document records the options, test results, and final decision.
 
 ## Context
 
-Sentinel's governance harness verifies agent claims against independent
+Scrutineer's governance harness verifies agent claims against independent
 evidence. It needs an auditor model to compare claims vs evidence and
 produce a structured report with findings.
 
@@ -84,7 +84,7 @@ for test counts despite evidence showing otherwise.
 
 ### Running on current codebase (2026-07-08)
 
-**Note:** No diary entries exist in the sentinel project, so the audit
+**Note:** No diary entries exist in the scrutineer project, so the audit
 requires creating one first. The audit was tested on the original
 automation framework codebase where diary entries exist.
 
@@ -111,7 +111,7 @@ automation framework codebase where diary entries exist.
 
 **Rationale:**
 
-1. **CI/CD needs deterministic auditing.** When sentinel is published and
+1. **CI/CD needs deterministic auditing.** When scrutineer is published and
    used by others, the governance audit should work without a local LLM.
    Option C is the only option that works everywhere.
 

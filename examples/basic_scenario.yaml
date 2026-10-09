@@ -1,6 +1,6 @@
 # Basic Scenario — minimal passing example
 #
-# Run: sentinel run --path examples/basic_scenario.yaml
+# Run: scrutineer run --path examples/basic_scenario.yaml
 #
 # A deterministic reference agent calls one mocked tool. The assertions verify that
 # it did — and they can genuinely fail, because the tool call is what is being

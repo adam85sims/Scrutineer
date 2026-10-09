@@ -1,6 +1,6 @@
 # Adapters Guide — Testing Real Agent Frameworks
 
-> Sentinel works with any agent framework through adapters.
+> Scrutineer works with any agent framework through adapters.
 > Here's how to use them and write custom ones.
 
 ## Built-in Adapters
@@ -8,13 +8,13 @@
 ### LangChain
 
 ```python
-from sentinel.adapters.langchain import SentinelToolAdapter, wrap_agent
-from sentinel.env import MockTool
-from sentinel.models import AgentTrace
+from scrutineer.adapters.langchain import ScrutineerToolAdapter, wrap_agent
+from scrutineer.env import MockTool
+from scrutineer.models import AgentTrace
 
 # Option 1: Wrap individual tools
 trace = AgentTrace()
-adapter = SentinelToolAdapter(
+adapter = ScrutineerToolAdapter(
     mock=MockTool("search", response="results"),
     trace=trace,
     base_tool=your_langchain_tool,  # Real @tool-decorated function
@@ -40,7 +40,7 @@ result = wrapped.invoke({"messages": [HumanMessage(content="Find info")]})
 - All tool calls recorded in AgentTrace
 
 **What it replaces:**
-- Tool execution → delegated to sentinel MockTools
+- Tool execution → delegated to scrutineer MockTools
 - External API calls → mocked responses
 
 **How interception actually works.** `wrap_agent` replaces each of the agent's
@@ -64,9 +64,9 @@ agent = create_react_agent(model, wrapped.tools.values())
 ### CrewAI
 
 ```python
-from sentinel.adapters.crewai import SentinelCrewTool, wrap_crew_agent
-from sentinel.env import MockTool
-from sentinel.models import AgentTrace
+from scrutineer.adapters.crewai import ScrutineerCrewTool, wrap_crew_agent
+from scrutineer.env import MockTool
+from scrutineer.models import AgentTrace
 
 trace = AgentTrace()
 
@@ -87,9 +87,9 @@ print(f"Calls made: {adapter.mock.call_count}")
 ### OpenAI Agents SDK
 
 ```python
-from sentinel.adapters.openai import wrap_agent
-from sentinel.env import MockTool
-from sentinel.models import AgentTrace
+from scrutineer.adapters.openai import wrap_agent
+from scrutineer.env import MockTool
+from scrutineer.models import AgentTrace
 
 trace = AgentTrace()
 
@@ -105,9 +105,9 @@ wrapped = wrap_agent(
 ### Generic (Any Framework)
 
 ```python
-from sentinel.adapters.generic import HookAdapter, wrap_callable
-from sentinel.env import MockTool
-from sentinel.models import AgentTrace
+from scrutineer.adapters.generic import HookAdapter, wrap_callable
+from scrutineer.env import MockTool
+from scrutineer.models import AgentTrace
 
 trace = AgentTrace()
 
@@ -141,8 +141,8 @@ An adapter must:
 ### Template
 
 ```python
-from sentinel.env import MockTool
-from sentinel.models import AgentTrace, ToolCall
+from scrutineer.env import MockTool
+from scrutineer.models import AgentTrace, ToolCall
 import time
 
 
@@ -189,8 +189,8 @@ class MyFrameworkAdapter:
 
 - [ ] Adapter records all calls (success + failure) into AgentTrace
 - [ ] Adapter preserves framework tool metadata (name, description, args)
-- [ ] Adapter works with sentinel's chaos injectors (wrap the MockTool)
-- [ ] Adapter works with sentinel's assertions (reads from AgentTrace)
+- [ ] Adapter works with scrutineer's chaos injectors (wrap the MockTool)
+- [ ] Adapter works with scrutineer's assertions (reads from AgentTrace)
 - [ ] Adapter handles framework-specific input formats (dict, string, etc.)
 - [ ] Adapter type-checks framework tools (raises TypeError for wrong type)
 
@@ -198,16 +198,16 @@ class MyFrameworkAdapter:
 
 ```python
 import pytest
-from sentinel.adapters.langchain import SentinelToolAdapter
-from sentinel.env import MockTool
-from sentinel.models import AgentTrace
+from scrutineer.adapters.langchain import ScrutineerToolAdapter
+from scrutineer.env import MockTool
+from scrutineer.models import AgentTrace
 
 
 class TestMyAdapter:
     def test_records_successful_call(self):
         trace = AgentTrace()
         mock = MockTool("my_tool", response="ok")
-        adapter = SentinelToolAdapter(mock=mock, trace=trace)
+        adapter = ScrutineerToolAdapter(mock=mock, trace=trace)
 
         result = adapter.invoke({"query": "test"})
 
@@ -219,7 +219,7 @@ class TestMyAdapter:
     def test_records_failed_call(self):
         trace = AgentTrace()
         mock = MockTool("my_tool", side_effect=ValueError("bad input"))
-        adapter = SentinelToolAdapter(mock=mock, trace=trace)
+        adapter = ScrutineerToolAdapter(mock=mock, trace=trace)
 
         with pytest.raises(ValueError):
             adapter.invoke({"query": "test"})
@@ -228,7 +228,7 @@ class TestMyAdapter:
         assert trace.tool_calls[0].error == "bad input"
 
     def test_works_with_chaos(self):
-        from sentinel.chaos import ToolFailureInjector
+        from scrutineer.chaos import ToolFailureInjector
 
         trace = AgentTrace()
         mock = MockTool("my_tool", response="ok")
@@ -240,7 +240,7 @@ class TestMyAdapter:
         )
         injector.wrap(mock)
 
-        adapter = SentinelToolAdapter(mock=mock, trace=trace)
+        adapter = ScrutineerToolAdapter(mock=mock, trace=trace)
 
         with pytest.raises(Exception):
             adapter.invoke({"query": "test"})

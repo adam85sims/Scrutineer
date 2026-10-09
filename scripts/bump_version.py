@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Version bump script for Sentinel.
+"""Version bump script for Scrutineer.
 
 Usage:
     python scripts/bump_version.py major    # 0.1.0 -> 1.0.0
@@ -57,7 +57,7 @@ def update_version(new_version: str) -> None:
     pyproject.write_text(content)
 
     # Update __init__.py
-    init_file = project_root / "src" / "sentinel" / "__init__.py"
+    init_file = project_root / "src" / "scrutineer" / "__init__.py"
     if init_file.exists():
         content = init_file.read_text()
         content = re.sub(r'__version__ = ".+?"', f'__version__ = "{new_version}"', content)

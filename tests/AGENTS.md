@@ -1,4 +1,4 @@
-# Testing rules for `sentinel/`
+# Testing rules for `scrutineer/`
 
 This file is the source of truth for how tests in this directory should be
 written. Follow it when adding or modifying tests, and update it if you make
@@ -37,7 +37,7 @@ the rule.
 - Use the `tmp_path` fixture for any path work. Never write into the
   repo or the user's CWD.
 - Use `tmp_baseline_dir` (from `tests/conftest.py`) for baseline tests —
-  it overrides `sentinel.baseline.get_baseline_dir` cleanly.
+  it overrides `scrutineer.baseline.get_baseline_dir` cleanly.
 
 ### Helpers go in `conftest.py`
 - If you find yourself duplicating a factory across two or more test files,

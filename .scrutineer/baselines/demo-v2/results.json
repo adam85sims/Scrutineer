@@ -1,0 +1,660 @@
+[
+  {
+    "scenario_id": "cascade-db-api-ui",
+    "scenario_name": "Cascading Database and API Failure",
+    "passed": true,
+    "duration_ms": 0.6008148193359375,
+    "error": null,
+    "timestamp": 1789691787.763123,
+    "assertion_results": [
+      {
+        "assertion_name": "tool_called(tool_name='database')",
+        "passed": true,
+        "error_message": null,
+        "duration_ms": 0.0050067901611328125
+      },
+      {
+        "assertion_name": "tool_called(tool_name='api_server')",
+        "passed": true,
+        "error_message": null,
+        "duration_ms": 0.00095367431640625
+      },
+      {
+        "assertion_name": "tool_called(tool_name='user_interface')",
+        "passed": true,
+        "error_message": null,
+        "duration_ms": 0.0
+      },
+      {
+        "assertion_name": "agent_recovers",
+        "passed": true,
+        "error_message": null,
+        "duration_ms": 0.0040531158447265625
+      },
+      {
+        "assertion_name": "chaos_resilience(chaos_budget='auto', max_failure_rate=0.7)",
+        "passed": true,
+        "error_message": null,
+        "duration_ms": 0.0030994415283203125
+      }
+    ],
+    "trace": {
+      "total_steps": 1,
+      "total_tool_calls": 3,
+      "total_duration_ms": 0.5819797515869141,
+      "tool_names_called": [
+        "database",
+        "api_server",
+        "user_interface"
+      ],
+      "failed_tool_calls_count": 2,
+      "errors_count": 2,
+      "state_changes_count": 0,
+      "steps": [
+        {
+          "step_id": 3,
+          "action": "tool_call",
+          "duration_ms": 0.0,
+          "error": null
+        }
+      ],
+      "tool_calls": [
+        {
+          "tool_name": "database",
+          "arguments": {
+            "query": "user 789"
+          },
+          "duration_ms": 0.015974044799804688,
+          "error": "Database connection timeout after 5000ms",
+          "succeeded": false,
+          "step_id": 0,
+          "timestamp": 1789691787.763084
+        },
+        {
+          "tool_name": "api_server",
+          "arguments": {
+            "path": "/user/789/orders"
+          },
+          "duration_ms": 0.005245208740234375,
+          "error": "API unavailable: upstream dependency failed",
+          "succeeded": false,
+          "step_id": 0,
+          "timestamp": 1789691787.763097
+        },
+        {
+          "tool_name": "user_interface",
+          "arguments": {
+            "view": "dashboard"
+          },
+          "duration_ms": 0.0021457672119140625,
+          "error": null,
+          "succeeded": true,
+          "step_id": 0,
+          "timestamp": 1789691787.763102
+        }
+      ],
+      "errors": [
+        {
+          "message": "Tool 'database' failed: Database connection timeout after 5000ms",
+          "severity": "high",
+          "recoverable": true,
+          "step_id": 0,
+          "timestamp": 1789691787.763088
+        },
+        {
+          "message": "Tool 'api_server' failed: API unavailable: upstream dependency failed",
+          "severity": "high",
+          "recoverable": true,
+          "step_id": 0,
+          "timestamp": 1789691787.763098
+        }
+      ],
+      "state_changes": [],
+      "metadata": {}
+    }
+  },
+  {
+    "scenario_id": "context-degradation-long",
+    "scenario_name": "Long-Session Tool Degradation",
+    "passed": false,
+    "duration_ms": 0.11777877807617188,
+    "error": "Agent crashed: Customer lookup service degraded\nTraceback (most recent call last):\n  File \"/Users/adam/Documents/projects/scrutineer/src/scrutineer/runner.py\", line 297, in run\n    agent_fn(\n  File \"/Users/adam/Documents/projects/scrutineer/src/scrutineer/script_agent.py\", line 60, in __call__\n    self._call(env, trace, step, index)\n  File \"/Users/adam/Documents/projects/scrutineer/src/scrutineer/script_agent.py\", line 85, in _call\n    output = tool(**step.get(\"args\", {}))\n             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/adam/Documents/projects/scrutineer/src/scrutineer/env.py\", line 1026, in __call__\n    result = tool(**kwargs)\n             ^^^^^^^^^^^^^^\n  File \"/Users/adam/Documents/projects/scrutineer/src/scrutineer/env.py\", line 130, in __call__\n    return self.call_handler(**kwargs)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/adam/Documents/projects/scrutineer/src/scrutineer/chaos.py\", line 368, in _injected_call\n    raise error\nscrutineer.env.MockToolError: Customer lookup service degraded\n",
+    "timestamp": 1789691787.7689002,
+    "assertion_results": [],
+    "trace": {
+      "total_steps": 0,
+      "total_tool_calls": 1,
+      "total_duration_ms": 0.11706352233886719,
+      "tool_names_called": [
+        "customer_lookup"
+      ],
+      "failed_tool_calls_count": 1,
+      "errors_count": 1,
+      "state_changes_count": 0,
+      "steps": [],
+      "tool_calls": [
+        {
+          "tool_name": "customer_lookup",
+          "arguments": {
+            "id": "78432"
+          },
+          "duration_ms": 0.008821487426757812,
+          "error": "Customer lookup service degraded",
+          "succeeded": false,
+          "step_id": 0,
+          "timestamp": 1789691787.7686641
+        }
+      ],
+      "errors": [
+        {
+          "message": "Agent execution failed: Customer lookup service degraded",
+          "severity": "critical",
+          "recoverable": false,
+          "step_id": 0,
+          "timestamp": 1789691787.768666
+        }
+      ],
+      "state_changes": [],
+      "metadata": {}
+    }
+  },
+  {
+    "scenario_id": "memory-pressure-evict",
+    "scenario_name": "Critical State Under Partial Tool Failure",
+    "passed": true,
+    "duration_ms": 0.1850128173828125,
+    "error": null,
+    "timestamp": 1789691787.771554,
+    "assertion_results": [
+      {
+        "assertion_name": "tool_called(tool_name='session_manager')",
+        "passed": true,
+        "error_message": null,
+        "duration_ms": 0.0050067901611328125
+      },
+      {
+        "assertion_name": "tool_called(tool_name='order_service')",
+        "passed": true,
+        "error_message": null,
+        "duration_ms": 0.0019073486328125
+      },
+      {
+        "assertion_name": "tool_called(tool_name='payment_service')",
+        "passed": true,
+        "error_message": null,
+        "duration_ms": 0.0011920928955078125
+      },
+      {
+        "assertion_name": "agent_recovers",
+        "passed": true,
+        "error_message": null,
+        "duration_ms": 0.003814697265625
+      },
+      {
+        "assertion_name": "chaos_resilience(chaos_budget='auto')",
+        "passed": true,
+        "error_message": null,
+        "duration_ms": 0.0019073486328125
+      },
+      {
+        "assertion_name": "no_silent_failure",
+        "passed": true,
+        "error_message": null,
+        "duration_ms": 0.0
+      }
+    ],
+    "trace": {
+      "total_steps": 3,
+      "total_tool_calls": 4,
+      "total_duration_ms": 0.16689300537109375,
+      "tool_names_called": [
+        "session_manager",
+        "order_service",
+        "inventory_service",
+        "payment_service"
+      ],
+      "failed_tool_calls_count": 1,
+      "errors_count": 1,
+      "state_changes_count": 0,
+      "steps": [
+        {
+          "step_id": 1,
+          "action": "tool_call",
+          "duration_ms": 0.0,
+          "error": null
+        },
+        {
+          "step_id": 2,
+          "action": "tool_call",
+          "duration_ms": 0.0,
+          "error": null
+        },
+        {
+          "step_id": 4,
+          "action": "tool_call",
+          "duration_ms": 0.0,
+          "error": null
+        }
+      ],
+      "tool_calls": [
+        {
+          "tool_name": "session_manager",
+          "arguments": {
+            "action": "init"
+          },
+          "duration_ms": 0.0030994415283203125,
+          "error": null,
+          "succeeded": true,
+          "step_id": 0,
+          "timestamp": 1789691787.771511
+        },
+        {
+          "tool_name": "order_service",
+          "arguments": {
+            "action": "create"
+          },
+          "duration_ms": 0.00095367431640625,
+          "error": null,
+          "succeeded": true,
+          "step_id": 0,
+          "timestamp": 1789691787.7715158
+        },
+        {
+          "tool_name": "inventory_service",
+          "arguments": {
+            "sku": "PREMIUM-WIDGET"
+          },
+          "duration_ms": 0.007867813110351562,
+          "error": "Inventory check timed out under load",
+          "succeeded": false,
+          "step_id": 0,
+          "timestamp": 1789691787.7715268
+        },
+        {
+          "tool_name": "payment_service",
+          "arguments": {
+            "action": "select"
+          },
+          "duration_ms": 0.00095367431640625,
+          "error": null,
+          "succeeded": true,
+          "step_id": 0,
+          "timestamp": 1789691787.771533
+        }
+      ],
+      "errors": [
+        {
+          "message": "Tool 'inventory_service' failed: Inventory check timed out under load",
+          "severity": "high",
+          "recoverable": true,
+          "step_id": 0,
+          "timestamp": 1789691787.77153
+        }
+      ],
+      "state_changes": [],
+      "metadata": {}
+    }
+  },
+  {
+    "scenario_id": "multi-tool-resilience",
+    "scenario_name": "Multi-Tool Failure Resilience",
+    "passed": false,
+    "duration_ms": 0.15687942504882812,
+    "error": "Agent crashed: Search service timeout after 10s\nTraceback (most recent call last):\n  File \"/Users/adam/Documents/projects/scrutineer/src/scrutineer/runner.py\", line 297, in run\n    agent_fn(\n  File \"/Users/adam/Documents/projects/scrutineer/src/scrutineer/script_agent.py\", line 60, in __call__\n    self._call(env, trace, step, index)\n  File \"/Users/adam/Documents/projects/scrutineer/src/scrutineer/script_agent.py\", line 85, in _call\n    output = tool(**step.get(\"args\", {}))\n             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/adam/Documents/projects/scrutineer/src/scrutineer/env.py\", line 1026, in __call__\n    result = tool(**kwargs)\n             ^^^^^^^^^^^^^^\n  File \"/Users/adam/Documents/projects/scrutineer/src/scrutineer/env.py\", line 130, in __call__\n    return self.call_handler(**kwargs)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/adam/Documents/projects/scrutineer/src/scrutineer/chaos.py\", line 368, in _injected_call\n    raise error\nscrutineer.env.TimeoutError: Search service timeout after 10s\n",
+    "timestamp": 1789691787.776663,
+    "assertion_results": [],
+    "trace": {
+      "total_steps": 0,
+      "total_tool_calls": 1,
+      "total_duration_ms": 0.15616416931152344,
+      "tool_names_called": [
+        "search"
+      ],
+      "failed_tool_calls_count": 1,
+      "errors_count": 1,
+      "state_changes_count": 0,
+      "steps": [],
+      "tool_calls": [
+        {
+          "tool_name": "search",
+          "arguments": {
+            "query": "order ORD-7721"
+          },
+          "duration_ms": 0.0050067901611328125,
+          "error": "Search service timeout after 10s",
+          "succeeded": false,
+          "step_id": 0,
+          "timestamp": 1789691787.776459
+        }
+      ],
+      "errors": [
+        {
+          "message": "Agent execution failed: Search service timeout after 10s",
+          "severity": "critical",
+          "recoverable": false,
+          "step_id": 0,
+          "timestamp": 1789691787.77646
+        }
+      ],
+      "state_changes": [],
+      "metadata": {}
+    }
+  },
+  {
+    "scenario_id": "network-partition-db",
+    "scenario_name": "Primary Database Unreachable, Replica Fallback",
+    "passed": true,
+    "duration_ms": 0.17309188842773438,
+    "error": null,
+    "timestamp": 1789691787.779573,
+    "assertion_results": [
+      {
+        "assertion_name": "tool_called(tool_name='primary_database')",
+        "passed": true,
+        "error_message": null,
+        "duration_ms": 0.004291534423828125
+      },
+      {
+        "assertion_name": "tool_called(tool_name='replica_east')",
+        "passed": true,
+        "error_message": null,
+        "duration_ms": 0.0
+      },
+      {
+        "assertion_name": "tool_called(tool_name='replica_west')",
+        "passed": true,
+        "error_message": null,
+        "duration_ms": 0.0
+      },
+      {
+        "assertion_name": "agent_recovers",
+        "passed": true,
+        "error_message": null,
+        "duration_ms": 0.00286102294921875
+      },
+      {
+        "assertion_name": "chaos_resilience(chaos_budget='auto')",
+        "passed": true,
+        "error_message": null,
+        "duration_ms": 0.0021457672119140625
+      }
+    ],
+    "trace": {
+      "total_steps": 2,
+      "total_tool_calls": 3,
+      "total_duration_ms": 0.15997886657714844,
+      "tool_names_called": [
+        "primary_database",
+        "replica_east",
+        "replica_west"
+      ],
+      "failed_tool_calls_count": 1,
+      "errors_count": 1,
+      "state_changes_count": 0,
+      "steps": [
+        {
+          "step_id": 2,
+          "action": "tool_call",
+          "duration_ms": 0.0,
+          "error": null
+        },
+        {
+          "step_id": 3,
+          "action": "tool_call",
+          "duration_ms": 0.0,
+          "error": null
+        }
+      ],
+      "tool_calls": [
+        {
+          "tool_name": "primary_database",
+          "arguments": {
+            "query": "inventory"
+          },
+          "duration_ms": 0.009059906005859375,
+          "error": "Connection refused: network unreachable (10.0.1.50:5432)",
+          "succeeded": false,
+          "step_id": 0,
+          "timestamp": 1789691787.779549
+        },
+        {
+          "tool_name": "replica_east",
+          "arguments": {
+            "query": "inventory"
+          },
+          "duration_ms": 0.00095367431640625,
+          "error": null,
+          "succeeded": true,
+          "step_id": 0,
+          "timestamp": 1789691787.779556
+        },
+        {
+          "tool_name": "replica_west",
+          "arguments": {
+            "query": "inventory"
+          },
+          "duration_ms": 0.00095367431640625,
+          "error": null,
+          "succeeded": true,
+          "step_id": 0,
+          "timestamp": 1789691787.779559
+        }
+      ],
+      "errors": [
+        {
+          "message": "Tool 'primary_database' failed: Connection refused: network unreachable (10.0.1.50:5432)",
+          "severity": "high",
+          "recoverable": true,
+          "step_id": 0,
+          "timestamp": 1789691787.779552
+        }
+      ],
+      "state_changes": [],
+      "metadata": {}
+    }
+  },
+  {
+    "scenario_id": "rate-limit-retry",
+    "scenario_name": "Rate-Limited Tool Retry",
+    "passed": false,
+    "duration_ms": 0.09989738464355469,
+    "error": "Agent crashed: 429 Too Many Requests\nTraceback (most recent call last):\n  File \"/Users/adam/Documents/projects/scrutineer/src/scrutineer/runner.py\", line 297, in run\n    agent_fn(\n  File \"/Users/adam/Documents/projects/scrutineer/src/scrutineer/script_agent.py\", line 60, in __call__\n    self._call(env, trace, step, index)\n  File \"/Users/adam/Documents/projects/scrutineer/src/scrutineer/script_agent.py\", line 85, in _call\n    output = tool(**step.get(\"args\", {}))\n             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/adam/Documents/projects/scrutineer/src/scrutineer/env.py\", line 1026, in __call__\n    result = tool(**kwargs)\n             ^^^^^^^^^^^^^^\n  File \"/Users/adam/Documents/projects/scrutineer/src/scrutineer/env.py\", line 130, in __call__\n    return self.call_handler(**kwargs)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/adam/Documents/projects/scrutineer/src/scrutineer/chaos.py\", line 368, in _injected_call\n    raise error\nscrutineer.env.RateLimitError: 429 Too Many Requests\n",
+    "timestamp": 1789691787.78334,
+    "assertion_results": [],
+    "trace": {
+      "total_steps": 0,
+      "total_tool_calls": 1,
+      "total_duration_ms": 0.09989738464355469,
+      "tool_names_called": [
+        "search_api"
+      ],
+      "failed_tool_calls_count": 1,
+      "errors_count": 1,
+      "state_changes_count": 0,
+      "steps": [],
+      "tool_calls": [
+        {
+          "tool_name": "search_api",
+          "arguments": {
+            "query": "ergonomic keyboard"
+          },
+          "duration_ms": 0.005245208740234375,
+          "error": "429 Too Many Requests",
+          "succeeded": false,
+          "step_id": 0,
+          "timestamp": 1789691787.783173
+        }
+      ],
+      "errors": [
+        {
+          "message": "Agent execution failed: 429 Too Many Requests",
+          "severity": "critical",
+          "recoverable": false,
+          "step_id": 0,
+          "timestamp": 1789691787.7831738
+        }
+      ],
+      "state_changes": [],
+      "metadata": {}
+    }
+  },
+  {
+    "scenario_id": "refund-agent-timeout",
+    "scenario_name": "Refund Agent Timeout Handling",
+    "passed": true,
+    "duration_ms": 0.11396408081054688,
+    "error": null,
+    "timestamp": 1789691787.785481,
+    "assertion_results": [
+      {
+        "assertion_name": "tool_called(tool_name='search')",
+        "passed": true,
+        "error_message": null,
+        "duration_ms": 0.0021457672119140625
+      },
+      {
+        "assertion_name": "tool_called(tool_name='cache')",
+        "passed": true,
+        "error_message": null,
+        "duration_ms": 0.0
+      },
+      {
+        "assertion_name": "graceful_degradation",
+        "passed": true,
+        "error_message": null,
+        "duration_ms": 0.0040531158447265625
+      },
+      {
+        "assertion_name": "chaos_resilience(chaos_budget='auto')",
+        "passed": true,
+        "error_message": null,
+        "duration_ms": 0.0016689300537109375
+      },
+      {
+        "assertion_name": "no_silent_failure",
+        "passed": true,
+        "error_message": null,
+        "duration_ms": 0.0011920928955078125
+      }
+    ],
+    "trace": {
+      "total_steps": 1,
+      "total_tool_calls": 2,
+      "total_duration_ms": 0.10180473327636719,
+      "tool_names_called": [
+        "search",
+        "cache"
+      ],
+      "failed_tool_calls_count": 1,
+      "errors_count": 1,
+      "state_changes_count": 0,
+      "steps": [
+        {
+          "step_id": 2,
+          "action": "tool_call",
+          "duration_ms": 0.0,
+          "error": null
+        }
+      ],
+      "tool_calls": [
+        {
+          "tool_name": "search",
+          "arguments": {
+            "query": "refund policy"
+          },
+          "duration_ms": 0.0050067901611328125,
+          "error": "Search API timed out after 10s",
+          "succeeded": false,
+          "step_id": 0,
+          "timestamp": 1789691787.785463
+        },
+        {
+          "tool_name": "cache",
+          "arguments": {
+            "key": "order_12345"
+          },
+          "duration_ms": 0.00095367431640625,
+          "error": null,
+          "succeeded": true,
+          "step_id": 0,
+          "timestamp": 1789691787.7854679
+        }
+      ],
+      "errors": [
+        {
+          "message": "Tool 'search' failed: Search API timed out after 10s",
+          "severity": "high",
+          "recoverable": true,
+          "step_id": 0,
+          "timestamp": 1789691787.785465
+        }
+      ],
+      "state_changes": [],
+      "metadata": {}
+    }
+  },
+  {
+    "scenario_id": "spec-drift-pressure",
+    "scenario_name": "Booking Service Failure Recovery",
+    "passed": false,
+    "duration_ms": 0.11491775512695312,
+    "error": "Agent crashed: Booking service returned 503: Service temporarily unavailable\nTraceback (most recent call last):\n  File \"/Users/adam/Documents/projects/scrutineer/src/scrutineer/runner.py\", line 297, in run\n    agent_fn(\n  File \"/Users/adam/Documents/projects/scrutineer/src/scrutineer/script_agent.py\", line 60, in __call__\n    self._call(env, trace, step, index)\n  File \"/Users/adam/Documents/projects/scrutineer/src/scrutineer/script_agent.py\", line 85, in _call\n    output = tool(**step.get(\"args\", {}))\n             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/adam/Documents/projects/scrutineer/src/scrutineer/env.py\", line 1026, in __call__\n    result = tool(**kwargs)\n             ^^^^^^^^^^^^^^\n  File \"/Users/adam/Documents/projects/scrutineer/src/scrutineer/env.py\", line 130, in __call__\n    return self.call_handler(**kwargs)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/adam/Documents/projects/scrutineer/src/scrutineer/chaos.py\", line 368, in _injected_call\n    raise error\nscrutineer.env.MockToolError: Booking service returned 503: Service temporarily unavailable\n",
+    "timestamp": 1789691787.789233,
+    "assertion_results": [],
+    "trace": {
+      "total_steps": 1,
+      "total_tool_calls": 2,
+      "total_duration_ms": 0.11396408081054688,
+      "tool_names_called": [
+        "availability_check",
+        "booking_service"
+      ],
+      "failed_tool_calls_count": 1,
+      "errors_count": 1,
+      "state_changes_count": 0,
+      "steps": [
+        {
+          "step_id": 1,
+          "action": "tool_call",
+          "duration_ms": 0.0,
+          "error": null
+        }
+      ],
+      "tool_calls": [
+        {
+          "tool_name": "availability_check",
+          "arguments": {
+            "date_range": "2026-08"
+          },
+          "duration_ms": 0.0021457672119140625,
+          "error": null,
+          "succeeded": true,
+          "step_id": 0,
+          "timestamp": 1789691787.789046
+        },
+        {
+          "tool_name": "booking_service",
+          "arguments": {
+            "date": "2026-08-15"
+          },
+          "duration_ms": 0.0050067901611328125,
+          "error": "Booking service returned 503: Service temporarily unavailable",
+          "succeeded": false,
+          "step_id": 0,
+          "timestamp": 1789691787.789053
+        }
+      ],
+      "errors": [
+        {
+          "message": "Agent execution failed: Booking service returned 503: Service temporarily unavailable",
+          "severity": "critical",
+          "recoverable": false,
+          "step_id": 0,
+          "timestamp": 1789691787.7890549
+        }
+      ],
+      "state_changes": [],
+      "metadata": {}
+    }
+  }
+]

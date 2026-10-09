@@ -1,29 +1,29 @@
 #!/usr/bin/env python3
-"""Sentinel + LangChain Quickstart
+"""Scrutineer + LangChain Quickstart
 
-Demonstrates how to test a LangChain agent's behavior using Sentinel.
+Demonstrates how to test a LangChain agent's behavior using Scrutineer.
 This example:
 
 1. Creates real LangChain tools (search, calculator)
-2. Wraps them with Sentinel's mock environment
+2. Wraps them with Scrutineer's mock environment
 3. Simulates an agent calling tools in sequence
-4. Injects chaos (tool failures) and verifies Sentinel catches them
-5. Asserts behavioral properties using Sentinel's assertion library
+4. Injects chaos (tool failures) and verifies Scrutineer catches them
+5. Asserts behavioral properties using Scrutineer's assertion library
 
 Run:  python examples/langchain_quickstart.py
 Requires: pip install -e ".[langchain]"
 """
 
-from sentinel.adapters.langchain import SentinelToolAdapter, wrap_agent
-from sentinel.env import MockTool, EnvironmentBuilder
-from sentinel.models import AgentTrace
-from sentinel.assertions import (
+from scrutineer.adapters.langchain import ScrutineerToolAdapter, wrap_agent
+from scrutineer.env import MockTool, EnvironmentBuilder
+from scrutineer.models import AgentTrace
+from scrutineer.assertions import (
     assert_tool_called,
     assert_tool_call_count,
     assert_tool_call_order,
     assert_no_tool_errors,
 )
-from sentinel.chaos import ToolFailureInjector
+from scrutineer.chaos import ToolFailureInjector
 
 # ─── Step 1: Define real LangChain tools ────────────────────────
 # These are actual @tool-decorated functions with real metadata.
@@ -60,10 +60,10 @@ def calculator(expression: str) -> str:
         return f"Error: {e}"
 
 
-# ─── Step 2: Create sentinel mock environment ───────────────────
+# ─── Step 2: Create scrutineer mock environment ───────────────────
 
 print("=" * 60)
-print("SENTINEL + LANGCHAIN QUICKSTART")
+print("SCRUTINEER + LANGCHAIN QUICKSTART")
 print("=" * 60)
 
 # Build an environment with mocked tools
@@ -79,23 +79,23 @@ print(f"    - web_search: {env.tools['web_search']}")
 print(f"    - calculator: {env.tools['calculator']}")
 
 
-# ─── Step 3: Wrap real tools with sentinel adapters ─────────────
+# ─── Step 3: Wrap real tools with scrutineer adapters ─────────────
 
 trace = AgentTrace()
 
-search_adapter = SentinelToolAdapter(
+search_adapter = ScrutineerToolAdapter(
     mock=env.tools["web_search"],
     trace=trace,
     base_tool=web_search,  # Real LangChain tool
 )
 
-calc_adapter = SentinelToolAdapter(
+calc_adapter = ScrutineerToolAdapter(
     mock=env.tools["calculator"],
     trace=trace,
     base_tool=calculator,  # Real LangChain tool
 )
 
-print("\n[2] Real LangChain tools wrapped with sentinel adapters:")
+print("\n[2] Real LangChain tools wrapped with scrutineer adapters:")
 print(f"    - search_adapter: {search_adapter}")
 print(f"    - calc_adapter: {calc_adapter}")
 
@@ -175,7 +175,7 @@ injector = ToolFailureInjector(
 )
 injector.wrap(failing_search)
 
-chaos_adapter = SentinelToolAdapter(
+chaos_adapter = ScrutineerToolAdapter(
     mock=failing_search,
     trace=chaos_trace,
     base_tool=web_search,
@@ -202,10 +202,10 @@ print("=" * 60)
 print(f"Total tool calls across both traces: {len(trace.tool_calls) + len(chaos_trace.tool_calls)}")
 print(f"Successful calls: {sum(1 for tc in trace.tool_calls if tc.error is None) + 0}")
 print(f"Failed calls: {sum(1 for tc in chaos_trace.tool_calls if tc.error is not None)}")
-print("\nSentinel successfully:")
+print("\nScrutineer successfully:")
 print("  ✓ Wrapped real LangChain tools with mock environment")
 print("  ✓ Captured all tool calls in AgentTrace")
 print("  ✓ Verified behavioral properties with assertions")
 print("  ✓ Detected tool failures from chaos injection")
-print("\nThis is the 'proof of value' — Sentinel catches behavioral")
+print("\nThis is the 'proof of value' — Scrutineer catches behavioral")
 print("regressions that output-only evaluation would miss.")

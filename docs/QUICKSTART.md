@@ -1,29 +1,29 @@
 # Quickstart — 5 Minutes to First Test
 
-> Get Sentinel running, write a test, and see it catch a behavioral regression.
+> Get Scrutineer running, write a test, and see it catch a behavioral regression.
 
 ## Install
 
-> Published to PyPI as **`sentinel-agents`** (release pending). Do not `pip install sentinel`
-> — that name belongs to an unrelated project. The import package and the CLI are `sentinel`.
+> Published to PyPI as **`scrutineer-agents`** (release pending). Do not `pip install scrutineer`
+> — that name belongs to an unrelated project. The import package and the CLI are `scrutineer`.
 
 ```bash
 # Basic install (zero dependencies)
-pip install git+https://github.com/adam85sims/Sentinel.git
+pip install git+https://github.com/adam85sims/Scrutineer.git
 
 # With LangChain adapter support
-pip install "git+https://github.com/adam85sims/Sentinel.git[langchain]"
+pip install "git+https://github.com/adam85sims/Scrutineer.git[langchain]"
 
 # Or with all adapters
-pip install "git+https://github.com/adam85sims/Sentinel.git[adapters]"
+pip install "git+https://github.com/adam85sims/Scrutineer.git[adapters]"
 ```
 
 ## Your First Test (Python)
 
 ```python
-from sentinel.env import MockTool, EnvironmentBuilder
-from sentinel.models import AgentTrace
-from sentinel.assertions import assert_tool_called, assert_no_tool_errors
+from scrutineer.env import MockTool, EnvironmentBuilder
+from scrutineer.models import AgentTrace
+from scrutineer.assertions import assert_tool_called, assert_no_tool_errors
 
 # 1. Create a mock environment
 env = (
@@ -50,11 +50,11 @@ print("All assertions passed!")
 ## Your First Test (pytest decorator)
 
 ```python
-from sentinel.runner import sentinel_test
-from sentinel.env import EnvironmentBuilder, MockTool
-from sentinel.assertions import assert_tool_called
+from scrutineer.runner import scrutineer_test
+from scrutineer.env import EnvironmentBuilder, MockTool
+from scrutineer.assertions import assert_tool_called
 
-@sentinel_test(
+@scrutineer_test(
     env=(EnvironmentBuilder()
         .mock_tool("search", response={"results": []})
         .build()),
@@ -74,8 +74,8 @@ def test_search_agent(trace, env):
 ## Adding Chaos
 
 ```python
-from sentinel.chaos import ToolFailureInjector
-from sentinel.env import MockTool
+from scrutineer.chaos import ToolFailureInjector
+from scrutineer.env import MockTool
 
 # Make the search tool fail 50% of the time
 mock = MockTool("search", response="results")
@@ -98,25 +98,25 @@ except Exception as e:
 
 ```bash
 # Run a YAML scenario
-sentinel run --path scenarios/basic.yaml
+scrutineer run --path scenarios/basic.yaml
 
 # Run with verbose output
-sentinel run --path scenarios/basic.yaml --verbose
+scrutineer run --path scenarios/basic.yaml --verbose
 
 # List available scenarios
-sentinel list
+scrutineer list
 
 # Show scenario details
-sentinel info refund-agent
+scrutineer info refund-agent
 
 # Record a baseline
-sentinel baseline record
+scrutineer baseline record
 
 # Compare against baseline
-sentinel diff
+scrutineer diff
 
 # Generate a report
-sentinel report
+scrutineer report
 ```
 
 ## What Just Happened?
@@ -126,7 +126,7 @@ sentinel report
 3. **Assertions** — You verified the agent's behavior, not just its output
 4. **Chaos** — You injected failures and verified the agent handles them
 
-This is what makes Sentinel different from output-only evaluation:
+This is what makes Scrutineer different from output-only evaluation:
 you're testing what the agent **does**, not just what it **says**.
 
 ## Next Steps

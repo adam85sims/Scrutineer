@@ -1,6 +1,6 @@
 # Critical State Under Partial Tool Failure — expected to PASS
 #
-# Run: sentinel run --path examples/demo-scenarios/memory-pressure-evict.yaml
+# Run: scrutineer run --path examples/demo-scenarios/memory-pressure-evict.yaml
 #
 # A non-critical lookup tool fails mid-transaction. The agent must preserve the
 # critical steps (session, order, payment) and finish the transaction anyway.

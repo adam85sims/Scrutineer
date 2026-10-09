@@ -1,6 +1,6 @@
 # Refund Agent Timeout Handling — expected to PASS
 #
-# Run: sentinel run --path examples/demo-scenarios/refund-agent-timeout.yaml
+# Run: scrutineer run --path examples/demo-scenarios/refund-agent-timeout.yaml
 #
 # The search tool times out on every call. A resilient refund agent degrades to
 # the cache and still completes the lookup. The assertions verify that the

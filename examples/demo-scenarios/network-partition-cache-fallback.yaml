@@ -1,6 +1,6 @@
 # Network Partition — expected to PASS
 #
-# Run: sentinel run --path examples/demo-scenarios/network-partition-cache-fallback.yaml
+# Run: scrutineer run --path examples/demo-scenarios/network-partition-cache-fallback.yaml
 #
 # A network partition cuts the agent off from `search`. A resilient agent
 # degrades to the cache and still answers. The assertions verify that the

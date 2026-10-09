@@ -1,4 +1,4 @@
-# Sentinel WebUI — Architecture & Implementation Design
+# Scrutineer WebUI — Architecture & Implementation Design
 
 > **Author:** Hermes  
 > **Date:** 2026-07-16  
@@ -9,10 +9,10 @@
 
 ## 1. What We're Building
 
-A web-based dashboard for Sentinel that turns the CLI-only experience into an
+A web-based dashboard for Scrutineer that turns the CLI-only experience into an
 interactive, visual platform. The WebUI wraps the existing Python core — it does
 NOT rewrite or replace any of it. Every operation the WebUI performs maps to an
-existing Sentinel API call.
+existing Scrutineer API call.
 
 ### 1.1 Why a WebUI Matters (Commercial Angle)
 
@@ -20,11 +20,11 @@ The current CLI is powerful but invisible. For a SaaS play (Tier 2-3 of the
 adamsims.dev plan), the WebUI is the product surface:
 
 - **Audit-in-a-Box (Tier 2):** Client uploads agent config → WebUI runs
-  Sentinel scenarios → generates branded HTML report → downloadable PDF.
+  Scrutineer scenarios → generates branded HTML report → downloadable PDF.
 - **Web Service (Tier 3):** Continuous monitoring dashboard. Agent tests run
   on schedule, WebUI shows trend lines, regression alerts, chaos impact scores.
 - **Demo:** A live dashboard is 10x more compelling in a sales call than
-  `sentinel run --verbose` output.
+  `scrutineer run --verbose` output.
 
 ### 1.2 Design Principles
 
@@ -47,17 +47,17 @@ adamsims.dev plan), the WebUI is the product surface:
 
 **Why FastAPI:**
 - Native async → perfect for SSE streaming and long-running test scenarios
-- Pydantic models integrate directly with Sentinel's dataclasses (auto-convert)
+- Pydantic models integrate directly with Scrutineer's dataclasses (auto-convert)
 - Built-in OpenAPI/Swagger → auto-docs for the API
-- Python ecosystem → no context-switching from Sentinel core
+- Python ecosystem → no context-switching from Scrutineer core
 - Uvicorn is battle-tested for production
 
 **Structure:**
 ```
-src/sentinel/web/
+src/scrutineer/web/
 ├── __init__.py
 ├── app.py              # FastAPI app factory
-├── server.py           # Uvicorn entry point (sentinel serve)
+├── server.py           # Uvicorn entry point (scrutineer serve)
 ├── api/
 │   ├── __init__.py
 │   ├── scenarios.py    # CRUD + run scenarios
@@ -82,7 +82,7 @@ src/sentinel/web/
 └── static/             # Frontend assets (built or hand-written)
     ├── index.html
     ├── css/
-    │   └── sentinel.css
+    │   └── scrutineer.css
     ├── js/
     │   ├── app.js       # Main SPA router
     │   ├── dashboard.js
@@ -93,18 +93,18 @@ src/sentinel/web/
 │   │   ├── chaos-builder.js
 │   │   └── streaming.js
     └── img/
-        └── sentinel-logo.svg
+        └── scrutineer-logo.svg
 ```
 
 ### 2.2 Frontend: Vanilla JS + CSS Grid (No Framework)
 
 **Why not React/Vue/Svelte:**
-- Sentinel is a Python project. Adding a JS build step (npm, webpack, vite)
+- Scrutineer is a Python project. Adding a JS build step (npm, webpack, vite)
   creates a dependency wall that slows iteration.
 - The UI is data-dense but not interactions-heavy. It's dashboards, tables,
   and config forms — not a rich interactive app.
 - Vanilla JS with a thin router is ~500 lines. A React app would be 3000+.
-- Zero build step = `sentinel serve` works from a fresh clone with no npm.
+- Zero build step = `scrutineer serve` works from a fresh clone with no npm.
 
 **If we outgrow vanilla:** Migrate to htmx + Hyperscript (server-rendered
 partials, no build step, progressive enhancement). This is the escape hatch.
@@ -125,7 +125,7 @@ partials, no build step, progressive enhancement). This is the escape hatch.
 └─────────────┘                    └──────┬───────┘
                                           │
                                    ┌──────▼───────┐
-                                   │  Sentinel     │
+                                   │  Scrutineer     │
                                    │  Core Modules │
                                    │  (runner,     │
                                    │   chaos,      │
@@ -211,7 +211,7 @@ DELETE /api/models/{id}                   # Remove a model endpoint
 POST   /api/models/{id}/test             # Test connection to model
 ```
 
-**Model endpoint config (stored in sentinel-web.yaml):**
+**Model endpoint config (stored in scrutineer-web.yaml):**
 ```yaml
 endpoints:
   - id: openai-gpt4
@@ -238,7 +238,7 @@ endpoints:
 
 ```
 ┌──────────────────────────────────────────────────────────┐
-│  ◉ SENTINEL    [Dashboard] [Scenarios] [Runs] [Baselines]│
+│  ◉ SCRUTINEER    [Dashboard] [Scenarios] [Runs] [Baselines]│
 │  v0.1.0                        [Chaos] [Settings]        │
 ├──────────────────────────────────────────────────────────┤
 │                                                          │
@@ -547,7 +547,7 @@ class StreamEvent(StrEnum):
 
 ### 5.3 Implementation: EventBridge Pattern
 
-The key challenge: Sentinel's ScenarioRunner doesn't have callback hooks for
+The key challenge: Scrutineer's ScenarioRunner doesn't have callback hooks for
 live events. We need to inject them without modifying the core.
 
 **Solution: Monkey-patch with callbacks**
@@ -556,10 +556,10 @@ live events. We need to inject them without modifying the core.
 # services/runner_service.py
 
 async def run_scenario_streaming(
-    scenario: SentinelScenario,
+    scenario: ScrutineerScenario,
     run_id: str,
     event_queue: asyncio.Queue,
-) -> SentinelResult:
+) -> ScrutineerResult:
     """Run a scenario and push events to an SSE queue."""
     
     original_add_step = AgentTrace.add_step
@@ -597,7 +597,7 @@ async def run_scenario_streaming(
 to ScenarioRunner:
 
 ```python
-# In sentinel/runner.py (future modification)
+# In scrutineer/runner.py (future modification)
 class ScenarioRunner:
     def __init__(self, event_handler: Callable | None = None):
         self.event_handler = event_handler
@@ -747,10 +747,10 @@ The WebUI adds a new CLI command:
 
 ```bash
 # Start the WebUI server
-sentinel serve [--port 8080] [--host 0.0.0.0] [--reload]
+scrutineer serve [--port 8080] [--host 0.0.0.0] [--reload]
 
 # Or as a module
-python -m sentinel.web.server --port 8080
+python -m scrutineer.web.server --port 8080
 ```
 
 The existing CLI commands continue to work unchanged. The WebUI is additive.
@@ -762,7 +762,7 @@ The existing CLI commands continue to work unchanged. The WebUI is additive.
 New files (NO existing files modified for Phase 7.1):
 
 ```
-src/sentinel/web/              # NEW directory
+src/scrutineer/web/              # NEW directory
 ├── __init__.py
 ├── app.py
 ├── server.py
@@ -786,7 +786,7 @@ src/sentinel/web/              # NEW directory
 │   └── stream_service.py
 └── static/
     ├── index.html
-    ├── css/sentinel.css
+    ├── css/scrutineer.css
     └── js/
         ├── app.js
         ├── router.js
@@ -803,7 +803,7 @@ src/sentinel/web/              # NEW directory
 pyproject.toml                 # MODIFY: add [web] optional deps
 README.md                      # MODIFY: add WebUI section
 docs/WEBUI.md                  # NEW: user-facing docs
-tests/sentinel/web/            # NEW: web API tests
+tests/scrutineer/web/            # NEW: web API tests
 ```
 
 **pyproject.toml changes:**
@@ -822,9 +822,9 @@ web = [
 
 1. **No API keys in responses.** Model endpoint configs show `●●●●●●●●` for
    keys. Keys are loaded from environment variables, never stored in the
-   sentinel-web.yaml.
+   scrutineer-web.yaml.
 
-2. **Local-only by default.** `sentinel serve` binds to `127.0.0.1` (not
+2. **Local-only by default.** `scrutineer serve` binds to `127.0.0.1` (not
    `0.0.0.0`). Must explicitly pass `--host 0.0.0.0` for network access.
 
 3. **No auth in Phase 7.1.** This is a local dev tool. Auth is a Phase 7.5
@@ -858,11 +858,11 @@ web = [
 
 ---
 
-## Appendix A: Existing Sentinel API Surface (What We Wrap)
+## Appendix A: Existing Scrutineer API Surface (What We Wrap)
 
-| Sentinel Module | Key Classes/Functions | WebUI Maps To |
+| Scrutineer Module | Key Classes/Functions | WebUI Maps To |
 |----------------|----------------------|---------------|
-| `runner.py` | `ScenarioRunner.run()`, `SentinelScenario` | `/api/runs`, `/api/scenarios` |
+| `runner.py` | `ScenarioRunner.run()`, `ScrutineerScenario` | `/api/runs`, `/api/scenarios` |
 | `reporting.py` | `build_regression_report()`, `generate_html_report()` | `/api/reports` |
 | `baseline.py` | `record_baseline()`, `load_baseline()`, `list_baselines()` | `/api/baselines` |
 | `chaos.py` | `ToolFailureInjector`, `ContextDegradation`, etc. | `/api/chaos` |

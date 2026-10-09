@@ -1,6 +1,6 @@
 # Rate-Limited Tool Retry — expected to PASS
 #
-# Run: sentinel run --path examples/demo-scenarios/rate-limit-retry.yaml
+# Run: scrutineer run --path examples/demo-scenarios/rate-limit-retry.yaml
 #
 # The search API returns 429 on every attempt. The agent retries the configured
 # number of times and, when the retries are exhausted, falls back to cache

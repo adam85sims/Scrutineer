@@ -3,7 +3,7 @@
 
 Unlike the previous version, this script does **not** fabricate traces. It loads
 the scenarios in ``examples/demo-scenarios/`` and runs each one through the real
-``sentinel`` runner, then persists the genuine ``SentinelResult`` in the exact
+``scrutineer`` runner, then persists the genuine ``ScrutineerResult`` in the exact
 format the WebUI reads.
 
 For every scenario two runs are produced from the *same* chaos, differing only
@@ -26,8 +26,8 @@ shows a real v1 → v3 improvement:
 Usage:
     python scripts/generate_demo_data.py
 
-Run from the sentinel project root. The script clears and regenerates
-``.sentinel/runs/`` and ``.sentinel/baselines/`` — those directories are
+Run from the scrutineer project root. The script clears and regenerates
+``.scrutineer/runs/`` and ``.scrutineer/baselines/`` — those directories are
 generated state (gitignored) and this script owns them for the demo.
 """
 
@@ -46,15 +46,15 @@ _SRC = _ROOT / "src"
 if _SRC.exists() and str(_SRC) not in sys.path:
     sys.path.insert(0, str(_SRC))
 
-from sentinel.baseline import record_baseline  # noqa: E402
-from sentinel.cli import _load_scenario_file  # noqa: E402
-from sentinel.runner import ScenarioRunner, SentinelResult  # noqa: E402
-from sentinel.web.services.persistence import save_run  # noqa: E402
+from scrutineer.baseline import record_baseline  # noqa: E402
+from scrutineer.cli import _load_scenario_file  # noqa: E402
+from scrutineer.runner import ScenarioRunner, ScrutineerResult  # noqa: E402
+from scrutineer.web.services.persistence import save_run  # noqa: E402
 
 SCENARIOS_DIR = _ROOT / "examples" / "demo-scenarios"
-SENTINEL_DIR = _ROOT / ".sentinel"
-RUNS_DIR = SENTINEL_DIR / "runs"
-BASELINES_DIR = SENTINEL_DIR / "baselines"
+SCRUTINEER_DIR = _ROOT / ".scrutineer"
+RUNS_DIR = SCRUTINEER_DIR / "runs"
+BASELINES_DIR = SCRUTINEER_DIR / "baselines"
 
 
 @dataclass
@@ -67,7 +67,7 @@ class DemoRun:
     status: str
     started_at: datetime
     completed_at: datetime
-    result: SentinelResult
+    result: ScrutineerResult
 
 
 def _reset_demo_state() -> None:
@@ -90,7 +90,7 @@ def _unhandled_variant(scenario):
     return variant
 
 
-def _persist(result: SentinelResult, started_at: datetime) -> DemoRun:
+def _persist(result: ScrutineerResult, started_at: datetime) -> DemoRun:
     """Persist one real result as a run file and return its DemoRun record."""
     status = "pass" if result.passed else "fail"
     run = DemoRun(
@@ -120,12 +120,12 @@ def main() -> int:
     _reset_demo_state()
 
     print("=" * 64)
-    print("  Sentinel Demo Data Generator (real runs, not fabricated traces)")
+    print("  Scrutineer Demo Data Generator (real runs, not fabricated traces)")
     print("=" * 64)
     print()
 
-    resilient: list[SentinelResult] = []
-    unhandled: list[SentinelResult] = []
+    resilient: list[ScrutineerResult] = []
+    unhandled: list[ScrutineerResult] = []
     now = datetime.now(UTC)
 
     for i, path in enumerate(paths):

@@ -1,6 +1,6 @@
 # Primary Database Unreachable, Replica Fallback — expected to PASS
 #
-# Run: sentinel run --path examples/demo-scenarios/network-partition-db.yaml
+# Run: scrutineer run --path examples/demo-scenarios/network-partition-db.yaml
 #
 # The primary database is unreachable (network partition). The agent must
 # detect the failure and aggregate data from the regional replicas instead of

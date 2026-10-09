@@ -1,23 +1,33 @@
 # Changelog
 
-All notable changes to **Sentinel** are documented here. Format follows
+All notable changes to **Scrutineer** are documented here. Format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versioning follows
 [SemVer](https://semver.org/).
 
 ## [Unreleased]
+
+## [0.3.0] — 2026-10-09
+
+### Changed
+- **Renamed: Sentinel → Scrutineer.** PyPI's `sentinel` is owned by an unrelated project
+  (so the old README install line fetched someone else's library), and the working name
+  `overseer` turned out to collide with "Overseer AI" in this exact market, as did
+  Watchkeeper, WitnessAI, Attestor, Probity and Depositions. The distribution is now
+  `scrutineer-agents`; the import package and console scripts are `scrutineer` /
+  `scrutineer-run` / `scrutineer-serve`.
 
 ### Added
 - **Wrapper-based chaos injectors are reachable from a scenario file.** `network_partition`,
   `clock_skew` and `memory_pressure` now load, inject and are falsifiable from YAML. The
   runner substitutes each injector's `ChaosToolWrapper` into the environment (§4.10). New
   demo: `examples/demo-scenarios/network-partition-cache-fallback.yaml`.
-- CI pipeline (pytest + ruff) for Sentinel and pattern-memory.
+- CI pipeline (pytest + ruff) for Scrutineer and pattern-memory.
 - LICENSE file (MIT).
-- **Declarative scenario schema** (`sentinel.scenario_schema`): scenario files can now
+- **Declarative scenario schema** (`scrutineer.scenario_schema`): scenario files can now
   express `assertions:` and `chaos:` blocks, compiled into real assertions and injectors.
   Invalid specs fail loudly — unknown assertion/injector types, misspelled parameters and
   missing required parameters all raise rather than being silently ignored.
-- **`ScriptedAgent`** (`sentinel.script_agent`): a deterministic reference agent so a
+- **`ScriptedAgent`** (`scrutineer.script_agent`): a deterministic reference agent so a
   scenario *file* can supply a subject without Python glue. Its `on_error` policy
   (`fail` / `continue` / `fallback`) is a usable behavioural variable. It is explicitly
   not an LLM agent — for real agents use `ScenarioRunner.run(scenario, agent_fn=...)`.
@@ -26,17 +36,17 @@ All notable changes to **Sentinel** are documented here. Format follows
   fallback, expected to FAIL.
 
 ### Changed
-- **Distribution renamed to `sentinel-agents`.** The PyPI name `sentinel` is owned by an
-  unrelated project, so the `pip install sentinel` line shipped in earlier READMEs installed
-  a different library, with no error. The import package remains `sentinel` and the CLI
-  remains `sentinel`; only the distribution name changes. Not yet published to PyPI.
+- **Distribution renamed to `scrutineer-agents`.** The PyPI name `scrutineer` is owned by an
+  unrelated project, so the `pip install scrutineer` line shipped in earlier READMEs installed
+  a different library, with no error. The import package remains `scrutineer` and the CLI
+  remains `scrutineer`; only the distribution name changes. Not yet published to PyPI.
 - **A scenario that declares no assertions now FAILS.** Previously `ScenarioRunner.run()`
   returned `passed=True` after iterating zero assertions, so every file-based scenario
   reported a green it had not earned. The run now fails with a `no_assertions_declared`
   assertion result; set `allow_no_assertions: true` to collect a trace deliberately.
 - `ScenarioRunner.run()` now applies the scenario's `chaos_config` (previously ignored
   entirely by the file-based path, so declared chaos injected nothing).
-- CLI `sentinel run` carries `agent:`, `assertions:`, `chaos:` and `allow_no_assertions`;
+- CLI `scrutineer run` carries `agent:`, `assertions:`, `chaos:` and `allow_no_assertions`;
   prints failure reasons without needing `--verbose`; no longer prints the status twice;
   and reports a malformed scenario as a scenario error rather than a traceback.
 
@@ -46,7 +56,7 @@ All notable changes to **Sentinel** are documented here. Format follows
   first line reads `injector.tool_name` and which later reads `injector.failure_type` — neither
   of which those classes defined, so each raised `AttributeError` inside its own wrapper on the
   first call that should have injected. They now define both, the contract is written down on
-  `ChaosToolWrapper`, and `tests/sentinel/test_chaos_wrapper_contract.py` pins it. The
+  `ChaosToolWrapper`, and `tests/scrutineer/test_chaos_wrapper_contract.py` pins it. The
   `_WRAPPABLE_INJECTORS` gate had been hiding this by refusing to load them.
 - **LangChain `wrap_agent` did not intercept — it delegated to the real agent, which
   called its real tools, while recording nothing and reporting success.** It now replaces

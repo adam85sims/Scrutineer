@@ -1,8 +1,8 @@
 # API Reference
 
-> Sentinel's public API. All exports are defined in `__all__` for each module.
+> Scrutineer's public API. All exports are defined in `__all__` for each module.
 
-## sentinel.env
+## scrutineer.env
 
 Mock environment layer for agent testing.
 
@@ -60,7 +60,7 @@ class TimeoutError(MockToolError):
     status_code: int = 408
 ```
 
-## sentinel.models
+## scrutineer.models
 
 Core data structures for agent traces.
 
@@ -96,7 +96,7 @@ class AgentTrace:
     def add_tool_call(self, tool_call: ToolCall) -> None
 ```
 
-## sentinel.assertions
+## scrutineer.assertions
 
 20+ behavioral assertions across 5 categories.
 
@@ -147,7 +147,7 @@ assert_step_count(trace: AgentTrace, min_steps: int, max_steps: int) -> None
 assert_tool_latency(trace: AgentTrace, tool_name: str, max_ms: float) -> None
 ```
 
-## sentinel.chaos
+## scrutineer.chaos
 
 Failure injection for behavioral testing.
 
@@ -195,7 +195,7 @@ class DriftIntensity(StrEnum):
     SUBTLE, MODERATE, AGGRESSIVE
 ```
 
-## sentinel.runner
+## scrutineer.runner
 
 Test execution and scenario management.
 
@@ -209,7 +209,7 @@ class AgentConfig:
     kwargs: Dict[str, Any] = {}
     factory: Optional[Callable] = None
 
-class SentinelScenario:
+class ScrutineerScenario:
     """Declarative test scenario."""
     id: str
     name: str
@@ -223,13 +223,13 @@ class SentinelScenario:
 
 class ScenarioRunner:
     """Executes test scenarios."""
-    def run(self, scenario: SentinelScenario, agent_fn: Callable = None) -> SentinelResult
-    def run_batch(self, scenarios: List[SentinelScenario], agent_fn: Callable = None) -> List[SentinelResult]
+    def run(self, scenario: ScrutineerScenario, agent_fn: Callable = None) -> ScrutineerResult
+    def run_batch(self, scenarios: List[ScrutineerScenario], agent_fn: Callable = None) -> List[ScrutineerResult]
 
-def sentinel_test(env: Environment = None, task: str = "", **kwargs) -> Callable
+def scrutineer_test(env: Environment = None, task: str = "", **kwargs) -> Callable
 ```
 
-## sentinel.reporting
+## scrutineer.reporting
 
 Regression detection and report generation.
 
@@ -239,22 +239,22 @@ class ResultDelta(Enum):
 
 class RegressionReport:
     """Compare current results against baseline."""
-    def __init__(self, baseline: dict, current: List[SentinelResult])
+    def __init__(self, baseline: dict, current: List[ScrutineerResult])
     def to_dict(self) -> dict
     def to_html(self) -> str
     def to_junit_xml(self) -> str
 ```
 
-## sentinel.baseline
+## scrutineer.baseline
 
 JSON-based baseline storage with git integration.
 
 ```python
-def record_baseline(results: List[SentinelResult], path: str = None) -> str
+def record_baseline(results: List[ScrutineerResult], path: str = None) -> str
 def load_baseline(path: str) -> dict
 ```
 
-## sentinel.otel
+## scrutineer.otel
 
 OpenTelemetry span model (no SDK dependency for core).
 

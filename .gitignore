@@ -39,7 +39,7 @@ htmlcov/
 .coverage.*
 coverage.xml
 
-# Sentinel-specific
+# Scrutineer-specific
 # Audit reports (generated, not source)
 governance/reports/*.json
 governance/reports/*.txt
@@ -47,7 +47,7 @@ governance/reports/*.txt
 # Brain files (session-specific, not source)
 .brain/
 
-# Baselines (recorded per-project, not source for sentinel itself)
+# Baselines (recorded per-project, not source for scrutineer itself)
 # baselines/
 
 # OS
@@ -59,9 +59,9 @@ Thumbs.db
 .env.local
 
 # Local review files
-sentinel_review.md
+scrutineer_review.md
 planning/
 
-# Generated WebUI state (runs/baselines are produced by `sentinel serve` and by
+# Generated WebUI state (runs/baselines are produced by `scrutineer serve` and by
 # scripts/generate_demo_data.py; they accumulated into git history once already)
-.sentinel/
+.scrutineer/

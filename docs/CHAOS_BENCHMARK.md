@@ -1,6 +1,6 @@
-# Chaos Benchmark — Sentinel vs Real Production Failures
+# Chaos Benchmark — Scrutineer vs Real Production Failures
 
-> How well does Sentinel's chaos module simulate actual production failure modes?
+> How well does Scrutineer's chaos module simulate actual production failure modes?
 > This document maps each injector to real-world failure data.
 
 ## Failure Mode Coverage
@@ -60,33 +60,33 @@ To validate simulation fidelity against real production data:
 
 1. **Collect production logs** — Gather timeout rates, error codes, cascade
    patterns from 100+ production incidents
-2. **Run Sentinel scenarios** — Execute chaos scenarios with equivalent parameters
-3. **Compare distributions** — Check if Sentinel's failure patterns match
+2. **Run Scrutineer scenarios** — Execute chaos scenarios with equivalent parameters
+3. **Compare distributions** — Check if Scrutineer's failure patterns match
    production distributions (Kolmogorov-Smirnov test)
 4. **Validate cascade depth** — Compare cascading failure depth distribution
-   (Sentinel max_depth vs real cascade depth)
+   (Scrutineer max_depth vs real cascade depth)
 
 ## Correlation Evidence
 
 ### Tool Failures
 - **Production:** 28% timeout, 22% rate_limit, 18% error, 12% partial
-- **Sentinel:** Configurable via probability — can match any distribution
+- **Scrutineer:** Configurable via probability — can match any distribution
 - **Validation:** ToolFailureInjector with probability=0.28 timeout,
   0.22 rate_limit, 0.18 error, 0.12 partial matches production
 
 ### Context Degradation
 - **Production:** Linear degradation for first 60%, quadratic after
-- **Sentinel:** ContextDegradation with quadratic acceleration curve
+- **Scrutineer:** ContextDegradation with quadratic acceleration curve
 - **Validation:** Matches real context window pressure curves
 
 ### Cascading Failures
 - **Production:** Average cascade depth 2.3, max 5
-- **Sentinel:** CascadingFailures with max_cascade_depth=5
+- **Scrutineer:** CascadingFailures with max_cascade_depth=5
 - **Validation:** Adjustable to match any cascade pattern
 
 ### Network Partitions
 - **Production:** 12% of cloud incidents, partial connectivity in 70%
-- **Sentinel:** NetworkPartition with connectivity matrix
+- **Scrutineer:** NetworkPartition with connectivity matrix
 - **Validation:** Matrix can model any partition topology
 
 ## Recommendations
@@ -97,15 +97,15 @@ To validate simulation fidelity against real production data:
    production incident patterns
 3. **Add your dependency graph** — Model your actual service topology
    in NetworkPartition
-4. **Record baselines** — Use sentinel baseline record to capture
+4. **Record baselines** — Use scrutineer baseline record to capture
    behavior under chaos
 5. **Compare against production** — Run the same scenarios you see
-   in production and verify Sentinel catches the same regressions
+   in production and verify Scrutineer catches the same regressions
 
 ## Future Work
 
 - [ ] Collect production failure distributions from real incident reports
-- [ ] Implement statistical comparison (K-S test) between Sentinel and production
+- [ ] Implement statistical comparison (K-S test) between Scrutineer and production
 - [ ] Add more partition topologies (cross-AZ, DNS failure, BGP)
 - [ ] Model specific cloud provider failure patterns (AWS, GCP, Azure)
 - [ ] Add latency injection (not just timeout — gradual degradation)

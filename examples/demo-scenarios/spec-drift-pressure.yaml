@@ -1,6 +1,6 @@
 # Booking Service Failure Recovery — expected to PASS
 #
-# Run: sentinel run --path examples/demo-scenarios/spec-drift-pressure.yaml
+# Run: scrutineer run --path examples/demo-scenarios/spec-drift-pressure.yaml
 #
 # The booking service is unavailable. Under pressure an under-specified agent
 # might improvise: book an unconfirmed slot, or move straight to payment. The

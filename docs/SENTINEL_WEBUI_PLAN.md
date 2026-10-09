@@ -1,9 +1,9 @@
-# Sentinel — WebUI Feature Plan, PoC Data Strategy & adamsims.dev Integration
+# Scrutineer — WebUI Feature Plan, PoC Data Strategy & adamsims.dev Integration
 
 > **Author:** Hermes (Kimi K3 via OpenCode Go)
 > **Date:** 2026-07-22
 > **Status:** PLAN — Not yet executed
-> **Purpose:** Main selling document for client work. The WebUI is the product surface — it turns Sentinel from "another CLI tool" into a platform devs can actually see and touch.
+> **Purpose:** Main selling document for client work. The WebUI is the product surface — it turns Scrutineer from "another CLI tool" into a platform devs can actually see and touch.
 
 ---
 
@@ -11,7 +11,7 @@
 
 ### What's Built (Phase 7.1 Complete)
 
-The core WebUI works. It is functional, dark-themed, and wraps the Sentinel core without adding new logic:
+The core WebUI works. It is functional, dark-themed, and wraps the Scrutineer core without adding new logic:
 
 | Component | Status | Lines | What It Does |
 |-----------|--------|-------|-------------|
@@ -39,7 +39,7 @@ The core WebUI works. It is functional, dark-themed, and wraps the Sentinel core
 
 ### The Commercial Context
 
-Sentinel is the primary selling tool for Tier 2 (AI Governance & Safety) and Tier 3 (Web Service) on adamsims.dev. The WebUI is what makes it demo-able. A CLI is invisible; a dashboard with live traces, pass/fail charts, and chaos scores is what closes deals.
+Scrutineer is the primary selling tool for Tier 2 (AI Governance & Safety) and Tier 3 (Web Service) on adamsims.dev. The WebUI is what makes it demo-able. A CLI is invisible; a dashboard with live traces, pass/fail charts, and chaos scores is what closes deals.
 
 ---
 
@@ -55,7 +55,7 @@ These are the things a dev would hit in the first 5 minutes of using the WebUI:
 - The WEBUI_DESIGN.md shows a full scenario editor (YAML + visual preview) — none of that exists.
 
 **G2: Chaos Builder is not implemented**
-- This is the differentiator. The chaos module is what sets Sentinel apart from DeepEval/LangSmith.
+- This is the differentiator. The chaos module is what sets Scrutineer apart from DeepEval/LangSmith.
 - The interactive chaos config builder (sliders for failure probability, preset selector, YAML preview) is designed but has zero code.
 - Without it, chaos scenarios can only be run from pre-written YAML files — you can't demo the interactive "what happens if I crank the failure rate to 50%" experience.
 
@@ -66,7 +66,7 @@ These are the things a dev would hit in the first 5 minutes of using the WebUI:
 
 **G4: No PoC / sample data**
 - The WebUI starts empty. No scenarios, no runs, no baselines.
-- For adamsims.dev, we need a pre-populated demo that shows what Sentinel can do without the visitor needing to install anything or configure a model endpoint.
+- For adamsims.dev, we need a pre-populated demo that shows what Scrutineer can do without the visitor needing to install anything or configure a model endpoint.
 - Currently there are only 2 YAML scenarios (basic + chaos) and they're minimal.
 
 **G5: Trace view is functional but not polished**
@@ -86,7 +86,7 @@ These are the things a dev would hit in the first 5 minutes of using the WebUI:
 - The backend `_build_agent_fn()` works but is never invoked from the frontend.
 
 **G8: No governance integration**
-- Sentinel has a full governance audit harness (evidence collection, claims extraction, deterministic comparator).
+- Scrutineer has a full governance audit harness (evidence collection, claims extraction, deterministic comparator).
 - The WebUI has zero governance UI — no audit results, no compliance scores, no evidence viewer.
 - For Tier 2 sales, the governance story is the differentiator. The WebUI should show it.
 
@@ -138,18 +138,18 @@ Then write a script that runs all of these against a mock agent and stores the r
 #### A2: Model Endpoint Selector on Run (2h)
 **Gap:** G7
 **Files:**
-- Modify: `src/sentinel/web/static/js/scenarios.js:93-103`
-- Modify: `src/sentinel/web/static/js/scenarios.js:106-198`
+- Modify: `src/scrutineer/web/static/js/scenarios.js:93-103`
+- Modify: `src/scrutineer/web/static/js/scenarios.js:106-198`
 
-**What:** Add a dropdown to the scenario detail page and to the run button that lets you pick which model endpoint to use. The `SentinelAPI.startRun()` already accepts `modelEndpoint` — it just needs a UI control.
+**What:** Add a dropdown to the scenario detail page and to the run button that lets you pick which model endpoint to use. The `ScrutineerAPI.startRun()` already accepts `modelEndpoint` — it just needs a UI control.
 
 #### A3: Scenario Editor — Read-Write YAML (6h)
 **Gap:** G1
 **Files:**
-- Create: `src/sentinel/web/api/scenario_editor.py`
-- Modify: `src/sentinel/web/static/js/scenarios.js`
-- Create: `src/sentinel/web/static/js/editor.js`
-- Modify: `src/sentinel/web/static/index.html` (add route + script tag)
+- Create: `src/scrutineer/web/api/scenario_editor.py`
+- Modify: `src/scrutineer/web/static/js/scenarios.js`
+- Create: `src/scrutineer/web/static/js/editor.js`
+- Modify: `src/scrutineer/web/static/index.html` (add route + script tag)
 
 **What:** 
 - Add `PUT /api/scenarios/{id}` endpoint that writes YAML back to disk.
@@ -161,18 +161,18 @@ Then write a script that runs all of these against a mock agent and stores the r
 #### A4: Run History Persistence (4h)
 **Gap:** G9
 **Files:**
-- Modify: `src/sentinel/web/services/runner_service.py`
-- Create: `src/sentinel/web/services/persistence.py`
+- Modify: `src/scrutineer/web/services/runner_service.py`
+- Create: `src/scrutineer/web/services/persistence.py`
 
 **What:** 
-- After each run completes, serialize the RunState + SentinelResult to a JSON file in `.sentinel/runs/{run_id}.json`.
-- On server start, scan `.sentinel/runs/` and load all completed runs into RunManager.
+- After each run completes, serialize the RunState + ScrutineerResult to a JSON file in `.scrutineer/runs/{run_id}.json`.
+- On server start, scan `.scrutineer/runs/` and load all completed runs into RunManager.
 - This gives us trend data for free.
 
 #### A5: Pass/Fail Trend Chart on Dashboard (4h)
 **Gap:** G3
 **Files:**
-- Modify: `src/sentinel/web/static/js/dashboard.js`
+- Modify: `src/scrutineer/web/static/js/dashboard.js`
 
 **What:**
 - Replace the current bar chart (which shows pass/fail per run) with a proper trend line.
@@ -183,9 +183,9 @@ Then write a script that runs all of these against a mock agent and stores the r
 #### A6: Batch Run — "Run All" + Tag Filter (4h)
 **Gap:** G10
 **Files:**
-- Modify: `src/sentinel/web/api/runs.py`
-- Modify: `src/sentinel/web/static/js/scenarios.js`
-- Modify: `src/sentinel/web/static/js/dashboard.js`
+- Modify: `src/scrutineer/web/api/runs.py`
+- Modify: `src/scrutineer/web/static/js/scenarios.js`
+- Modify: `src/scrutineer/web/static/js/dashboard.js`
 
 **What:**
 - Add `POST /api/runs/batch` endpoint that accepts a list of scenario IDs (or a tag filter) and runs them sequentially.
@@ -195,15 +195,15 @@ Then write a script that runs all of these against a mock agent and stores the r
 
 ### Sprint B: Chaos Builder & Governance UI (Est. 18-22h)
 
-These features differentiate Sentinel from every other eval tool.
+These features differentiate Scrutineer from every other eval tool.
 
 #### B1: Chaos Configuration Builder (8h)
 **Gap:** G2
 **Files:**
-- Create: `src/sentinel/web/api/chaos.py`
-- Create: `src/sentinel/web/static/js/chaos-builder.js`
-- Modify: `src/sentinel/web/static/index.html`
-- Modify: `src/sentinel/web/static/css/sentinel.css`
+- Create: `src/scrutineer/web/api/chaos.py`
+- Create: `src/scrutineer/web/static/js/chaos-builder.js`
+- Modify: `src/scrutineer/web/static/index.html`
+- Modify: `src/scrutineer/web/static/css/scrutineer.css`
 
 **What:**
 - API: `GET /api/chaos/presets` — return all presets from `chaos_presets.py` with metadata.
@@ -217,9 +217,9 @@ These features differentiate Sentinel from every other eval tool.
 #### B2: Governance Dashboard Widget (6h)
 **Gap:** G8
 **Files:**
-- Create: `src/sentinel/web/api/governance.py`
-- Create: `src/sentinel/web/static/js/governance.js`
-- Modify: `src/sentinel/web/static/index.html`
+- Create: `src/scrutineer/web/api/governance.py`
+- Create: `src/scrutineer/web/static/js/governance.js`
+- Modify: `src/scrutineer/web/static/index.html`
 
 **What:**
 - API: `POST /api/governance/audit` — run the governance audit harness against the current project.
@@ -231,9 +231,9 @@ These features differentiate Sentinel from every other eval tool.
 #### B3: Report Download Endpoints (4h)
 **Gap:** G6
 **Files:**
-- Create: `src/sentinel/web/api/reports.py`
-- Modify: `src/sentinel/web/static/js/runs.js`
-- Modify: `src/sentinel/web/static/js/baselines.js`
+- Create: `src/scrutineer/web/api/reports.py`
+- Modify: `src/scrutineer/web/static/js/runs.js`
+- Modify: `src/scrutineer/web/static/js/baselines.js`
 
 **What:**
 - `GET /api/reports/{baseline}/html` — generate and download HTML report.
@@ -246,7 +246,7 @@ These features differentiate Sentinel from every other eval tool.
 #### C1: Trace View Waterfall (6h)
 **Gap:** G5
 **Files:**
-- Modify: `src/sentinel/web/static/js/traces.js`
+- Modify: `src/scrutineer/web/static/js/traces.js`
 
 **What:**
 - Redesign the trace timeline as a proper waterfall (Gantt-style).
@@ -258,22 +258,22 @@ These features differentiate Sentinel from every other eval tool.
 #### C2: Light Mode Toggle (2h)
 **Gap:** G11
 **Files:**
-- Modify: `src/sentinel/web/static/css/sentinel.css`
-- Modify: `src/sentinel/web/static/js/app.js`
+- Modify: `src/scrutineer/web/static/css/scrutineer.css`
+- Modify: `src/scrutineer/web/static/js/app.js`
 
 **What:** CSS custom properties already exist — add a `[data-theme="light"]` override set and a toggle button in the nav bar.
 
 #### C3: Scenario Tag Filtering (2h)
 **Gap:** G12
 **Files:**
-- Modify: `src/sentinel/web/static/js/scenarios.js`
+- Modify: `src/scrutineer/web/static/js/scenarios.js`
 
 **What:** Click a tag chip to filter the scenario list. Show active filter. Click again to clear.
 
 #### C4: Keyboard Shortcuts (2h)
 **Gap:** G13
 **Files:**
-- Modify: `src/sentinel/web/static/js/app.js`
+- Modify: `src/scrutineer/web/static/js/app.js`
 
 **What:** 
 - `g d` → Dashboard, `g s` → Scenarios, `g r` → Runs, `g b` → Baselines
@@ -298,7 +298,7 @@ We have three sources of PoC data:
 
 **Source 2: Local Model Runs (Short-term)**
 - Use the existing LM Studio endpoint (gemma-4-12b at 192.168.1.107:1234).
-- Run real agents through Sentinel chaos scenarios.
+- Run real agents through Scrutineer chaos scenarios.
 - Captures real model behavior under failure conditions.
 
 **Source 3: Public Agent Benchmarks (Medium-term)**
@@ -327,7 +327,7 @@ For adamsims.dev, we want visitors to see a populated dashboard without running 
 
 1. **Run all 8 scenarios** against a mock agent (deterministic, no model needed)
 2. **Record as baselines** with labels like `demo-v1`, `demo-v2`
-3. **Store run history** in `.sentinel/runs/` for trend charts
+3. **Store run history** in `.scrutineer/runs/` for trend charts
 4. **Generate a comparison diff** between two baselines showing improvement
 
 This gives us:
@@ -338,11 +338,11 @@ This gives us:
 
 ### adamsims.dev Integration
 
-The Sentinel section at `/sentinel/` already has documentation pages. We need to add:
+The Scrutineer section at `/scrutineer/` already has documentation pages. We need to add:
 
-1. **Live Demo page** (`/sentinel/demo/`) — a static export of the WebUI with pre-computed data baked in (no server needed, just HTML/JS with JSON data)
-2. **Sample Data page** (`/sentinel/data/`) — downloadable YAML scenarios, baseline JSONs, and a "try it yourself" quickstart
-3. **Results Gallery** (`/sentinel/results/`) — screenshots of the dashboard with real data, organized by chaos type
+1. **Live Demo page** (`/scrutineer/demo/`) — a static export of the WebUI with pre-computed data baked in (no server needed, just HTML/JS with JSON data)
+2. **Sample Data page** (`/scrutineer/data/`) — downloadable YAML scenarios, baseline JSONs, and a "try it yourself" quickstart
+3. **Results Gallery** (`/scrutineer/results/`) — screenshots of the dashboard with real data, organized by chaos type
 4. **Comparison Table** — a matrix showing how different models handle the same chaos scenarios
 
 ---
@@ -351,15 +351,15 @@ The Sentinel section at `/sentinel/` already has documentation pages. We need to
 
 ### Current State
 
-- `/sentinel/` — product page with feature grid + quick example
-- `/sentinel/docs/` — 21 documentation HTML pages (quickstart, chaos, adapters, API, etc.)
-- `/sentinel/product.html` — exists but not reviewed yet
+- `/scrutineer/` — product page with feature grid + quick example
+- `/scrutineer/docs/` — 21 documentation HTML pages (quickstart, chaos, adapters, API, etc.)
+- `/scrutineer/product.html` — exists but not reviewed yet
 - `/docs/BUSINESS_PLAN.md` — service tiers (Tier 1: Agent Engineering, Tier 2: AI Governance, Tier 3: Web Service)
 
 ### What's Missing from adamsims.dev
 
-1. **No live demo.** The site has docs but no interactive demonstration of Sentinel's capabilities.
-2. **No sample data.** Visitors can't see what a real Sentinel report looks like.
+1. **No live demo.** The site has docs but no interactive demonstration of Scrutineer's capabilities.
+2. **No sample data.** Visitors can't see what a real Scrutineer report looks like.
 3. **No comparison data.** Nothing showing "Model A vs Model B under chaos conditions."
 4. **No client-facing report samples.** Tier 2 prospects want to see what an "Audit-in-a-Box" report looks like.
 
@@ -368,10 +368,10 @@ The Sentinel section at `/sentinel/` already has documentation pages. We need to
 **Step 1: Create Static Demo Export (8h)**
 - Build a script that runs the WebUI, populates it with demo data, then exports the rendered pages as static HTML.
 - The static export uses the same CSS/JS but fetches data from embedded JSON instead of the API.
-- Deploy to `/sentinel/demo/` on adamsims.dev.
+- Deploy to `/scrutineer/demo/` on adamsims.dev.
 
 **Step 2: Add Sample Data Downloads (2h)**
-- Create a `/sentinel/data/` page with links to:
+- Create a `/scrutineer/data/` page with links to:
   - All 8 demo scenario YAML files
   - Pre-computed baseline JSON files
   - A sample HTML report (generated from the demo data)
@@ -379,12 +379,12 @@ The Sentinel section at `/sentinel/` already has documentation pages. We need to
 
 **Step 3: Add Results Gallery (4h)**
 - Screenshot the WebUI dashboard, trace view, chaos builder, and baseline diff with real demo data.
-- Create `/sentinel/results/` with captioned screenshots organized by feature.
+- Create `/scrutineer/results/` with captioned screenshots organized by feature.
 - Include "before/after" comparisons showing how chaos injection reveals behavioral regressions.
 
 **Step 4: Create Client Report Template (4h)**
 - Extend `reporting.py` HTML output with a branded header/footer for adamsims.dev.
-- Add a "Sentinel Audit Report" template that includes:
+- Add a "Scrutineer Audit Report" template that includes:
   - Executive summary (pass rate, top failures, recommendations)
   - Detailed findings per scenario
   - Chaos resilience score
@@ -400,7 +400,7 @@ The Sentinel section at `/sentinel/` already has documentation pages. We need to
   - Pass rate per chaos type
   - Average latency per scenario
   - Resilience score (custom metric: how well the agent degrades)
-- Add to `/sentinel/compare/`.
+- Add to `/scrutineer/compare/`.
 
 ---
 
@@ -461,7 +461,7 @@ The chaos builder could become a full visual programming environment. Keep it si
 
 ### R5: Open Source vs. Proprietary Strategy
 The WebUI strategy document mentions Tier 2 (Audit-in-a-Box) and Tier 3 (Web Service). These have different licensing implications:
-- Tier 2: Client runs Sentinel locally → open source is fine
+- Tier 2: Client runs Scrutineer locally → open source is fine
 - Tier 3: Hosted SaaS → may want a proprietary dashboard layer
 - **Decision needed (Jul 21):** Should the WebUI remain MIT open source, or should advanced features (chaos builder, trend analytics, report templates) be part of a commercial layer?
 
@@ -473,7 +473,7 @@ How we know this is working:
 
 1. **Demo time:** A client can see a populated dashboard, run a chaos scenario, and view a trace — all within 60 seconds of opening the WebUI.
 2. **PoC data:** The dashboard shows 10+ runs across 6+ chaos types with a visible trend.
-3. **Site engagement:** The adamsims.dev Sentinel section has a live demo that doesn't require installation.
+3. **Site engagement:** The adamsims.dev Scrutineer section has a live demo that doesn't require installation.
 4. **Sales collateral:** We can generate a branded HTML report from a client demo in under 5 minutes.
 5. **Differentiation:** The chaos builder demo shows something DeepEval, LangSmith, and MS AGT cannot do.
 
@@ -484,14 +484,14 @@ How we know this is working:
 ### New Files to Create
 
 ```
-src/sentinel/web/api/chaos.py              # Chaos builder API
-src/sentinel/web/api/reports.py            # Report download endpoints
-src/sentinel/web/api/governance.py         # Governance audit API
-src/sentinel/web/api/scenario_editor.py    # Scenario CRUD (write)
-src/sentinel/web/services/persistence.py   # Run history JSON persistence
-src/sentinel/web/static/js/chaos-builder.js
-src/sentinel/web/static/js/editor.js
-src/sentinel/web/static/js/governance.js
+src/scrutineer/web/api/chaos.py              # Chaos builder API
+src/scrutineer/web/api/reports.py            # Report download endpoints
+src/scrutineer/web/api/governance.py         # Governance audit API
+src/scrutineer/web/api/scenario_editor.py    # Scenario CRUD (write)
+src/scrutineer/web/services/persistence.py   # Run history JSON persistence
+src/scrutineer/web/static/js/chaos-builder.js
+src/scrutineer/web/static/js/editor.js
+src/scrutineer/web/static/js/governance.js
 scripts/generate_demo_data.py
 examples/demo-scenarios/*.yaml              # 8 demo scenarios
 ```
@@ -499,26 +499,26 @@ examples/demo-scenarios/*.yaml              # 8 demo scenarios
 ### Files to Modify
 
 ```
-src/sentinel/web/static/js/scenarios.js    # Model selector, batch run, tag filter
-src/sentinel/web/static/js/dashboard.js    # Trend chart
-src/sentinel/web/static/js/traces.js       # Waterfall view
-src/sentinel/web/static/js/runs.js         # Report download buttons
-src/sentinel/web/static/js/baselines.js    # Report download buttons
-src/sentinel/web/static/js/app.js          # Light mode, keyboard shortcuts
-src/sentinel/web/static/css/sentinel.css   # Light mode, chaos builder styles
-src/sentinel/web/static/index.html         # New routes, script tags
-src/sentinel/web/api/runs.py               # Batch run endpoint
-src/sentinel/web/services/runner_service.py # Persistence hooks
-src/sentinel/web/app.py                    # Register new routers
+src/scrutineer/web/static/js/scenarios.js    # Model selector, batch run, tag filter
+src/scrutineer/web/static/js/dashboard.js    # Trend chart
+src/scrutineer/web/static/js/traces.js       # Waterfall view
+src/scrutineer/web/static/js/runs.js         # Report download buttons
+src/scrutineer/web/static/js/baselines.js    # Report download buttons
+src/scrutineer/web/static/js/app.js          # Light mode, keyboard shortcuts
+src/scrutineer/web/static/css/scrutineer.css   # Light mode, chaos builder styles
+src/scrutineer/web/static/index.html         # New routes, script tags
+src/scrutineer/web/api/runs.py               # Batch run endpoint
+src/scrutineer/web/services/runner_service.py # Persistence hooks
+src/scrutineer/web/app.py                    # Register new routers
 ```
 
 ### adamsims.dev Files
 
 ```
-sentinel/demo/index.html                    # Static demo export
-sentinel/data/index.html                    # Sample data downloads
-sentinel/results/index.html                 # Results gallery
-sentinel/compare/index.html                 # Model comparison matrix
+scrutineer/demo/index.html                    # Static demo export
+scrutineer/data/index.html                    # Sample data downloads
+scrutineer/results/index.html                 # Results gallery
+scrutineer/compare/index.html                 # Model comparison matrix
 ```
 
 ---
@@ -543,20 +543,20 @@ sentinel/compare/index.html                 # Model comparison matrix
 | B3 | Report Download Endpoints | B | ✅ DONE | `api/reports.py` (NEW), `static/js/baselines.js` (MOD) |
 | B2 | Governance Dashboard Widget | B | ✅ DONE | `static/js/governance.js` (NEW) |
 | C1 | Trace View Waterfall | C | ✅ DONE | `static/js/traces.js` (REWRITE) |
-| C2 | Light Mode Toggle | C | ✅ DONE | `static/css/sentinel.css` (MOD), `static/js/app.js` (MOD), `static/index.html` (MOD) |
+| C2 | Light Mode Toggle | C | ✅ DONE | `static/css/scrutineer.css` (MOD), `static/js/app.js` (MOD), `static/index.html` (MOD) |
 | C3 | Scenario Tag Filtering | C | ✅ DONE | `static/js/scenarios.js` (MOD) |
 | C4 | Keyboard Shortcuts | C | ✅ DONE | `static/js/app.js` (MOD) |
 
 ### 10.2 New Files Created (11 files)
 
 ```
-src/sentinel/web/api/scenario_editor.py     174 lines  — Scenario CRUD (read-write YAML)
-src/sentinel/web/api/chaos.py               209 lines  — Chaos builder API (presets, injectors, preview)
-src/sentinel/web/api/reports.py              88 lines  — Report download (HTML, JUnit, comparison)
-src/sentinel/web/services/persistence.py    234 lines  — Run history JSON persistence
-src/sentinel/web/static/js/editor.js        242 lines  — Scenario YAML editor (split-view)
-src/sentinel/web/static/js/chaos-builder.js 556 lines  — Interactive chaos config builder
-src/sentinel/web/static/js/governance.js    178 lines  — Governance compliance dashboard
+src/scrutineer/web/api/scenario_editor.py     174 lines  — Scenario CRUD (read-write YAML)
+src/scrutineer/web/api/chaos.py               209 lines  — Chaos builder API (presets, injectors, preview)
+src/scrutineer/web/api/reports.py              88 lines  — Report download (HTML, JUnit, comparison)
+src/scrutineer/web/services/persistence.py    234 lines  — Run history JSON persistence
+src/scrutineer/web/static/js/editor.js        242 lines  — Scenario YAML editor (split-view)
+src/scrutineer/web/static/js/chaos-builder.js 556 lines  — Interactive chaos config builder
+src/scrutineer/web/static/js/governance.js    178 lines  — Governance compliance dashboard
 examples/demo-scenarios/refund-agent-timeout.yaml
 examples/demo-scenarios/cascade-db-api-ui.yaml
 examples/demo-scenarios/context-degradation-long.yaml
@@ -571,18 +571,18 @@ scripts/generate_demo_data.py              1176 lines  — Demo data generator (
 ### 10.3 Modified Files (9 files)
 
 ```
-src/sentinel/web/app.py                    — Register 3 new routers (chaos, reports, scenario_editor)
-src/sentinel/web/api/runs.py               — Add POST /api/runs/batch endpoint
-src/sentinel/web/schemas/run.py            — Add BatchRunRequest, BatchRunResponse
-src/sentinel/web/services/runner_service.py — Persistence hooks (save on complete, load on startup)
-src/sentinel/web/static/index.html         — Nav links (Chaos, Governance), theme toggle, 3 new scripts
-src/sentinel/web/static/js/api.js          — New API methods (chaos, reports, editor, batch)
-src/sentinel/web/static/js/app.js          — Routes (chaos, governance, editor), light mode, keyboard shortcuts
-src/sentinel/web/static/js/dashboard.js    — SVG trend chart (rewrote from bar chart)
-src/sentinel/web/static/js/scenarios.js    — Model selector, tag filtering, Run All, New Scenario, Edit button
-src/sentinel/web/static/js/baselines.js    — Report download buttons (HTML + JUnit)
-src/sentinel/web/static/js/traces.js       — Waterfall timeline view (rewrote from flat list)
-src/sentinel/web/static/css/sentinel.css   — Light mode vars, trend chart, editor, chaos builder, governance CSS
+src/scrutineer/web/app.py                    — Register 3 new routers (chaos, reports, scenario_editor)
+src/scrutineer/web/api/runs.py               — Add POST /api/runs/batch endpoint
+src/scrutineer/web/schemas/run.py            — Add BatchRunRequest, BatchRunResponse
+src/scrutineer/web/services/runner_service.py — Persistence hooks (save on complete, load on startup)
+src/scrutineer/web/static/index.html         — Nav links (Chaos, Governance), theme toggle, 3 new scripts
+src/scrutineer/web/static/js/api.js          — New API methods (chaos, reports, editor, batch)
+src/scrutineer/web/static/js/app.js          — Routes (chaos, governance, editor), light mode, keyboard shortcuts
+src/scrutineer/web/static/js/dashboard.js    — SVG trend chart (rewrote from bar chart)
+src/scrutineer/web/static/js/scenarios.js    — Model selector, tag filtering, Run All, New Scenario, Edit button
+src/scrutineer/web/static/js/baselines.js    — Report download buttons (HTML + JUnit)
+src/scrutineer/web/static/js/traces.js       — Waterfall timeline view (rewrote from flat list)
+src/scrutineer/web/static/css/scrutineer.css   — Light mode vars, trend chart, editor, chaos builder, governance CSS
 ```
 
 ### 10.4 Verification Results
@@ -636,7 +636,7 @@ Demo data generator:    ✓ 24 runs + 3 baselines created successfully
 ## 11. Second Pass Instructions for Antigravity
 
 ### Priority 1: Playwright E2E Tests (Critical)
-The existing `test_playwright_e2e.py` has a `page` fixture error. Fix this first, then add E2E tests for all new features. The WebUI runs on `localhost:8080` via `sentinel serve`.
+The existing `test_playwright_e2e.py` has a `page` fixture error. Fix this first, then add E2E tests for all new features. The WebUI runs on `localhost:8080` via `scrutineer serve`.
 
 ### Priority 2: Fix the Scenario API to Return Raw YAML
 The scenario detail endpoint doesn't return the raw YAML content. The editor page falls back to reconstructing YAML from parsed fields. Add a `raw_yaml` field to the scenario API response by reading the file content directly.

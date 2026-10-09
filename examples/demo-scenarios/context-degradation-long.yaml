@@ -1,12 +1,12 @@
 # Long-Session Tool Degradation — expected to PASS
 #
-# Run: sentinel run --path examples/demo-scenarios/context-degradation-long.yaml
+# Run: scrutineer run --path examples/demo-scenarios/context-degradation-long.yaml
 #
 # A multi-step customer-service session in which one lookup tool is permanently
 # degraded. The agent must keep the rest of the plan running and still answer.
 #
 # Note: the ContextDegradation injector (a quadratic instruction-loss curve)
-# exists in sentinel.chaos but is step-driven and is not yet wired into the
+# exists in scrutineer.chaos but is step-driven and is not yet wired into the
 # file-based runner, so it cannot honestly be declared here. This scenario
 # exercises the closest expressible behaviour: sustained degradation of one tool
 # across a long plan, handled without collapsing.

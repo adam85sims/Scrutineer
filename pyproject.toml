@@ -3,13 +3,12 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-# Distribution name. The PyPI name `sentinel` belongs to an unrelated project (a
-# sentinel-object library), so `pip install sentinel` silently installs THAT package —
-# a supply-chain trap rather than a typo. The import package stays `sentinel` and the
-# console script stays `sentinel`, so nothing user-facing changes. See
-# planning/COMMERCIAL_READINESS_2026-09-13.md §4.5.
-name = "sentinel-agents"
-version = "0.2.0"
+# Distribution name. PyPI's `scrutineer` belongs to an unrelated project, so
+# `pip install scrutineer` installs THAT package — a supply-chain trap rather than a typo.
+# The distribution is therefore `scrutineer-agents`; the import package and the console
+# scripts are `scrutineer` / `scrutineer-run` / `scrutineer-serve`.
+name = "scrutineer-agents"
+version = "0.3.0"
 description = "Agent Behavioral Testing Platform — tests what agents DO, not just what they SAY"
 readme = "README.md"
 license = "MIT"
@@ -30,8 +29,8 @@ classifiers = [
     "Topic :: Scientific/Engineering :: Artificial Intelligence",
 ]
 
-# Core: zero external dependencies for the testing engine. Sentinel works standalone.
-# `click` is required for the CLI entrypoints (`sentinel` / `sentinel-run` / `sentinel-serve`).
+# Core: zero external dependencies for the testing engine. Scrutineer works standalone.
+# `click` is required for the CLI entrypoints (`scrutineer` / `scrutineer-run` / `scrutineer-serve`).
 dependencies = ["click>=8.0"]
 
 [project.optional-dependencies]
@@ -74,7 +73,7 @@ dev = [
 # Everything
 # Keep in sync with the extras above: this extra is advertised as "Everything",
 # and it previously omitted the WebUI deps, so `pip install -e ".[all,dev]"`
-# could not import sentinel.web at all. In CI that silently skipped every
+# could not import scrutineer.web at all. In CI that silently skipped every
 # WebUI API test (importorskip) and aborted collection on the e2e module
 # (ModuleNotFoundError: No module named 'fastapi').
 all = [
@@ -98,22 +97,22 @@ all = [
 ]
 
 [project.scripts]
-sentinel = "sentinel.cli:cli"
-sentinel-run = "sentinel.cli:cli"
-sentinel-serve = "sentinel.web.server:main"
+scrutineer = "scrutineer.cli:cli"
+scrutineer-run = "scrutineer.cli:cli"
+scrutineer-serve = "scrutineer.web.server:main"
 
 [project.urls]
-Homepage = "https://github.com/adam85sims/sentinel"
-Documentation = "https://github.com/adam85sims/sentinel#readme"
-Repository = "https://github.com/adam85sims/sentinel"
-Issues = "https://github.com/adam85sims/sentinel/issues"
+Homepage = "https://github.com/adam85sims/scrutineer"
+Documentation = "https://github.com/adam85sims/scrutineer#readme"
+Repository = "https://github.com/adam85sims/scrutineer"
+Issues = "https://github.com/adam85sims/scrutineer/issues"
 
 [tool.hatch.build.targets.wheel]
 # NOTE: `governance` and `common` are top-level packages the audit harness needs
 # (web/api/governance.py does `from governance.audit import run_audit`, and the
 # governance package imports `common.*`). They MUST ship in the wheel or the
 # installed WebUI crashes. See planning/PRODUCTIZATION_BLOCKERS.md (B1).
-packages = ["src/sentinel", "governance", "common"]
+packages = ["src/scrutineer", "governance", "common"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

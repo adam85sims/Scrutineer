@@ -1,4 +1,4 @@
-# Sentinel — Development Queue
+# Scrutineer — Development Queue
 
 > Phase 7 is currently pending.
 
@@ -22,8 +22,8 @@
 ## Phase 1: Proof of Value (Real Agent Integration)
 
 - [x] Install langchain-core and create a minimal LangChain agent (ReAct pattern, 2 tools)
-- [x] Write integration test: run LangChain agent through Sentinel with mock environment
-- [x] Inject a tool failure mid-run and verify Sentinel catches the behavioral regression
+- [x] Write integration test: run LangChain agent through Scrutineer with mock environment
+- [x] Inject a tool failure mid-run and verify Scrutineer catches the behavioral regression
 - [x] Write integration test: context degradation scenario with real LangChain agent
 - [x] Create example script: `examples/langchain_quickstart.py` — runnable demo
 - [x] Document integration test results in docs/INTEGRATION_TESTING.md
@@ -31,12 +31,12 @@
 ## Phase 2: Package & Distribution
 
 - [x] Add MANIFEST.in or verify hatch build includes all necessary files
-- [x] Create .gitignore (standard Python + sentinel-specific: reports/, .brain/, baselines/)
+- [x] Create .gitignore (standard Python + scrutineer-specific: reports/, .brain/, baselines/)
 - [x] Verify `pip install -e .` works from clean state (no leftover deps)
 - [x] Verify `pip install -e ".[all]"` installs all optional dependency groups
 - [x] Add version bumping strategy (hatch version or manual)
-- [x] Create GitHub repo and push initial commit (https://github.com/adam85sims/Sentinel)
-- [x] Verify `pip install git+https://github.com/adam85sims/sentinel.git` works
+- [x] Create GitHub repo and push initial commit (https://github.com/adam85sims/Scrutineer)
+- [x] Verify `pip install git+https://github.com/adam85sims/scrutineer.git` works
 
 ## Phase 3: Documentation & Examples
 
@@ -70,11 +70,11 @@
 - [x] Implement ClockSkew chaos injector
 - [x] Implement MemoryPressure chaos injector
 - [x] Add chaos scenario presets (production incident, deploy Friday, traffic spike, etc.)
-- [x] Write benchmark: Sentinel chaos vs real production logs (docs/CHAOS_BENCHMARK.md)
+- [x] Write benchmark: Scrutineer chaos vs real production logs (docs/CHAOS_BENCHMARK.md)
 
 ## Phase 7: WebUI & Next-Gen Features
 
-- [ ] Design and implement a WebUI dashboard for Sentinel (running tests, viewing trace visualization, comparing baselines)
+- [ ] Design and implement a WebUI dashboard for Scrutineer (running tests, viewing trace visualization, comparing baselines)
 - [ ] Add model endpoint selector in the WebUI to point test runs at different LLMs/providers (OpenAI, Anthropic, local)
 - [ ] Add interactive chaos configuration builder in the WebUI
 - [ ] Implement live log/span streaming in WebUI using WebSockets or Server-Sent Events (SSE)
@@ -83,11 +83,11 @@
 - [ ] Add asynchronous chaos injection support for native async agent frameworks
 - [ ] Implement built-in retry assertions (e.g., `assert_retried_after_failure(tool_name, max_retries=3)`)
 - [ ] Implement Prometheus metrics exporter for CI/CD run dashboards
-- [ ] Guard optional deps with `pytest.importorskip` in `tests/sentinel/test_edge_cases.py`
+- [ ] Guard optional deps with `pytest.importorskip` in `tests/scrutineer/test_edge_cases.py`
       — the two YAML edge-case tests raise `ModuleNotFoundError: No module named 'yaml'` on a
       `.[dev]`-only install (4 failures). Same class as the e2e collection abort fixed in c98109f:
       a missing extra should skip, not fail. Not a CI blocker (CI installs `.[all,dev]`).
-- [ ] Give `sentinel/adapters/openai.py` the same treatment as the LangChain adapter:
+- [ ] Give `scrutineer/adapters/openai.py` the same treatment as the LangChain adapter:
       its `wrap_openai_agent` builds adapters and `invoke()` delegates, so it is still
       fail-OPEN — the agent's real FunctionTools run while the trace stays empty and the run
       reports success. §4.3 fixed this for LangChain only (see commit 1ab62c0).
@@ -98,6 +98,12 @@
 
 All 6 phases complete. **647 tests passing** (656 collected incl. the 9 browser e2e tests,
 which run in their own CI job).
+
+- [x] **Renamed: Sentinel → Scrutineer (2026-10-09)** — 1603 substitutions across 117 files,
+      6 path moves; 647 tests still pass, ruff clean, wheel rebuilt as `scrutineer_agents-0.3.0`.
+      Two defects found *by* the rename: `click.version_option(package_name=…)` must name the
+      DISTRIBUTION (`scrutineer-agents`) or `--version` raises at runtime while the suite stays
+      green; and a rename leaves orphaned console scripts + `*-dist-info` in `.venv`.
 
 - [x] Phase 1: LangChain integration tests (16 tests)
 - [x] Phase 2: Package & distribution (build, install, version bump)
@@ -111,24 +117,38 @@ which run in their own CI job).
 
 ## Blocked
 
-- [ ] **Product/brand name — PAUSED (2026-10-08, pending Adam).** Blocks the first PyPI
-      upload, and therefore Gate 3 and the whole "release → case study → outreach" sequence.
-      `pyproject.toml` currently says `sentinel-agents`, which is **PROVISIONAL**.
+- [ ] **GitHub repo is still named `Sentinel`** — pending Adam (browser, ~30s).
+      `pyproject.toml` and `README.md` project URLs now point at
+      `github.com/adam85sims/scrutineer`, which 404s until the repo is renamed
+      (Settings → Repository name). GitHub redirects the old URL permanently afterwards, so
+      the local remote keeps working either way. This is the last blocker on a clean 0.3.0
+      project page: **PyPI release metadata cannot be edited after upload**, so either the
+      rename lands before the publish, or 0.3.0 ships a dead project link.
 
-      Known constraints, so this doesn't restart from zero: PyPI `sentinel`, `sentinel-ai`,
-      `agent-sentinel` and `sentinel-harness` are all taken; and `sentinel` collides with
-      Microsoft Sentinel, SentinelOne and Whitehat Sentinel — three security vendors in this
-      exact market, which is the real argument against it. A Nova-flavoured name is under
-      consideration (working name *Overseer*; it is on-message for a governance instrument):
-      bare `overseer` is taken on both PyPI and npm, but `overseer-agents`, `agent-overseer`,
-      `nova-overseer`, `overseer-harness` and `overseer-py` are all free. Note `overseer` is
-      already a generic term of art for "the agent that watches the other agents", so it is a
-      role word like Sentinel — findable, but hard to own.
+## Name decision (2026-10-09) — DECIDED: Scrutineer
 
-      **Decide before any upload.** The rename is free today and effectively permanent after
-      (a rename means a new project and a dead namesake). The import package (`sentinel`) and
-      the CLI (`sentinel serve`) are the user-visible surface and renaming those is a breaking
-      change, so the brand should land before anyone depends on them.
+**Brand:** Scrutineer · **distribution:** `scrutineer-agents` · **import package + CLI:**
+`scrutineer` / `scrutineer-run` / `scrutineer-serve`.
+
+A scrutineer is the independent official who inspects a thing against the rulebook and
+certifies it — which is the job description of the audit, and explicitly *independent of
+the thing being inspected*, which is the whole pitch.
+
+Verified 2026-10-09 (PyPI + npm + DNS) so this never has to restart from zero:
+
+| Candidate | Verdict |
+|---|---|
+| `sentinel` | PyPI-owned by an unrelated project; collides with Microsoft Sentinel, SentinelOne and Whitehat Sentinel in this exact market. |
+| `overseer` | **Overseer AI** (overseerai.app) is a live AI-safety/compliance API; PyPI `overseer-ai` is an agent-reliability package. Direct collision. |
+| `watchkeeper` | Bit Zesty's Watchkeeper is an AI agent that reviews evidence for ISO 27001 audits — the same offer. |
+| `witness` | WitnessAI — "unified AI security and governance platform". |
+| `attestor`, `probity`, `deposition`, `groundtruth`, `warden`, `tribunal`, `arbiter`, `verifier`, `custodian`, `assayer`, `plumbline`, `litmus`, `signet`, `hallmark`, `rulebook`, `crucible`, `sextant`, `reagent`, `lodestone` | All PyPI-claimed, most by AI-eval / agent-observability tooling. |
+| `scrutineer` | PyPI-owned (`scrutineer 1.6.4`, "agentic code review toolkit for Claude Code") — different function, adjacent niche. `scrutineer-agents` free on PyPI **and** npm; `scrutineer-agents.com/.dev/.io` free. **CHOSEN.** |
+
+The descriptive lane in this market is crowded — further support for selling the report
+(readiness §5) rather than competing on the tool's name.
+
+Rename cost, for the record: 1603 substitutions across 117 files, 6 path moves.
 
 ## Open Questions
 
@@ -148,10 +168,17 @@ which run in their own CI job).
 
 ## Notes
 
-- Repo at https://github.com/adam85sims/Sentinel
+- Repo at https://github.com/adam85sims/Scrutineer
 - Governance default is deterministic-only (no LLM required)
 - The five shipped Phase 7 items above are marked `[ ]` here despite existing — this file
   overstates remaining work, and its `Done`/`Notes` sections understated test counts until
   2026-10-08. Keep both honest; the governance audit reads this file.
+- PyPI: `scrutineer-agents 0.3.0` built; `twine check` PASSED on wheel + sdist. Upload uses
+  `~/.pypirc` (token stored 2026-10-09 — **rotate it after the first upload**: it was pasted
+  into a chat log). Import package `scrutineer` shares its name with PyPI's unrelated
+  `scrutineer 1.6.4`, so the two cannot be co-installed (accepted pattern: pillow→PIL).
+- README badge corrected 520 → 647. The uncited "88% of AI agents fail in production" claim
+  still stands in README/docs/CHAOS_GUIDE/PROJECT_REVIEW — deliberately left for Adam to
+  cite or cut, because it is a marketing decision, not a typo.
 - Not production-ready: §4.4 (no real agent under test) and §4.7 (auditor not client-grade)
   are both open. Do not take a paid engagement before Gate 1 and Gate 2 pass.

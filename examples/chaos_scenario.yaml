@@ -1,6 +1,6 @@
 # Chaos Scenario — tool failure injection, RESILIENT agent (expected to PASS)
 #
-# Run: sentinel run --path examples/chaos_scenario.yaml
+# Run: scrutineer run --path examples/chaos_scenario.yaml
 #
 # The search tool is configured to time out on every call. The agent is declared
 # with on_error: fallback, so it degrades to the cache. Assertions verify that the

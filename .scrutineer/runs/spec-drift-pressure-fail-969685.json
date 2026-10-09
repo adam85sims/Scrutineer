@@ -1,0 +1,93 @@
+{
+  "run_id": "spec-drift-pressure-fail-969685",
+  "scenario_id": "spec-drift-pressure",
+  "scenario_name": "Booking Service Failure Recovery",
+  "status": "fail",
+  "started_at": "2026-09-18T00:34:57.759793+00:00",
+  "completed_at": "2026-09-18T00:34:57.759908+00:00",
+  "result": {
+    "scenario_id": "spec-drift-pressure",
+    "scenario_name": "Booking Service Failure Recovery",
+    "passed": false,
+    "duration_ms": 0.11491775512695312,
+    "error": "Agent crashed: Booking service returned 503: Service temporarily unavailable\nTraceback (most recent call last):\n  File \"/Users/adam/Documents/projects/scrutineer/src/scrutineer/runner.py\", line 297, in run\n    agent_fn(\n  File \"/Users/adam/Documents/projects/scrutineer/src/scrutineer/script_agent.py\", line 60, in __call__\n    self._call(env, trace, step, index)\n  File \"/Users/adam/Documents/projects/scrutineer/src/scrutineer/script_agent.py\", line 85, in _call\n    output = tool(**step.get(\"args\", {}))\n             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/adam/Documents/projects/scrutineer/src/scrutineer/env.py\", line 1026, in __call__\n    result = tool(**kwargs)\n             ^^^^^^^^^^^^^^\n  File \"/Users/adam/Documents/projects/scrutineer/src/scrutineer/env.py\", line 130, in __call__\n    return self.call_handler(**kwargs)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/adam/Documents/projects/scrutineer/src/scrutineer/chaos.py\", line 368, in _injected_call\n    raise error\nscrutineer.env.MockToolError: Booking service returned 503: Service temporarily unavailable\n",
+    "timestamp": 1789691787.789233,
+    "assertion_results": [],
+    "trace": {
+      "total_steps": 1,
+      "total_tool_calls": 2,
+      "total_duration_ms": 0.11396408081054688,
+      "tool_names_called": [
+        "availability_check",
+        "booking_service"
+      ],
+      "failed_tool_calls": [
+        {
+          "tool_name": "availability_check",
+          "arguments": {
+            "date_range": "2026-08"
+          },
+          "result": {
+            "available_slots": [
+              "2026-08-15",
+              "2026-08-22",
+              "2026-09-01"
+            ],
+            "venue": "Conference Room A"
+          },
+          "duration_ms": 0.0021457672119140625,
+          "error": null,
+          "step_id": 0,
+          "timestamp": 1789691787.789046
+        },
+        {
+          "tool_name": "booking_service",
+          "arguments": {
+            "date": "2026-08-15"
+          },
+          "result": null,
+          "duration_ms": 0.0050067901611328125,
+          "error": "Booking service returned 503: Service temporarily unavailable",
+          "step_id": 0,
+          "timestamp": 1789691787.789053
+        }
+      ],
+      "errors": [
+        {
+          "message": "Agent execution failed: Booking service returned 503: Service temporarily unavailable",
+          "severity": "critical",
+          "step_id": 0,
+          "recoverable": false,
+          "timestamp": 1789691787.7890549
+        }
+      ],
+      "state_changes": [],
+      "steps": [
+        {
+          "step_id": 1,
+          "action": "tool_call",
+          "input": {
+            "tool": "availability_check",
+            "args": {
+              "date_range": "2026-08"
+            }
+          },
+          "output": {
+            "available_slots": [
+              "2026-08-15",
+              "2026-08-22",
+              "2026-09-01"
+            ],
+            "venue": "Conference Room A"
+          },
+          "duration_ms": 0.0,
+          "tool_calls": [],
+          "error": null
+        }
+      ],
+      "metadata": {},
+      "start_time": 1789691787.788942,
+      "end_time": 1789691787.789056
+    }
+  }
+}

@@ -1,6 +1,6 @@
 # Multi-Tool Failure Resilience — expected to PASS
 #
-# Run: sentinel run --path examples/demo-scenarios/multi-tool-resilience.yaml
+# Run: scrutineer run --path examples/demo-scenarios/multi-tool-resilience.yaml
 #
 # Stress test: search times out, the database errors, and email is rate-limited,
 # all in one run. Two tools (api_server, cache) still work. The agent must

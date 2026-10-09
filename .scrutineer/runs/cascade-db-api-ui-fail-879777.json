@@ -1,0 +1,52 @@
+{
+  "run_id": "cascade-db-api-ui-fail-879777",
+  "scenario_id": "cascade-db-api-ui",
+  "scenario_name": "Cascading Database and API Failure",
+  "status": "fail",
+  "started_at": "2026-09-18T00:20:57.759793+00:00",
+  "completed_at": "2026-09-18T00:20:57.759925+00:00",
+  "result": {
+    "scenario_id": "cascade-db-api-ui",
+    "scenario_name": "Cascading Database and API Failure",
+    "passed": false,
+    "duration_ms": 0.13184547424316406,
+    "error": "Agent crashed: Database connection timeout after 5000ms\nTraceback (most recent call last):\n  File \"/Users/adam/Documents/projects/scrutineer/src/scrutineer/runner.py\", line 297, in run\n    agent_fn(\n  File \"/Users/adam/Documents/projects/scrutineer/src/scrutineer/script_agent.py\", line 60, in __call__\n    self._call(env, trace, step, index)\n  File \"/Users/adam/Documents/projects/scrutineer/src/scrutineer/script_agent.py\", line 85, in _call\n    output = tool(**step.get(\"args\", {}))\n             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/adam/Documents/projects/scrutineer/src/scrutineer/env.py\", line 1026, in __call__\n    result = tool(**kwargs)\n             ^^^^^^^^^^^^^^\n  File \"/Users/adam/Documents/projects/scrutineer/src/scrutineer/env.py\", line 130, in __call__\n    return self.call_handler(**kwargs)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/adam/Documents/projects/scrutineer/src/scrutineer/chaos.py\", line 368, in _injected_call\n    raise error\nscrutineer.env.TimeoutError: Database connection timeout after 5000ms\n",
+    "timestamp": 1789691787.7652779,
+    "assertion_results": [],
+    "trace": {
+      "total_steps": 0,
+      "total_tool_calls": 1,
+      "total_duration_ms": 0.13113021850585938,
+      "tool_names_called": [
+        "database"
+      ],
+      "failed_tool_calls": [
+        {
+          "tool_name": "database",
+          "arguments": {
+            "query": "user 789"
+          },
+          "result": null,
+          "duration_ms": 0.0069141387939453125,
+          "error": "Database connection timeout after 5000ms",
+          "step_id": 0,
+          "timestamp": 1789691787.763686
+        }
+      ],
+      "errors": [
+        {
+          "message": "Agent execution failed: Database connection timeout after 5000ms",
+          "severity": "critical",
+          "step_id": 0,
+          "recoverable": false,
+          "timestamp": 1789691787.7636878
+        }
+      ],
+      "state_changes": [],
+      "steps": [],
+      "metadata": {},
+      "start_time": 1789691787.763558,
+      "end_time": 1789691787.763689
+    }
+  }
+}

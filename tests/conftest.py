@@ -1,7 +1,7 @@
-"""Shared pytest fixtures and helpers for the Sentinel test suite.
+"""Shared pytest fixtures and helpers for the Scrutineer test suite.
 
 All fixtures here are auto-discovered by pytest and available to every test
-under ``tests/`` and ``tests/sentinel/`` without explicit import.
+under ``tests/`` and ``tests/scrutineer/`` without explicit import.
 
 Conventions:
     * Factory fixtures (``make_*``) return a callable that builds the object
@@ -18,7 +18,7 @@ from typing import Any
 
 import pytest
 
-from sentinel.models import (
+from scrutineer.models import (
     AgentTrace,
     Error,
     ErrorSeverity,
@@ -26,7 +26,7 @@ from sentinel.models import (
     Step,
     ToolCall,
 )
-from sentinel.runner import SentinelAssertionResult, SentinelResult
+from scrutineer.runner import ScrutineerAssertionResult, ScrutineerResult
 
 # ──────────────────────────────────────────────────────
 # Trace builders
@@ -139,13 +139,13 @@ def make_error():
 
 
 # ──────────────────────────────────────────────────────
-# SentinelResult builder
+# ScrutineerResult builder
 # ──────────────────────────────────────────────────────
 
 
 @pytest.fixture
 def make_result():
-    """Factory: build a SentinelResult with given scenario attributes.
+    """Factory: build a ScrutineerResult with given scenario attributes.
 
     Example::
 
@@ -160,7 +160,7 @@ def make_result():
         duration_ms: float = 100.0,
         metadata: dict[str, Any] | None = None,
         error_message: str | None = None,
-    ) -> SentinelResult:
+    ) -> ScrutineerResult:
         trace = AgentTrace(metadata=metadata or {})
         for name in tool_names or []:
             trace.add_tool_call(ToolCall(tool_name=name, arguments={}))
@@ -168,23 +168,23 @@ def make_result():
 
         if assertion_names:
             assertion_results = [
-                SentinelAssertionResult(assertion_name=n, passed=passed)
+                ScrutineerAssertionResult(assertion_name=n, passed=passed)
                 for n in assertion_names
             ]
         elif passed:
             assertion_results = [
-                SentinelAssertionResult(assertion_name="default_assert", passed=True)
+                ScrutineerAssertionResult(assertion_name="default_assert", passed=True)
             ]
         else:
             assertion_results = [
-                SentinelAssertionResult(
+                ScrutineerAssertionResult(
                     assertion_name="default_assert",
                     passed=False,
                     error_message=error_message or "boom",
                 )
             ]
 
-        return SentinelResult(
+        return ScrutineerResult(
             scenario_id=scenario_id,
             scenario_name=f"Scenario {scenario_id}",
             passed=passed,
@@ -203,7 +203,7 @@ def make_result():
 
 @pytest.fixture
 def tmp_baseline_dir(tmp_path, monkeypatch):
-    """Override ``sentinel.baseline.get_baseline_dir`` to a temp directory.
+    """Override ``scrutineer.baseline.get_baseline_dir`` to a temp directory.
 
     Replaces the hand-rolled module monkey-patch that used to live in
     ``test_otel_baseline.py``. Uses ``monkeypatch.setattr`` so teardown
@@ -211,8 +211,8 @@ def tmp_baseline_dir(tmp_path, monkeypatch):
 
     Returns the fake baseline directory path so tests can inspect it.
     """
-    import sentinel.baseline as bl_mod
+    import scrutineer.baseline as bl_mod
 
-    fake_dir = tmp_path / ".sentinel" / "baselines"
+    fake_dir = tmp_path / ".scrutineer" / "baselines"
     monkeypatch.setattr(bl_mod, "get_baseline_dir", lambda pr=None: fake_dir)
     return fake_dir

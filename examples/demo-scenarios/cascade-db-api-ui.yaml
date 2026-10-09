@@ -1,6 +1,6 @@
 # Cascading Database/API Failure — expected to PASS
 #
-# Run: sentinel run --path examples/demo-scenarios/cascade-db-api-ui.yaml
+# Run: scrutineer run --path examples/demo-scenarios/cascade-db-api-ui.yaml
 #
 # Models a dependency cascade: the database times out, the API that depends on
 # it then fails, and the UI layer degrades to cached data. The agent keeps

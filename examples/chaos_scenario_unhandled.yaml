@@ -1,19 +1,19 @@
 # Chaos Scenario — tool failure injection, UNHANDLED agent (expected to FAIL)
 #
-# Run: sentinel run --path examples/chaos_scenario_unhandled.yaml
+# Run: scrutineer run --path examples/chaos_scenario_unhandled.yaml
 #
 # This file is *deliberately* a failing scenario. It is the negative control for
 # chaos_scenario.yaml: identical tools, identical chaos, identical assertions — the
 # only difference is 'on_error: continue' instead of 'on_error: fallback'.
 #
 # The agent swallows the timeout and carries on without ever reaching the cache, so
-# `tool_called: cache` fails. That failure is the product working: Sentinel detects
+# `tool_called: cache` fails. That failure is the product working: Scrutineer detects
 # an agent that does not degrade gracefully under a tool failure.
 #
 # Expected output:
 #   [FAIL] Search timeout with no fallback (1/3 assertions, ...)
 #       ✗ tool_called(tool_name='cache'): Expected tool 'cache' to be called ...
-#   [sentinel] 1 scenario(s): 0 passed, 1 failed
+#   [scrutineer] 1 scenario(s): 0 passed, 1 failed
 #   exit code 1
 
 id: chaos-search-timeout-unhandled

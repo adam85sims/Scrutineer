@@ -1,10 +1,10 @@
-# Sentinel
+# Scrutineer
 
 **Agent Behavioral Testing Platform** — Tests what agents DO, not just what they SAY.
 
 [![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
-[![Tests](https://img.shields.io/badge/tests-520%20passing-brightgreen.svg)](#testing)
+[![Tests](https://img.shields.io/badge/tests-647%20passing-brightgreen.svg)](#testing)
 [![Code style: ruff](https://img.shields.io/badge/code%20style-ruff-red.svg)](https://docs.astral.sh/ruff/)
 
 ## The Problem
@@ -20,7 +20,7 @@ environments before deployment.
 
 ## The Solution
 
-Sentinel fills that gap. It's a behavioral testing platform that:
+Scrutineer fills that gap. It's a behavioral testing platform that:
 
 1. **Mocks your agent's environment** — tools, APIs, databases with configurable
    latency, errors, and rate limits
@@ -32,42 +32,42 @@ Sentinel fills that gap. It's a behavioral testing platform that:
 
 ## Quick Start
 
-> **Distribution name:** this project publishes to PyPI as **`sentinel-agents`**.
-> Do **not** run `pip install sentinel` — that name belongs to an unrelated project and
+> **Distribution name:** this project publishes to PyPI as **`scrutineer-agents`**.
+> Do **not** run `pip install scrutineer` — that name belongs to an unrelated project and
 > installs a different library. The import package and the console script are both
-> `sentinel`. The PyPI release is not out yet; install from git for now.
+> `scrutineer`.
 
 ```bash
 # Install (zero dependencies by default)
-pip install git+https://github.com/adam85sims/Sentinel.git
+pip install scrutineer-agents
 
 # Or with framework adapters
-pip install "git+https://github.com/adam85sims/Sentinel.git[adapters]"
+pip install "scrutineer-agents[adapters]"
 
 # Or with the WebUI dashboard
-pip install "git+https://github.com/adam85sims/Sentinel.git[web]"
+pip install "scrutineer-agents[web]"
 
 # Run the quickstart example
 python examples/langchain_quickstart.py
 
 # Run a YAML scenario
-sentinel run --path examples/basic_scenario.yaml
+scrutineer run --path examples/basic_scenario.yaml
 ```
 
 ## WebUI Dashboard
 
-Sentinel includes a browser-based dashboard for running scenarios, viewing
+Scrutineer includes a browser-based dashboard for running scenarios, viewing
 traces, and comparing baselines — all wrapping the core Python API.
 
 ```bash
 # Install with web dependencies
-pip install "git+https://github.com/adam85sims/Sentinel.git[web]"
+pip install "scrutineer-agents[web]"
 
 # Start the dashboard
-sentinel serve
+scrutineer serve
 
 # Or with a custom port
-sentinel serve --port 9090
+scrutineer serve --port 9090
 ```
 
 Then open [http://localhost:8080](http://localhost:8080) in your browser.
@@ -79,17 +79,17 @@ Features:
 - **Baselines** — saved results with regression diff comparison
 - **Live Console** — real-time log streaming via SSE during test runs
 
-See [src/sentinel/web/README.md](src/sentinel/web/README.md) for the full
+See [src/scrutineer/web/README.md](src/scrutineer/web/README.md) for the full
 WebUI guide.
 
 ## Architecture
 
 ```
-src/sentinel/
+src/scrutineer/
 ├── env.py          # MockTool, MockAPI, MockDatabase, EnvironmentBuilder
 ├── chaos.py        # ToolFailureInjector, ContextDegradation, CascadingFailures
 ├── assertions.py   # 20+ behavioral assertions
-├── runner.py       # @sentinel_test decorator, ScenarioRunner
+├── runner.py       # @scrutineer_test decorator, ScenarioRunner
 ├── reporting.py    # Regression reports, JUnit XML, HTML
 ├── baseline.py     # JSON baseline storage with git integration
 ├── otel.py         # OpenTelemetry span model
@@ -106,7 +106,7 @@ src/sentinel/
 
 ## The Chaos Module (Differentiator)
 
-Sentinel's chaos injection is what sets it apart:
+Scrutineer's chaos injection is what sets it apart:
 
 - **ContextDegradation** — Quadratic acceleration curve matching real context
   window pressure (last 20% is much worse than first 20%)
@@ -120,25 +120,25 @@ No other tool tests these production failure modes.
 ## CLI Commands
 
 ```bash
-sentinel run <scenario>          # Run a test scenario
-sentinel list                    # List available scenarios
-sentinel info <scenario>         # Show scenario details
-sentinel baseline record         # Record current state as baseline
-sentinel baseline show           # Show recorded baseline
-sentinel diff                    # Compare current vs baseline
-sentinel report                  # Generate regression report
-sentinel trace <run-id>          # Show execution trace
-sentinel serve                   # Start WebUI dashboard
-sentinel serve --port 9090       # Custom port
+scrutineer run <scenario>          # Run a test scenario
+scrutineer list                    # List available scenarios
+scrutineer info <scenario>         # Show scenario details
+scrutineer baseline record         # Record current state as baseline
+scrutineer baseline show           # Show recorded baseline
+scrutineer diff                    # Compare current vs baseline
+scrutineer report                  # Generate regression report
+scrutineer trace <run-id>          # Show execution trace
+scrutineer serve                   # Start WebUI dashboard
+scrutineer serve --port 9090       # Custom port
 ```
 
 ## Framework Adapters
 
-Sentinel ships adapters for specific frameworks, plus a generic hook adapter for anything else:
+Scrutineer ships adapters for specific frameworks, plus a generic hook adapter for anything else:
 
 ```python
 # LangChain — rebinds your_agent.tools so the agent's own call path hits the mocks
-from sentinel.adapters.langchain import wrap_agent
+from scrutineer.adapters.langchain import wrap_agent
 wrapped = wrap_agent(your_agent, tool_map={...}, trace=trace)
 
 # Agents whose tools are bound internally (a create_react_agent Runnable, say)
@@ -148,22 +148,22 @@ wrapped = wrap_agent(agent=None, tool_map={...}, trace=trace, intercept=False)
 agent = create_react_agent(model, wrapped.tools.values())
 
 # CrewAI
-from sentinel.adapters.crewai import wrap_crew_agent
+from scrutineer.adapters.crewai import wrap_crew_agent
 wrapped = wrap_crew_agent(your_crew, tool_map={...}, trace=trace)
 
 # OpenAI SDK
-from sentinel.adapters.openai import wrap_agent
+from scrutineer.adapters.openai import wrap_agent
 wrapped = wrap_agent(your_agent, tool_map={...}, trace=trace)
 
 # Generic (any framework)
-from sentinel.adapters.generic import HookAdapter
+from scrutineer.adapters.generic import HookAdapter
 adapter = HookAdapter(mock=your_mock, before=hook_fn)
 ```
 
 ## Chaos Example
 
 ```python
-from sentinel.chaos import (
+from scrutineer.chaos import (
     ToolFailureInjector,
     ContextDegradation,
     CascadingFailures,
@@ -201,7 +201,7 @@ budget = ChaosBudget(max_failures=10)
 - [Integration Testing](docs/INTEGRATION_TESTING.md) — Proof of value with real LangChain tools
 - [API Reference](docs/api.md) — Module documentation
 - [WebUI Design](docs/WEBUI_DESIGN.md) — Architecture and implementation plan
-- [WebUI Guide](src/sentinel/web/README.md) — Getting started with the dashboard
+- [WebUI Guide](src/scrutineer/web/README.md) — Getting started with the dashboard
 
 ## Testing
 
@@ -210,10 +210,10 @@ budget = ChaosBudget(max_failures=10)
 pytest tests/ -v
 
 # Run with coverage
-pytest tests/ --cov=sentinel --cov-report=html
+pytest tests/ --cov=scrutineer --cov-report=html
 
 # Run integration tests only
-pytest tests/sentinel/test_integration_langchain.py -v
+pytest tests/scrutineer/test_integration_langchain.py -v
 
 # Lint
 ruff check src/ tests/

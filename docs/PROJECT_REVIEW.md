@@ -1,4 +1,4 @@
-# Sentinel — Project Review
+# Scrutineer — Project Review
 
 > **Reviewer:** Hermes (GLM-5.2 via OpenCode Go)
 > **Date:** 2026-07-07
@@ -14,12 +14,12 @@ directive to research the AI/AGI landscape, identify a commercial gap, and
 build a proof-of-concept. In a single day it went from blank folder to a
 10-phase platform.
 
-The application is **Sentinel** — an Agent Behavioral Testing Platform. The
+The application is **Scrutineer** — an Agent Behavioral Testing Platform. The
 thesis: 88% of AI agents fail in production, and the dominant failure modes
 are operational (tool errors 28%, memory/state 22%, edge cases 18%), NOT
 hallucination (12%). Yet the entire evaluation ecosystem (DeepEval, LangSmith,
 MS AGT) focuses on output quality or observability — nobody tests agent
-BEHAVIOR in production-like environments before deployment. Sentinel fills
+BEHAVIOR in production-like environments before deployment. Scrutineer fills
 that gap.
 
 ## 2. By the Numbers
@@ -81,7 +81,7 @@ into a test environment.
 
 ### 3.4 runner.py (433 lines)
 
-`@sentinel_test` decorator for declarative test definition. ScenarioRunner
+`@scrutineer_test` decorator for declarative test definition. ScenarioRunner
 builds environment from config, runs agent, executes assertions, returns
 structured results. Supports JSON/YAML scenario loading and pytest discovery.
 AgentConfig dataclass for agent instantiation.
@@ -113,10 +113,10 @@ Human-readable and git-trackable.
 
 ### 3.9 adapters/ (910 lines total)
 
-Four framework adapters, all using optional imports — sentinel works
+Four framework adapters, all using optional imports — scrutineer works
 standalone without any agent framework installed:
 
-- **LangChain** (281 lines) — SentinelToolAdapter wraps BaseTool, wrap_agent
+- **LangChain** (281 lines) — ScrutineerToolAdapter wraps BaseTool, wrap_agent
   replaces all tools with mocks, AgentWrapper delegates invoke/call.
 - **CrewAI** (252 lines) — crew and task-level interception.
 - **OpenAI Agents SDK** (295 lines) — function tool interception.
@@ -125,9 +125,9 @@ standalone without any agent framework installed:
 ### 3.10 CI/CD
 
 GitHub Actions workflow with lint gate (ruff), Python 3.11/3.12/3.13 test
-matrix with concurrency cancellation, sentinel scenario runner job, and
+matrix with concurrency cancellation, scrutineer scenario runner job, and
 governance audit job with artifact upload. GitLab CI template
-(`.sentinel-ci.yml`). Composite GitHub Action for reusable workflows.
+(`.scrutineer-ci.yml`). Composite GitHub Action for reusable workflows.
 
 ## 4. Framework Stress Test Results
 
@@ -208,7 +208,7 @@ synthesized into a 12k-word research document.
    collision detection).
 
 5. **Optional-dependency design.** langchain-core, opentelemetry-sdk, and
-   other heavy deps are optional. Sentinel is importable in minimal
+   other heavy deps are optional. Scrutineer is importable in minimal
    environments. Smart for adoption.
 
 6. **Production-grade CI/CD.** Test matrix across Python 3.11/3.12/3.13,
@@ -235,7 +235,7 @@ resolved in the source files.
 
 ### 6.3 No Published Package
 
-pyproject.toml exists with proper config, but sentinel isn't installable from
+pyproject.toml exists with proper config, but scrutineer isn't installable from
 PyPI or a public git repo. For the OSS + Pro revenue model to work, this needs
 to be publishable.
 
@@ -275,5 +275,5 @@ exactly the kind of findings this project was designed to surface.
 The commercial thesis is strong. The chaos module is the differentiator —
 nobody else is doing context degradation simulation with quadratic curves and
 cascading failure propagation graphs. If a real LangChain agent is put through
-Sentinel and it catches a behavioral regression that DeepEval/LangSmith would
+Scrutineer and it catches a behavioral regression that DeepEval/LangSmith would
 miss, that's the demo that sells it.

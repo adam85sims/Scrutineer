@@ -1,5 +1,5 @@
 @echo off
-REM Sentinel WebUI — dev start script
+REM Scrutineer WebUI — dev start script
 REM Starts the FastAPI server for testing.
 REM
 REM Usage:
@@ -23,12 +23,12 @@ if not exist "%VENV_PYTHON%" (
     exit /b 1
 )
 
-echo Starting Sentinel WebUI...
+echo Starting Scrutineer WebUI...
 echo   Server:   http://127.0.0.1:8090
 echo   API docs: http://127.0.0.1:8090/api/docs
 echo   Scenarios: %SCENARIO_DIR%
 echo.
 
-"%VENV_PYTHON%" -m sentinel.web.server --port 8090 --scenario-dir "%SCENARIO_DIR%" %*
+"%VENV_PYTHON%" -m scrutineer.web.server --port 8090 --scenario-dir "%SCENARIO_DIR%" %*
 
 endlocal
