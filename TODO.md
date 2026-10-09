@@ -150,6 +150,32 @@ The descriptive lane in this market is crowded — further support for selling t
 
 Rename cost, for the record: 1603 substitutions across 117 files, 6 path moves.
 
+## Found during the 0.3.0 publish verification (2026-10-09)
+
+Verified against the PUBLISHED artifact — clean venvs, installed from PyPI, run from an
+empty cwd — not against the repo checkout:
+
+- [ ] 🔴 **The README's Quick Start cannot work from the published wheel.** The wheel ships
+      `scrutineer/`, `governance/`, `common/` only — no `examples/` — yet Quick Start tells
+      the reader to run `python examples/langchain_quickstart.py` and
+      `scrutineer run --path examples/basic_scenario.yaml`. The sdist *does* carry
+      `examples/` (26 files), so only source installs work. This is the first command a
+      stranger types after `pip install scrutineer-agents` — §4.1's failure class again.
+      Fix: ship starter scenarios inside the package plus a `scrutineer init`/`demo` command
+      that writes one, or point Quick Start at the repo. Target 0.3.1.
+- [ ] 🟠 **YAML scenarios need `pyyaml`, which is in the `[governance]` extra, not core.**
+      So the advertised zero-dependency install cannot run any shipped scenario. Verified:
+      core venv prints "PyYAML required for YAML files." and then, misleadingly,
+      "No scenarios found in file." Fix: make pyyaml a core dependency (YAML is the primary
+      user-facing path) or document `scrutineer-agents[governance]`, and make the loader exit
+      on the real reason rather than printing a second, wrong one. Target 0.3.1.
+- [x] Everything else verified good on the published artifact: core install pulls exactly
+      `click` + the package; wheel carries `scrutineer/`+`governance/`+`common/`;
+      `scrutineer --version` → 0.3.0; `scrutineer serve` from an EMPTY cwd → `/api/health`
+      200 (B2 holds), `/api/baselines` 200, `/api/scenarios` 200; `twine check` PASSED on
+      wheel and sdist; CI green on the renamed tree (all five jobs, `dc0e692`); published
+      project URLs resolve 200.
+
 ## Open Questions
 
 - Phase 7's queue is ~half stale: of its 11 pending items, **5 are already built** (WebUI
@@ -177,6 +203,9 @@ Rename cost, for the record: 1603 substitutions across 117 files, 6 path moves.
   `~/.pypirc` (token stored 2026-10-09 — **rotate it after the first upload**: it was pasted
   into a chat log). Import package `scrutineer` shares its name with PyPI's unrelated
   `scrutineer 1.6.4`, so the two cannot be co-installed (accepted pattern: pillow→PIL).
+- **Published 2026-10-09:** `scrutineer-agents 0.3.0` on PyPI
+  (https://pypi.org/project/scrutineer-agents/0.3.0/); GitHub repo renamed to
+  `adam85sims/Scrutineer` (old URL 301-redirects). Installed from PyPI and smoke-tested.
 - README badge corrected 520 → 647. The uncited "88% of AI agents fail in production" claim
   still stands in README/docs/CHAOS_GUIDE/PROJECT_REVIEW — deliberately left for Adam to
   cite or cut, because it is a marketing decision, not a typo.
