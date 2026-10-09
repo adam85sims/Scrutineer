@@ -1,0 +1,69 @@
+name: Publish to PyPI
+
+# Trusted publishing over OIDC: no API token is stored anywhere. GitHub mints a
+# short-lived identity token, which PyPI exchanges for a one-shot upload credential.
+#
+# The PyPI project needs a trusted publisher configured with EXACTLY these values
+# (PyPI -> the project -> Manage -> Publishing -> Add a new trusted publisher):
+#
+#     Owner             adam85sims
+#     Repository        Scrutineer
+#     Workflow name     publish.yml
+#     Environment name  pypi
+#
+# Publishing happens only for a published GitHub Release, which should be cut from a
+# commit already green in CI - this workflow deliberately does not re-run the suite,
+# so cut the release from a green main, not from a branch.
+#
+# To test the wiring without cutting a release: run this workflow manually
+# (workflow_dispatch). It will fail with HTTP 400 "File already exists" for a version
+# already on PyPI - that failure still proves the OIDC handshake and the trusted
+# publisher entry are correct, which is exactly what you want to learn first.
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  publish:
+    name: Build and publish
+    runs-on: ubuntu-latest
+    environment:
+      name: pypi
+      url: https://pypi.org/project/scrutineer-agents/
+    permissions:
+      id-token: write # required by trusted publishing; no other write access granted
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Build sdist and wheel
+        run: |
+          python -m pip install --upgrade build twine
+          python -m build
+
+      - name: Check the distributions
+        run: twine check dist/*
+
+      - name: Verify the wheel carries what the WebUI imports
+        run: |
+          python - <<'PY'
+          import glob, sys, zipfile
+          wheel = glob.glob("dist/*.whl")[0]
+          names = zipfile.ZipFile(wheel).namelist()
+          missing = [p for p in ("scrutineer/", "governance/", "common/")
+                     if not any(n.startswith(p) for n in names)]
+          if missing:
+              sys.exit(f"wheel is missing: {missing}")
+          print(f"{wheel}: ok")
+          PY
+
+      - name: Publish to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
