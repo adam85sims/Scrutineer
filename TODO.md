@@ -108,6 +108,21 @@
 All 6 phases complete. **701 tests passing** (710 collected incl. the 9 browser e2e tests,
 which run in their own CI job).
 
+- [x] **0.3.1 published to PyPI (2026-10-10, evening)** — `scrutineer-agents 0.3.1`, wheel +
+  sdist, from commit `cbdcba8`. Verified by installing *from PyPI* into a fresh venv and running
+  the README verbatim from an empty directory: `--version` reports 0.3.1, `init` exits 0,
+  `run basic` PASS, `run --path chaos_scenario_unhandled.yaml` FAIL (by design),
+  `run --all` = 12 scenarios / 11 passed / 1 failed (the shipped negative control),
+  `list` finds 12 with no warnings, and PyYAML arrives as a core dependency.
+  - **Open:** the upload used the legacy `~/.pypirc` token, **not** the OIDC trusted-publisher
+    path the `publish.yml` workflow is built around, because `gh` is not authenticated on this
+    machine and the workflow only triggers on a published GitHub Release. No GitHub Release or
+    `v0.3.1` tag exists. Cutting one now would re-run the workflow and fail with "File already
+    exists" (the workflow's own comment anticipates this as a wiring test). **Rotate the PyPI
+    token** — it appeared in a chat log earlier.
+  - **Open:** `git remote` still points at `Sentinel.git`, which redirects; every push prints a
+    "repository moved" notice. One `git remote set-url` fixes it, left to Adam.
+
 - [x] **0.3.1 first-run pass (2026-10-10, afternoon)** — the same "it lies" class, hunted further
       down the same path. Verified from wheels built from this tree, installed into clean venvs:
       - `src/scrutineer/README.md` (ships inside the wheel) opened with
