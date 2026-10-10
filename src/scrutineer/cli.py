@@ -16,11 +16,43 @@ from __future__ import annotations
 
 import importlib
 import json
+import os
+import shutil
 import sys
 import time
 from pathlib import Path
 
 import click
+
+
+class ScenarioLoadError(Exception):
+    """A scenario file could not be read, for a reason the user must act on.
+
+    Raised instead of returning an empty list, so the CLI reports the true cause once rather
+    than printing a second, wrong one after it.
+    """
+
+
+def _examples_source_dir() -> Path:
+    """Locate the starter kit that ships with Scrutineer.
+
+    Installed from a wheel or an sdist it is ``scrutineer/examples``. Running from a source
+    checkout (an editable install), the package directory is ``src/scrutineer`` and the kit is
+    the repo-root ``examples/`` — the same files, force-included into the wheel at build time
+    by ``[tool.hatch.build.targets.wheel.force-include]``.
+    """
+    bundled = Path(__file__).resolve().parent / "examples"
+    if bundled.is_dir():
+        return bundled
+
+    checkout = Path(__file__).resolve().parents[2] / "examples"
+    if checkout.is_dir():
+        return checkout
+
+    raise ScenarioLoadError(
+        "could not find the bundled example scenarios — this is a packaging bug, "
+        "reinstall scrutineer-agents"
+    )
 
 
 @click.group()
@@ -91,18 +123,31 @@ def run(
 
     runner = ScenarioRunner()
 
+    # With --json-output the machine-readable document IS the contract, so every human-facing
+    # line moves to stderr and stdout carries JSON and nothing else. The documented workflow
+    # (`scrutineer run --all --json-output > results.json`, then
+    # `scrutineer baseline record LABEL --path results.json`) cannot work while the progress and
+    # summary lines share stdout with the document.
+    def emit(message: str = "") -> None:
+        click.echo(message, err=json_output)
+
     # Collect scenarios to run
     scenarios = []
+    discovery_problems: list[str] = []
 
     if scenario_path:
         # Load from file
-        scenarios = _load_scenario_file(scenario_path)
+        try:
+            scenarios = _load_scenario_file(scenario_path)
+        except ScenarioLoadError as exc:
+            click.echo(f"[scrutineer] ERROR: {exc}", err=True)
+            sys.exit(1)
         if not scenarios:
             click.echo("[scrutineer] ERROR: No scenarios found in file.", err=True)
             sys.exit(1)
     elif scenario:
         # Load specific scenario by name from discovery
-        found = _discover_scenarios()
+        found, _ = _discover_or_report()
         match = [s for s in found if s.id == scenario or s.name == scenario]
         if not match:
             click.echo(
@@ -113,8 +158,11 @@ def run(
             sys.exit(1)
         scenarios = match
     elif run_all:
-        scenarios = _discover_scenarios()
-        if not scenarios:
+        scenarios, discovery_problems = _discover_or_report()
+        # "Nothing to run" is only a clean exit when nothing was *missed*, either. With a
+        # problem outstanding, fall through so the incompleteness check below can speak; with
+        # --json-output, fall through too, so stdout still carries a document rather than nothing.
+        if not scenarios and not discovery_problems and not json_output:
             click.echo("[scrutineer] No scenarios discovered.", err=True)
             sys.exit(0)
     else:
@@ -126,16 +174,16 @@ def run(
         sys.exit(1)
 
     # Execute scenarios
-    click.echo(f"[scrutineer] Running {len(scenarios)} scenario(s)...\n")
+    emit(f"[scrutineer] Running {len(scenarios)} scenario(s)...\n")
 
     results: list[TestResult] = []
     start_time = time.time()
 
     for i, scenario in enumerate(scenarios, 1):
         if verbose:
-            click.echo(f"  [{i}/{len(scenarios)}] {scenario.name}")
-            click.echo(f"    Task: {scenario.task}")
-            click.echo(f"    Tags: {', '.join(scenario.tags) if scenario.tags else 'none'}")
+            emit(f"  [{i}/{len(scenarios)}] {scenario.name}")
+            emit(f"    Task: {scenario.task}")
+            emit(f"    Tags: {', '.join(scenario.tags) if scenario.tags else 'none'}")
 
         try:
             result = runner.run(scenario)
@@ -157,26 +205,26 @@ def run(
         results.append(result)
 
         # result.summary already carries the [PASS]/[FAIL] tag.
-        click.echo(f"  {result.summary}")
+        emit(f"  {result.summary}")
 
         # Failure reasons are always shown: a test runner that hides why something
         # failed is worse than useless.
         if not result.passed:
             for a in result.failed_assertions():
-                click.echo(f"      ✗ {a.assertion_name}: {a.error_message}")
+                emit(f"      ✗ {a.assertion_name}: {a.error_message}")
             if result.error and not result.failed_assertions():
-                click.echo(f"      ! {result.error}")
+                emit(f"      ! {result.error}")
 
         if verbose:
-            click.echo()
+            emit()
 
     # Summary
     total_time = (time.time() - start_time) * 1000
     passed = sum(1 for r in results if r.passed)
     failed = len(results) - passed
 
-    click.echo("─" * 60)
-    click.echo(
+    emit("─" * 60)
+    emit(
         f"[scrutineer] {len(results)} scenario(s): "
         f"{passed} passed, {failed} failed "
         f"({total_time:.0f}ms total)"
@@ -188,6 +236,10 @@ def run(
             "passed": passed,
             "failed": failed,
             "duration_ms": total_time,
+            # Never let the document look complete when part of the directory went unread: a
+            # consumer keying on total/passed would otherwise see a clean run over a subset.
+            "incomplete": bool(discovery_problems),
+            "discovery_problems": list(discovery_problems),
             "results": [
                 {
                     "scenario_id": r.scenario_id,
@@ -209,8 +261,81 @@ def run(
         }
         click.echo(json.dumps(output, indent=2))
 
+    if discovery_problems:
+        # A run that could not read every scenario in the directory is not a complete run, and
+        # reporting "all passed" over a subset is the exact failure this product exists to find
+        # in other people's systems. Report it, and exit non-zero even when nothing failed.
+        click.echo(
+            f"[scrutineer] ERROR: {len(discovery_problems)} file(s) under the scenario "
+            f"directories could not be read — this run is incomplete.",
+            err=True,
+        )
+        sys.exit(1)
+
     if failed > 0:
         sys.exit(1)
+
+
+# ──────────────────────────────────────────────────────
+# scrutineer init
+# ──────────────────────────────────────────────────────
+
+
+@cli.command()
+@click.option(
+    "--dir",
+    "target_dir",
+    type=click.Path(file_okay=False),
+    default=".",
+    show_default=True,
+    help="Directory to write the starter kit into.",
+)
+@click.option("--force", is_flag=True, help="Replace an existing starter kit.")
+def init(target_dir: str, force: bool) -> None:
+    """Write the starter scenarios, so there is something to run straight away.
+
+    \b
+    Examples:
+        scrutineer init
+        scrutineer init --dir ./agent-tests
+        scrutineer init --force
+
+    Copies the scenarios that ship inside the package into
+    ``<dir>/scrutineer-examples/`` and prints the commands to run them.
+    """
+    source = _examples_source_dir()
+    destination = Path(target_dir).resolve() / "scrutineer-examples"
+
+    if destination == source or source in destination.parents:
+        click.echo(
+            f"[scrutineer] ERROR: refusing to copy the starter kit into itself ({destination}).",
+            err=True,
+        )
+        sys.exit(1)
+
+    if destination.exists():
+        if not force:
+            click.echo(
+                f"[scrutineer] ERROR: {destination} already exists — not overwriting it.\n"
+                f"Re-run with --force to replace it, or pass --dir to write elsewhere.",
+                err=True,
+            )
+            sys.exit(1)
+        shutil.rmtree(destination)
+
+    shutil.copytree(source, destination)
+
+    written = sum(1 for path in destination.rglob("*") if path.is_file())
+    shown = Path(target_dir) / "scrutineer-examples"
+
+    click.echo(f"[scrutineer] Wrote {written} file(s) to {destination}\n")
+    click.echo("Run one now:")
+    click.echo(f"  scrutineer run --path {shown}/basic_scenario.yaml")
+    click.echo(f"  scrutineer run --path {shown}/chaos_scenario.yaml")
+    click.echo(
+        f"  scrutineer run --path {shown}/chaos_scenario_unhandled.yaml"
+        f"   # FAILS on purpose"
+    )
 
 
 # ──────────────────────────────────────────────────────
@@ -221,7 +346,7 @@ def run(
 @cli.command(name="list")
 def list_scenarios() -> None:
     """List all discovered test scenarios."""
-    scenarios = _discover_scenarios()
+    scenarios, _ = _discover_or_report()
     if not scenarios:
         click.echo("[scrutineer] No scenarios discovered.")
         return
@@ -245,7 +370,7 @@ def list_scenarios() -> None:
 @click.argument("scenario_id")
 def info(scenario_id: str) -> None:
     """Show detailed info about a specific scenario."""
-    scenarios = _discover_scenarios()
+    scenarios, _ = _discover_or_report()
     match = [s for s in scenarios if s.id == scenario_id]
     if not match:
         click.echo(f"[scrutineer] ERROR: Scenario '{scenario_id}' not found.", err=True)
@@ -295,8 +420,17 @@ def baseline_record(
 
     if results_path:
         # Load results from JSON file
-        with open(results_path) as f:
-            raw = json.load(f)
+        try:
+            with open(results_path) as f:
+                raw = json.load(f)
+        except json.JSONDecodeError as exc:
+            # A truncated or empty results file is a user-facing mistake, not a traceback.
+            click.echo(
+                f"[scrutineer] ERROR: '{results_path}' is not valid JSON ({exc}).\n"
+                f"  Produce it with: scrutineer run --all --json-output > results.json",
+                err=True,
+            )
+            sys.exit(1)
 
         # If it's the scrutineer run --json-output format, extract results
         if isinstance(raw, dict) and "results" in raw:
@@ -634,7 +768,7 @@ def serve(host: str, port: int, reload: bool) -> None:
     except ImportError:
         click.echo(
             "[scrutineer] ERROR: Web dependencies not installed. "
-            "Install with: pip install scrutineer[web]",
+            'Install with: pip install "scrutineer-agents[web]"',
             err=True,
         )
         sys.exit(1)
@@ -656,7 +790,108 @@ def serve(host: str, port: int, reload: bool) -> None:
 # ──────────────────────────────────────────────────────
 
 
+_SCENARIO_FILE_SUFFIXES = (".yaml", ".yml", ".json")
+
+# Directories under the user's cwd that hold scenario files. `scrutineer init` writes
+# `scrutineer-examples/`; `scenarios/` is the conventional home for a project's own files.
+_SCENARIO_DIRS = ("scenarios", "scrutineer-examples")
+
+# Subtrees that can never hold a scenario under any layout: compiled Python only.
+_SCENARIO_IGNORED_DIRS = frozenset({"__pycache__"})
+
+# Directories that are an installed environment rather than somewhere a user keeps scenarios.
+# These are pruned *and reported*. Walking one pulls the packages' own bundled YAML into the run —
+# a single `venv/` under `scenarios/` discovered 200 phantom scenarios from scrutineer's own
+# packaged examples — and pruning it in silence would hide a real scenario, which is the failure
+# an earlier round caught. Reporting keeps the choice visible instead of guessing.
+_SCENARIO_ENV_DIRS = frozenset({"node_modules", "site-packages"})
+
+# What a scenario has to contain to count as one. See `_is_scenario_item`.
+_SUBSTANTIVE_KEYS = (
+    "task",
+    "assertions",
+    "agent",
+    "env_config",
+    "chaos",
+    "chaos_config",
+    "allow_no_assertions",
+)
+
+
+def _is_scenario_item(item: object) -> bool:
+    """Is this dict a scenario definition, rather than a config file that happens to be YAML?
+
+    Two ways to qualify, because one test alone fails at one end or the other:
+
+    * **named and diagnostic** — an `id` or `name`, plus one of task / agent / assertions /
+      environment / chaos. A docker-compose file, a `package.json`, a GitHub workflow, an
+      Ansible playbook and a Grafana dashboard each carry a `name`, and a bare key sniff that
+      accepted them made `run --all` execute six infra config files as failing scenarios.
+    * **substantive twice over** — two of those blocks without any name. `task: deploy` alone is
+      a Taskfile; `task` *and* `assertions` is a scenario, and `_build_scenarios` will happily
+      run one with no `id` (defaulting it to "unnamed"), so discovery must not be the stricter
+      of the two or it silently drops a file the rest of the system supports.
+
+    This is a heuristic and is documented as one. A marker a user opts into would be better, and
+    needs a documented format before it can become the default.
+    """
+    if not isinstance(item, dict):
+        return False
+
+    identified = "id" in item or "name" in item
+    substantive = sum(1 for key in _SUBSTANTIVE_KEYS if key in item)
+    return (identified and substantive >= 1) or substantive >= 2
+
+
+def _iter_scenario_items(documents: list) -> list:
+    """Flatten parsed documents into candidate items.
+
+    Every document is considered, so a multi-document YAML file is not an error: a k8s-style
+    bundle simply yields no scenario items, and two scenarios separated by `---` yield two.
+    ``yaml.safe_load`` refuses a multi-document stream outright, which is how one unrelated
+    manifest in the scenario directory came to abort every command that discovers scenarios.
+    """
+    items: list = []
+    for document in documents:
+        if document is None:  # an empty document, e.g. between two `---` markers
+            continue
+        items.extend(document if isinstance(document, list) else [document])
+    return items
+
+
 def _discover_scenarios() -> list:
+    """Discover every runnable scenario: decorated test functions, plus scenario files.
+
+    Both are needed for `list` to answer the question the user is actually asking — "what can I
+    run?". Scanning only the package's own ``tests/`` meant a project that had just run
+    `scrutineer init` was told it had no scenarios while holding a dozen of them.
+    """
+    return _discover_scenarios_with_problems()[0]
+
+
+def _discover_scenarios_with_problems() -> tuple[list, list[str]]:
+    """Discover runnable scenarios, plus a line describing every file that could not be read."""
+    scenarios = _discover_decorated_scenarios()
+    files, problems = _discover_scenario_files()
+    return scenarios + files, problems
+
+
+def _discover_or_report() -> tuple[list, list[str]]:
+    """Discover scenarios and echo one line per unreadable file. Never exits.
+
+    Aborting was the previous behaviour and it was worse than the bug it fixed: an unrelated
+    multi-document manifest, or an editor's read-only lock file, anywhere under `scenarios/` made
+    `list`, `run --all`, `run --scenario <a perfectly good one>` and `info` all exit 1. A file
+    that cannot be *classified* is not evidence that anything is wrong with the files that can.
+    The problems are returned so `run --all` can still refuse to look like a complete run.
+    """
+    scenarios, problems = _discover_scenarios_with_problems()
+    for problem in problems:
+        click.echo(f"[scrutineer] WARNING: {problem}", err=True)
+    return scenarios, problems
+
+
+def _discover_decorated_scenarios() -> list:
     """Discover test scenarios from scrutineer_test-decorated functions.
 
     Searches for pytest-compatible test functions with the _scrutineer_test
@@ -693,37 +928,216 @@ def _discover_scenarios() -> list:
                             timeout_seconds=getattr(attr, "_scrutineer_timeout", 30),
                         )
                         scenarios.append(scenario)
-            except Exception:
-                # Skip modules that can't be imported
+            except (KeyboardInterrupt, SystemExit):
+                raise
+            except BaseException:
+                # Best-effort by design, and deliberately broader than `Exception`: a module can
+                # refuse to import for many reasons, one of which is pytest's `Skipped`, which
+                # derives from BaseException. A user's test module that `importorskip`s a missing
+                # optional dependency must not take every scenario in the project down with it.
                 continue
 
     return scenarios
 
 
-def _load_scenario_file(path: str) -> list:
-    """Load scenarios from a JSON or YAML file."""
-    from scrutineer.runner import TestScenario
+def _is_environment_dir(directory: Path, name: str) -> bool:
+    """Is this an installed environment rather than somewhere a user keeps scenarios?"""
+    if name.lower() in _SCENARIO_ENV_DIRS:
+        return True
+    try:
+        return (directory / "pyvenv.cfg").is_file()
+    except OSError:
+        # An unreadable directory is reported by the walk's onerror; probing it must not raise,
+        # or checking for an environment replaces the failure we were trying to avoid.
+        return False
 
-    file_path = Path(path)
-    content = file_path.read_text()
 
-    if file_path.suffix in (".yaml", ".yml"):
+def _note_if_scenarios(directory: Path, problems: list[str], reason: str) -> None:
+    """Record a problem if a directory we did not enter actually holds a *runnable scenario*.
+
+    A matching file suffix is not enough. A linked directory of ordinary configs
+    (`settings.json`, a workspace `package.json`) has exactly the right extension and nothing
+    runnable in it; reporting that as "holds scenario files" was both false and enough to turn a
+    correct tree into a failed run.
+    """
+    try:
+        names = os.listdir(directory)
+    except OSError:
+        return  # an unreadable directory is reported by the walk's onerror instead
+
+    for name in names:
+        if Path(name).suffix.lower() not in _SCENARIO_FILE_SUFFIXES:
+            continue
+        try:
+            documents = _read_scenario_documents(directory / name)
+        except Exception:  # noqa: BLE001 - best-effort: this is a note, not the walk's verdict
+            continue
+        if any(_is_scenario_item(item) for item in _iter_scenario_items(documents)):
+            problems.append(
+                f"'{directory}' {reason}, and it holds at least one runnable scenario — only "
+                f"{' and '.join(_SCENARIO_DIRS)} are searched"
+            )
+            return
+
+
+def _scenario_candidates(directory: Path, problems: list[str]):
+    """Yield scenario-file paths under a directory, recording what the walk refused to enter.
+
+    ``os.walk`` rather than ``Path.rglob`` for ``onerror``: rglob swallows a permission error and
+    silently drops the whole subtree, which is the same silent under-report this module exists to
+    prevent. Three kinds of directory are not entered, and each is *reported* when it turns out to
+    hold something runnable, because a drop you are told about is a different thing from a drop:
+    environment trees, hidden trees and ``__pycache__``, and directory symlinks.
+
+    Candidates must be real files. A dangling symlink whose name ends in ``.yaml`` — an editor's
+    lock file, or a scenario whose target moved — is not an unreadable scenario, and treating it
+    as one failed an entire run in which every scenario passed.
+    """
+    for root, dirnames, filenames in os.walk(
+        directory,
+        onerror=lambda exc: problems.append(
+            f"'{getattr(exc, 'filename', directory)}' could not be searched: {exc.strerror}"
+        ),
+    ):
+        root_path = Path(root)
+        keep: list[str] = []
+
+        for name in sorted(dirnames):
+            child = root_path / name
+            if child.is_symlink():
+                _note_if_scenarios(child, problems, "is a symlink and was not followed")
+            elif _is_environment_dir(child, name):
+                # Reported unconditionally, not only when it holds a scenario: skipping a whole
+                # environment is a decision the user should see, whatever happens to be inside it
+                # (a venv under `scenarios/` discovers the packages' own 200 bundled examples).
+                problems.append(
+                    f"'{child}' is an installed environment and was not searched — put scenarios "
+                    f"in {' or '.join(_SCENARIO_DIRS)}, not inside a virtualenv or node_modules"
+                )
+            elif name.lower() in _SCENARIO_IGNORED_DIRS or name.startswith("."):
+                _note_if_scenarios(child, problems, "was skipped by name")
+            else:
+                keep.append(name)
+
+        dirnames[:] = keep
+
+        for filename in sorted(filenames):
+            path = root_path / filename
+            if path.suffix.lower() in _SCENARIO_FILE_SUFFIXES and path.is_file():
+                yield path
+
+
+def _discover_scenario_files() -> tuple[list, list[str]]:
+    """Load scenario files from the conventional directories under the current directory.
+
+    Returns ``(scenarios, problems)``. A file that cannot be read or classified becomes a
+    *problem* rather than an exception: it is reported by the caller, and `run --all` turns a
+    non-empty list into a non-zero exit so an incomplete run cannot look complete. Silently
+    dropping a scenario stays forbidden — that is what ``problems`` is for.
+    """
+    found: list = []
+    problems: list[str] = []
+    seen: set[Path] = set()
+    ids_seen: dict[str, str] = {}
+
+    for directory_name in _SCENARIO_DIRS:
+        directory = Path.cwd() / directory_name
+        if not directory.exists():
+            continue
+        if not directory.is_dir():
+            problems.append(f"'{directory}' exists but is not a directory, so it was not searched")
+            continue
+
+        for path in _scenario_candidates(directory, problems):
+            resolved = path.resolve()
+            if resolved in seen:
+                continue
+            seen.add(resolved)
+
+            try:
+                documents = _read_scenario_documents(path)
+            except ScenarioLoadError as exc:
+                # A missing PyYAML is an environment problem rather than this file's fault — but
+                # it must not take `list` and `info` down with it, which is what re-raising did.
+                problems.append(str(exc))
+                continue
+            except Exception as exc:
+                problems.append(f"'{path}' could not be read and was skipped: {exc}")
+                continue
+
+            # Filter at the SAME granularity as the builder. Testing the file as a whole and then
+            # building every item in it let a config document that merely shared a file with a
+            # real scenario be built and executed as a scenario called "unnamed" — the defect
+            # this gate exists to prevent, and one that multi-document YAML made easier to hit.
+            items = _iter_scenario_items(documents)
+            scenario_items = [item for item in items if _is_scenario_item(item)]
+
+            strays = [item for item in items if not isinstance(item, dict)]
+            if strays:
+                # A scalar or bare list among scenario documents is nearly always a mistake, and
+                # dropping it in silence is how a typo'd scenario body vanishes unannounced.
+                problems.append(
+                    f"'{path}' holds {len(strays)} item(s) that are not mappings and were "
+                    f"skipped (first: {strays[0]!r})"
+                )
+
+            if not scenario_items:
+                continue  # a config file, not a scenario
+
+            # `_is_scenario_item` admits mappings only, so `_build_scenarios` cannot raise its
+            # non-mapping ValueError from here — the filter is the guard, not an except clause.
+            for scenario in _build_scenarios(scenario_items, str(path)):
+                previous = ids_seen.get(scenario.id)
+                if previous is not None:
+                    # Two sources, one id: `run --scenario <id>` would silently run both.
+                    problems.append(
+                        f"duplicate scenario id '{scenario.id}' in '{path}' — already defined in "
+                        f"'{previous}'; both will run"
+                    )
+                else:
+                    ids_seen[scenario.id] = str(path)
+                found.append(scenario)
+
+    return found, problems
+
+
+def _read_scenario_documents(path: Path) -> list:
+    """Read every document in a JSON or YAML file.
+
+    Shared by the explicit `--path` loader and by file discovery, so both report a missing
+    PyYAML identically: naming the real reason and stopping, rather than returning empty and
+    letting the caller blame the file's contents.
+
+    ``safe_load_all``, not ``safe_load``: a multi-document YAML stream is valid YAML, and
+    refusing one let a single unrelated manifest in the scenario directory abort every command
+    that discovers scenarios.
+    """
+    content = path.read_text()
+
+    if path.suffix.lower() in (".yaml", ".yml"):
         try:
             import yaml
-            data = yaml.safe_load(content)
-        except ImportError:
-            click.echo("[scrutineer] ERROR: PyYAML required for YAML files.", err=True)
-            return []
-    else:
-        data = json.loads(content)
+        except ImportError as exc:
+            raise ScenarioLoadError(
+                f"reading '{path}' needs PyYAML, which normally arrives with "
+                f"Scrutineer but is missing from this environment — run: pip install pyyaml"
+            ) from exc
+        return list(yaml.safe_load_all(content))
+
+    return [json.loads(content)]
+
+
+def _build_scenarios(items: list, source: str) -> list:
+    """Turn loaded scenario items into TestScenario objects."""
+    from scrutineer.runner import TestScenario
 
     scenarios = []
-    items = data if isinstance(data, list) else [data]
 
     for item in items:
         if not isinstance(item, dict):
             raise ValueError(
-                f"Each scenario must be a mapping, got {type(item).__name__}: {item!r}"
+                f"{source}: each scenario must be a mapping, "
+                f"got {type(item).__name__}: {item!r}"
             )
         scenario = TestScenario(
             id=item.get("id", item.get("name", "unnamed")),
@@ -743,6 +1157,31 @@ def _load_scenario_file(path: str) -> list:
         scenarios.append(scenario)
 
     return scenarios
+
+
+def _load_scenario_file(path: str) -> list:
+    """Load scenarios from a JSON or YAML file named explicitly by the user.
+
+    The shape test still applies — without it, pointing `--path` at a config template *ran* it as
+    a scenario called "unnamed" and reported a failure for a scenario nobody wrote — but here it
+    produces a message saying what the file is missing, rather than the old
+    "No scenarios found in file.", which said nothing about why.
+    """
+    file_path = Path(path)
+    items = _iter_scenario_items(_read_scenario_documents(file_path))
+
+    if not items:
+        return []  # a genuinely empty file: nothing in it, and nothing to complain about
+
+    scenario_items = [item for item in items if _is_scenario_item(item)]
+    if not scenario_items:
+        raise ScenarioLoadError(
+            f"'{file_path}' does not look like a scenario file — a scenario needs an id or name "
+            f"plus a task, agent, assertions, environment or chaos block, or two of those blocks "
+            f"without a name"
+        )
+
+    return _build_scenarios(scenario_items, str(file_path))
 
 
 def _deserialize_results_from_json(raw: list) -> list:

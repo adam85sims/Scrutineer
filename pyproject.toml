@@ -8,7 +8,7 @@ build-backend = "hatchling.build"
 # The distribution is therefore `scrutineer-agents`; the import package and the console
 # scripts are `scrutineer` / `scrutineer-run` / `scrutineer-serve`.
 name = "scrutineer-agents"
-version = "0.3.0"
+version = "0.3.1"
 description = "Agent Behavioral Testing Platform — tests what agents DO, not just what they SAY"
 readme = "README.md"
 license = "MIT"
@@ -29,9 +29,12 @@ classifiers = [
     "Topic :: Scientific/Engineering :: Artificial Intelligence",
 ]
 
-# Core: zero external dependencies for the testing engine. Scrutineer works standalone.
-# `click` is required for the CLI entrypoints (`scrutineer` / `scrutineer-run` / `scrutineer-serve`).
-dependencies = ["click>=8.0"]
+# Core: what the CLI genuinely needs. `click` for the entrypoints; `pyyaml` is core as of
+# 0.3.1 because YAML is the primary user-facing scenario format and the WebUI and the
+# governance auditor both import it at module load. While it sat in `[governance]`, a plain
+# `pip install scrutineer-agents` could not run a single shipped scenario, and the loader
+# reported that as "No scenarios found in file." (verified against the published 0.3.0).
+dependencies = ["click>=8.0", "pyyaml>=6.0"]
 
 [project.optional-dependencies]
 # Framework adapters — only install what you use
@@ -44,7 +47,8 @@ adapters = [
     "openai>=1.0.0",
 ]
 
-# Governance audit harness
+# Governance audit harness. pyyaml moved to the core dependencies in 0.3.1; it stays listed
+# here so existing `pip install "scrutineer-agents[governance]"` lines keep resolving.
 governance = ["pyyaml>=6.0"]
 
 # OpenTelemetry export (optional — core OTelSpan model works without SDK)
@@ -113,6 +117,13 @@ Issues = "https://github.com/adam85sims/scrutineer/issues"
 # governance package imports `common.*`). They MUST ship in the wheel or the
 # installed WebUI crashes. See planning/PRODUCTIZATION_BLOCKERS.md (B1).
 packages = ["src/scrutineer", "governance", "common"]
+
+[tool.hatch.build.targets.wheel.force-include]
+# Ship the starter kit INSIDE the wheel. 0.3.0 shipped no `examples/` at all while the README
+# told a pip user to run `examples/basic_scenario.yaml`, so the first two commands a stranger
+# typed both exited 2. `examples/` stays the single source of truth in the repo; `scrutineer
+# init` materialises these files into the user's cwd from the installed package.
+"examples" = "scrutineer/examples"
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

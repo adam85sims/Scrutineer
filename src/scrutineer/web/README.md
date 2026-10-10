@@ -6,7 +6,7 @@ Browser-based dashboard for the Scrutineer Agent Behavioral Testing Platform.
 
 ```bash
 # Install Scrutineer with web dependencies
-pip install "scrutineer[web]"
+pip install "scrutineer-agents[web]"
 
 # From the project root
 pip install -e ".[web]"

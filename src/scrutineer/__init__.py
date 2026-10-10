@@ -8,7 +8,7 @@ from importlib.metadata import version as _package_version
 try:  # single source of truth: the installed distribution's metadata
     __version__ = _package_version("scrutineer-agents")
 except _PackageNotFoundError:  # source tree with no install (e.g. PYTHONPATH=src)
-    __version__ = "0.3.0"
+    __version__ = "0.3.1"
 
 from scrutineer.assertions import (
     assert_agent_recovers,

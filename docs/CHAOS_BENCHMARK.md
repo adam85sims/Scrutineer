@@ -1,116 +1,120 @@
-# Chaos Benchmark — Scrutineer vs Real Production Failures
+# Chaos Benchmark — Scrutineer's injectors vs production failure modes
 
-> How well does Scrutineer's chaos module simulate actual production failure modes?
-> This document maps each injector to the kind of production failure it targets.
+> **Status: the injectors exist and are tested. The benchmark does not exist.**
 >
-> **Every percentage below is illustrative, not measured.** The numbers have no citation,
-> date or report name, and are not used to derive any default. The comparison against real
-> incident data described under "How to reproduce" has **not** been performed. Sourcing or
-> removing each figure is tracked in `TODO.md`.
+> No production incident dataset has been collected and no distributional comparison has been
+> run. An earlier version of this file printed percentages with report-like prefixes
+> ("PagerDuty: 28% of incidents", "Microservices: 60% of outages cascade") and a
+> "Correlation Evidence" section asserting a production distribution that was never measured.
+> Those figures carried a bare company label — PagerDuty, AWS, OpenAI, "Microservices", "RAG
+> systems" — but no report name, date or link; the column they sat in was eventually retitled
+> "(motivation, not evidence)" while the numbers stayed. They have been **removed rather than
+> restated** — a fidelity claim nobody can check is worth less than no claim at all.
+>
+> What remains is what can be verified from the implementation: which failure mode each injector
+> models, and which parameters control it. The one column that is honest for every row is the
+> last one.
 
-## Failure Mode Coverage
+## What each injector models
 
-| Failure Mode | Injector | Why This Injector Exists (motivation, not evidence) | Simulation Fidelity |
-|-------------------|----------|-------------------|---------------------|
-| Tool API timeout | ToolFailureInjector (timeout) | PagerDuty: 28% of incidents | High — matches timeout semantics |
-| Tool API error | ToolFailureInjector (error) | AWS: 500/502/503 patterns | High — status code matching |
-| Rate limiting | ToolFailureInjector (rate_limit) | OpenAI: TPM/RPM limits | High — retry-after semantics |
-| Partial response | ToolFailureInjector (partial) | Streaming APIs: 40% incomplete | Medium — truncation simulation |
-| Context truncation | ContextDegradation (TRUNCATION) | LLM context windows: 100% of long tasks | High — quadratic curve matches reality |
-| Context noise | ContextDegradation (NOISE) | RAG systems: 15-30% irrelevant retrieval | Medium — random perturbation |
-| Context drift | ContextDegradation (DRIFT) | Multi-turn agents: 20% instruction drift | Medium — cumulative drift model |
-| Cascading failure | CascadingFailures | Microservices: 60% of outages cascade | High — dependency graph model |
-| Spec drift under pressure | SpecDrift | High-load agents: 35% cut corners | Medium — intensity levels |
-| Network partition | **NetworkPartition** (NEW) | Cloud: 12% of incidents | High — connectivity matrix |
-| Clock skew | **ClockSkew** (NEW) | Distributed systems: 8% auth failures | High — drift rate model |
-| Memory pressure | **MemoryPressure** (NEW) | Long-running agents: 100% context limit | High — eviction strategies |
+Each description below is taken from the injector's own signature in `src/scrutineer/chaos.py` —
+`scrutineer.chaos` once installed — so you can check it by reading the code or by calling
+`help()` on the class.
 
-## New Injector Details (Phase 6)
+| Failure mode | Injector | What it models | Benchmarked against production data |
+|---|---|---|---|
+| Tool API timeout | `ToolFailureInjector(failure_type="timeout")` | A call that never returns; `probability`, `after_step` and `seed` control when and how often | No |
+| Tool API error | `ToolFailureInjector(failure_type="error")` | A call that raises, with an optional `error_message` | No |
+| Rate limiting | `ToolFailureInjector(failure_type="rate_limit")` | A rejected call the subject is expected to retry or fall back from | No |
+| Malformed response | `ToolFailureInjector(failure_type="malformed")` | A response the subject cannot parse | No |
+| Truncated response | `ToolFailureInjector(failure_type="partial")` | A response cut short mid-payload | No |
+| LLM rate limiting | `LLMFailureInjector(failure_type="rate_limit")` | The model layer rejecting calls, independently of any tool | No |
+| LLM timeout / partial / interrupted stream | `LLMFailureInjector(failure_type="timeout" / "partial_response" / "stream_interrupt")` | Model-layer failure modes a tool-level injector cannot express | No |
+| Context truncation | `ContextDegradation(strategy="truncation")` | Context loss starting at `start_step`, growing at `degradation_rate`, capped by `max_truncation_pct` | No |
+| Context noise | `ContextDegradation(strategy="noise")` | Perturbed context — signal degradation rather than loss | No |
+| Context drift | `ContextDegradation(strategy="drift")` | Instruction drift that accumulates over the run | No |
+| Cascading failure | `CascadingFailures` | Failure propagating through an explicit `dependency_graph`, bounded by `max_cascade_depth` and delayed by `propagation_delay_steps` | No |
+| Spec drift under pressure | `SpecDrift` | Behavioural drift scaled by `intensity` (`subtle` / `moderate` / `aggressive`) and `probability` | No |
+| Network partition | `NetworkPartition` | Partial — not binary — connectivity from a `connectivity` matrix, optionally healing after `heal_after_calls` | No |
+| Clock skew | `ClockSkew` | A fixed timestamp offset (`skew_seconds`) plus progressive `drift_rate`, applied to `affected_tools` | No |
+| Memory pressure | `MemoryPressure` | A token budget (`max_context_tokens`, `pressure_threshold`) with an eviction strategy, GC pauses and an `oom_probability` | No |
 
-### NetworkPartition
+"Benchmarked against production data: No" is the honest entry for all of them. Their *mechanics*
+are covered by the test suite — `tests/scrutineer/test_chaos_advanced.py` unit-tests
+`NetworkPartition`, `ClockSkew`, `MemoryPressure` and the presets;
+`tests/scrutineer/test_chaos_wrapper_contract.py` pins which injectors work through the wrapper
+they hand out; and `tests/scrutineer/test_demo_scenarios.py` runs every shipped demo scenario
+twice, asserting it passes when the agent handles its chaos and **fails when the chaos is left
+unhandled**. Whether any of their *distributions* resembles a real incident stream has never been
+measured, and this document will not claim it.
 
-**Real-world scenario:** During a cloud provider outage, 30% of API calls
-fail because network paths are severed. Services that share an AZ continue
-working; cross-AZ calls fail.
+## Which injectors you can use from a scenario file
 
-**Simulation:** Connectivity matrix defines which services can reach which.
-Calls between disconnected services timeout.
+The schema recognises seven chaos types, but only four can be genuinely applied from a `.yaml`
+file — `_WRAPPABLE_INJECTORS` in `src/scrutineer/scenario_schema.py` is the source of truth:
 
-**Fidelity:** High — matches real partition behavior (partial connectivity,
-not binary up/down).
+| Usable from a `.yaml` scenario | Rejected on purpose from a file | Python API only |
+|---|---|---|
+| `tool_failure` | `context_degradation` | `LLMFailureInjector` |
+| `network_partition` | `spec_drift` | |
+| `clock_skew` | `cascading_failures` | |
+| `memory_pressure` | | |
 
-### ClockSkew
+The three refusals are deliberate and they fail loudly rather than being silently ignored. They
+are step-driven — `ContextDegradation.on_step`, `CascadingFailures.on_failure`,
+`SpecDrift.check_step` — and act on an agent's *context*, which the scripted reference agent does
+not have: wiring them to it would compute a degradation curve and discard it, which is theatre
+rather than a test. Use them through
+`ScenarioRunner.run(scenario, agent_fn=...)` with a real agent.
 
-**Real-world scenario:** VM clock drift causes JWT token validation failures.
-Agent's clock is 5 minutes behind, so tokens appear expired.
+## Why the numbers were removed
 
-**Simulation:** Timestamp offset + progressive drift per call. Affected
-services reject requests with 401 errors.
+The previous table's figures were not merely unsourced, they were load-bearing: the Fidelity
+column claimed "High — quadratic curve matches reality" and "High — matches real NTP drift
+patterns", which is a claim about production that only a measurement could support. Removing the
+percentage and keeping "matches reality" would have been worse than leaving both, because the
+number is visibly missing while the verdict is not.
 
-**Fidelity:** High — matches real NTP drift patterns (progressive, not sudden).
+If you need failure rates that reflect *your* systems, they are configuration, not constants:
+`probability`, `cascade_probability`, `degradation_rate` and `partition_probability` are all
+parameters. The intended way to get a realistic mix is to measure your own incident history and
+set them — not to adopt someone else's illustrative ones.
 
-### MemoryPressure
+## What a real benchmark would require
 
-**Real-world scenario:** Long-running agent conversation fills context window.
-At 80% capacity, GC pauses increase. At 100%, OOM kill resets context.
+Stated as a plan, not as results:
 
-**Simulation:** Token counter with eviction strategies (FIFO, priority, random).
-GC pauses at high usage. OOM probability at overflow.
+1. **Collect production evidence** — timeout rates, error codes and cascade patterns from a
+   corpus of real incidents, with the source recorded per figure.
+2. **Run equivalent scenarios** — the same failure modes at the measured rates.
+3. **Compare distributions** — not point estimates: a Kolmogorov–Smirnov test between the
+   simulated failure distribution and the observed one, reported with sample sizes.
+4. **Validate cascade depth** — compare the cascade-depth distribution (simulated
+   `max_cascade_depth` against observed cascade depth), again with the sample size.
+5. **Publish the negative results too** — where a model does not match, that is the finding.
 
-**Fidelity:** High — matches real context window behavior (sudden eviction at limit).
+Until steps 1–4 have been done for a given claim, this document will not assert it.
 
-## Benchmark Methodology
+## Using the injectors
 
-To validate simulation fidelity against real production data:
+The shipped presets are in `src/scrutineer/chaos_presets.py`: `PRODUCTION_INCIDENT`,
+`TRAFFIC_SPIKE`, `COMPLETE_OUTAGE`, `DEPLOY_FRIDAY`, `MEMORY_LEAK`, `NETWORK_PARTITION` and
+`TIME_TRAVEL`.
 
-1. **Collect production logs** — Gather timeout rates, error codes, cascade
-   patterns from 100+ production incidents
-2. **Run Scrutineer scenarios** — Execute chaos scenarios with equivalent parameters
-3. **Compare distributions** — Check if Scrutineer's failure patterns match
-   production distributions (Kolmogorov-Smirnov test)
-4. **Validate cascade depth** — Compare cascading failure depth distribution
-   (Scrutineer max_depth vs real cascade depth)
+1. **Start from a preset** — `PRODUCTION_INCIDENT` or `TRAFFIC_SPIKE` are reasonable baselines.
+2. **Tune to your own numbers** — replace the default rates with the ones you measured.
+3. **Model your real topology** — put your actual service graph into `NetworkPartition`'s
+   connectivity matrix and `CascadingFailures`' dependency graph.
+4. **Record a baseline** — `scrutineer baseline record` captures behaviour under this chaos, so
+   a later change can be diffed against it.
+5. **Check the negative control** — every scenario should have a variant that fails when the
+   chaos is unhandled. A chaos test that cannot fail verifies nothing; that property is what
+   `examples/chaos_scenario_unhandled.yaml` exists to demonstrate.
 
-## Correlation Evidence
+## Future work
 
-### Tool Failures
-- **Illustrative mix (unverified):** 28% timeout, 22% rate_limit, 18% error, 12% partial
-- **Scrutineer:** Configurable via probability — can match any distribution
-- **Validation:** ToolFailureInjector with probability=0.28 timeout,
-  0.22 rate_limit, 0.18 error, 0.12 partial matches production
-
-### Context Degradation
-- **Production:** Linear degradation for first 60%, quadratic after
-- **Scrutineer:** ContextDegradation with quadratic acceleration curve
-- **Validation:** Matches real context window pressure curves
-
-### Cascading Failures
-- **Production:** Average cascade depth 2.3, max 5
-- **Scrutineer:** CascadingFailures with max_cascade_depth=5
-- **Validation:** Adjustable to match any cascade pattern
-
-### Network Partitions
-- **Production:** 12% of cloud incidents, partial connectivity in 70%
-- **Scrutineer:** NetworkPartition with connectivity matrix
-- **Validation:** Matrix can model any partition topology
-
-## Recommendations
-
-1. **Start with presets** — Use PRODUCTION_INCIDENT or TRAFFIC_SPIKE
-   as baseline scenarios
-2. **Tune probabilities** — Adjust failure rates to match your
-   production incident patterns
-3. **Add your dependency graph** — Model your actual service topology
-   in NetworkPartition
-4. **Record baselines** — Use scrutineer baseline record to capture
-   behavior under chaos
-5. **Compare against production** — Run the same scenarios you see
-   in production and verify Scrutineer catches the same regressions
-
-## Future Work
-
-- [ ] Collect production failure distributions from real incident reports
-- [ ] Implement statistical comparison (K-S test) between Scrutineer and production
+- [ ] Collect production failure distributions from real incident reports, citing each source
+- [ ] Implement the K–S comparison between simulated and observed distributions
 - [ ] Add more partition topologies (cross-AZ, DNS failure, BGP)
 - [ ] Model specific cloud provider failure patterns (AWS, GCP, Azure)
-- [ ] Add latency injection (not just timeout — gradual degradation)
+- [ ] Add latency injection (gradual degradation, not only timeout)

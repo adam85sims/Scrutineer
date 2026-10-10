@@ -65,3 +65,8 @@ planning/
 # Generated WebUI state (runs/baselines are produced by `scrutineer serve` and by
 # scripts/generate_demo_data.py; they accumulated into git history once already)
 .scrutineer/
+# A scenario saved through the WebUI editor during the playwright e2e run. The test writes it
+# itself, so it is an artifact rather than a fixture — it was committed by accident in cd25c02
+# and then shipped inside the wheel as part of the starter kit, where `run --all` reported it
+# as a failure out of the box.
+examples/e2e-scenario-saved.yaml

@@ -204,9 +204,15 @@ def _deserialize_result(data: dict[str, Any]) -> ScrutineerResult:
     trace = _deserialize_trace(data.get("trace", {}))
     assertion_results = [
         ScrutineerAssertionResult(
-            assertion_name=a["assertion_name"],
+            # `run --json-output` writes `name` / `error`; a serialised ScrutineerAssertionResult
+            # writes `assertion_name` / `error_message`. Accepting both is what makes the
+            # documented workflow work at all — `run --all --json-output > results.json` followed
+            # by `scrutineer baseline record LABEL --path results.json` used to raise KeyError on
+            # the first assertion, and would have silently dropped every failure reason even if
+            # it had not.
+            assertion_name=a.get("assertion_name", a.get("name", "")),
             passed=a["passed"],
-            error_message=a.get("error_message"),
+            error_message=a.get("error_message", a.get("error")),
             duration_ms=a.get("duration_ms", 0.0),
         )
         for a in data.get("assertion_results", [])

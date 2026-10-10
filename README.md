@@ -41,20 +41,29 @@ Scrutineer fills that gap. It's a behavioral testing platform that:
 > `scrutineer`.
 
 ```bash
-# Install (zero dependencies by default)
+# Dependencies are click + pyyaml; the WebUI and the framework adapters are extras.
 pip install scrutineer-agents
 
-# Or with framework adapters
-pip install "scrutineer-agents[adapters]"
+# Write the starter kit into ./scrutineer-examples
+scrutineer init
 
-# Or with the WebUI dashboard
-pip install "scrutineer-agents[web]"
+# A scenario that passes
+scrutineer run --path scrutineer-examples/basic_scenario.yaml
 
-# Run the quickstart example
-python examples/langchain_quickstart.py
+# Its negative control — the same chaos with an agent that has no fallback.
+# FAILS on purpose: a scenario that cannot fail cannot tell you anything.
+scrutineer run --path scrutineer-examples/chaos_scenario_unhandled.yaml
+```
 
-# Run a YAML scenario
-scrutineer run --path examples/basic_scenario.yaml
+Extras — install only what you use:
+
+```bash
+pip install "scrutineer-agents[web]"        # FastAPI dashboard: scrutineer serve
+pip install "scrutineer-agents[adapters]"   # langchain-core, crewai, openai
+
+# The LangChain demo is part of the starter kit written by `scrutineer init`
+pip install "scrutineer-agents[langchain]"
+python scrutineer-examples/langchain_quickstart.py
 ```
 
 ## WebUI Dashboard
@@ -123,6 +132,7 @@ No other tool tests these production failure modes.
 ## CLI Commands
 
 ```bash
+scrutineer init                    # Write the starter scenarios into ./scrutineer-examples
 scrutineer run <scenario>          # Run a test scenario
 scrutineer list                    # List available scenarios
 scrutineer info <scenario>         # Show scenario details
@@ -155,8 +165,8 @@ from scrutineer.adapters.crewai import wrap_crew_agent
 wrapped = wrap_crew_agent(your_crew, tool_map={...}, trace=trace)
 
 # OpenAI SDK
-from scrutineer.adapters.openai import wrap_agent
-wrapped = wrap_agent(your_agent, tool_map={...}, trace=trace)
+from scrutineer.adapters.openai import wrap_openai_agent
+wrapped = wrap_openai_agent(your_agent, tool_map={...}, trace=trace)
 
 # Generic (any framework)
 from scrutineer.adapters.generic import HookAdapter

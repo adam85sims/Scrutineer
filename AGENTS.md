@@ -74,3 +74,20 @@
   runs the customer's real tools while reporting success — see
   `scrutineer/adapters/langchain.py` (`AgentInterceptionError`) and `TODO.md` for the OpenAI
   adapter, which still has the old behaviour.
+- **Verify the WHEEL's file list, not just the tests (learned 2026-10-10).** A green suite says
+  nothing about what `pip install` actually delivers: 0.3.0 shipped no `examples/` at all while
+  the README told a pip user to run `examples/basic_scenario.yaml`, so the first two commands a
+  stranger typed exited 2. `unzip -l dist/*.whl` and then run the README verbatim in a clean
+  venv, from an empty cwd. A `[tool.hatch.build.targets.wheel] packages` list selects Python
+  packages only — anything else needs an explicit `force-include`.
+- **A missing dependency the CLI needs must name itself once, and exit.** The YAML loader
+  returned `[]` after printing the real cause, so the caller added "No scenarios found in
+  file." on top — two errors, and the wrong one was the last thing the user read. Raise
+  `ScenarioLoadError` instead; `run` catches it and exits 1. Put anything the user must act on
+  in a core dependency, not an extra.
+- **`src/scrutineer/README.md` is stale and ships in the wheel.** It still advertises
+  `pip install agent-frameworks[scrutineer]`, a distribution that does not exist. Left in place
+  pending a decision to rewrite or delete it — 500+ lines nobody has re-read since the rename.
+- **Test counts drift between installs by design.** `.[dev]`-only reported `4 failed, 561
+  passed, 21 skipped`; with PyYAML present it is `0 failed, 607 passed, 19 skipped`, because
+  whole YAML-dependent modules stop being skipped. Quote the install line with the count.

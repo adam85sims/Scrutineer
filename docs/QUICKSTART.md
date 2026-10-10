@@ -4,18 +4,21 @@
 
 ## Install
 
-> Published to PyPI as **`scrutineer-agents`** (release pending). Do not `pip install scrutineer`
-> — that name belongs to an unrelated project. The import package and the CLI are `scrutineer`.
+> Published to PyPI as **`scrutineer-agents`**. Do not `pip install scrutineer` — that name
+> belongs to an unrelated project. The import package and the CLI are `scrutineer`.
 
 ```bash
-# Basic install (zero dependencies)
-pip install git+https://github.com/adam85sims/Scrutineer.git
+# Core install — dependencies are click + pyyaml
+pip install scrutineer-agents
+
+# Write the starter scenarios into ./scrutineer-examples
+scrutineer init
 
 # With LangChain adapter support
-pip install "git+https://github.com/adam85sims/Scrutineer.git[langchain]"
+pip install "scrutineer-agents[langchain]"
 
 # Or with all adapters
-pip install "git+https://github.com/adam85sims/Scrutineer.git[adapters]"
+pip install "scrutineer-agents[adapters]"
 ```
 
 ## Your First Test (Python)
@@ -96,12 +99,18 @@ except Exception as e:
 
 ## Running from CLI
 
+`scrutineer init` writes the starter kit to `./scrutineer-examples/`, so these paths exist
+as soon as you have run it.
+
 ```bash
 # Run a YAML scenario
-scrutineer run --path scenarios/basic.yaml
+scrutineer run --path scrutineer-examples/basic_scenario.yaml
+
+# The negative control — FAILS on purpose, so you can see a real failure
+scrutineer run --path scrutineer-examples/chaos_scenario_unhandled.yaml
 
 # Run with verbose output
-scrutineer run --path scenarios/basic.yaml --verbose
+scrutineer run --path scrutineer-examples/basic_scenario.yaml --verbose
 
 # List available scenarios
 scrutineer list
@@ -133,4 +142,5 @@ you're testing what the agent **does**, not just what it **says**.
 
 - [Chaos Guide](CHAOS_GUIDE.md) — Deep dive on failure injection patterns
 - [Adapters Guide](ADAPTERS_GUIDE.md) — Test real LangChain/CrewAI agents
-- [Examples](../examples/) — Runnable demos and scenario files
+- [Examples](../examples/) — Runnable demos and scenario files. `scrutineer init` writes a
+  copy of this directory into your project as `scrutineer-examples/`

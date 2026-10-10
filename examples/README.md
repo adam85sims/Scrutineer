@@ -1,69 +1,57 @@
-# Examples
+# Examples — the Scrutineer starter kit
 
-This directory contains example configs, auditor configs, and scripts
-demonstrating how to use agent-frameworks.
+`scrutineer init` writes a copy of this directory into your project as
+`scrutineer-examples/`. The wheel ships it at `scrutineer/examples/`, so a `pip install`
+user does not need a git clone to have something to run.
 
-## Config Examples
+## Scenarios — run these with the CLI
 
-| File | Description |
-|------|-------------|
-| `agent-frameworks.minimal.yaml` | Just governance — pattern-memory and automation use defaults |
-| `agent-frameworks.full.yaml` | All modules configured with multiple model fallbacks |
-| `agent-frameworks.ollama.yaml` | Ollama-only setup — no cloud APIs needed |
-| `agent-frameworks.lmstudio.yaml` | LM Studio setup (OpenAI-compatible on port 1234) |
-
-## Auditor Config Examples
-
-| File | Description |
-|------|-------------|
-| `governance/auditor.ollama.yaml` | Ollama backend (port 11434) |
-| `governance/auditor.none.yaml` | No LLM — deterministic comparators only (CI/CD) |
-| `governance/auditor.vllm.yaml` | vLLM backend (port 8000) |
-
-## Script Examples
-
-| File | Description |
-|------|-------------|
-| `example_audit.py` | Run a governance audit and inspect results |
-| `example_model_routing.py` | Route tasks to optimal models by capability tier |
-| `example_session.py` | Session state + work queue management |
-| `example_pattern_memory.py` | Record and retrieve corrections (storage layer directly) |
-
-## Running Examples
+| File | What it shows | Expected |
+|------|---------------|----------|
+| `basic_scenario.yaml` | Minimal case: one scripted agent, one mocked tool, three assertions | PASS |
+| `chaos_scenario.yaml` | A tool failure the agent recovers from | PASS |
+| `chaos_scenario_unhandled.yaml` | Negative control — identical chaos, an agent with no fallback | **FAIL on purpose** |
+| `demo-scenarios/*.yaml` | The nine scenarios the WebUI lists on first run: network partition, rate limiting, refund timeout, DB/API/UI cascade, memory pressure, context degradation, spec drift | PASS; each fails when its chaos is unhandled |
 
 ```bash
-# From the project root:
-
-# Audit example
-python3 examples/example_audit.py .
-
-# Model routing (needs agent-frameworks.yaml in root)
-python3 examples/example_model_routing.py
-
-# Session state + work queue
-python3 examples/example_session.py .
-
-# Pattern memory (needs pattern-memory on path)
-python3 examples/example_pattern_memory.py
+scrutineer run --path scrutineer-examples/basic_scenario.yaml
+scrutineer run --path scrutineer-examples/chaos_scenario_unhandled.yaml
 ```
 
-## Using Example Configs
+The unhandled pair is the point of the whole thing: a scenario that cannot fail verifies
+nothing. `tests/scrutineer/test_demo_scenarios.py` pins that property for the demo set —
+every scenario declares assertions and is falsifiable.
 
-To use an example config, copy it to your project root:
+## Scripts
+
+| File | What it shows |
+|------|---------------|
+| `langchain_quickstart.py` | A real LangChain agent under the harness: mocked tools, trace capture, assertions, then chaos injection. Needs `pip install "scrutineer-agents[langchain]"` |
+| `example_audit.py` | Run a governance audit and inspect the result |
+| `example_session.py` | Session state and work-queue management |
+| `example_model_routing.py` | Route tasks to models by capability tier |
+| `example_pattern_memory.py` | Record and retrieve corrections via `pattern-memory` |
 
 ```bash
-# Minimal setup
-cp examples/agent-frameworks.minimal.yaml agent-frameworks.yaml
-
-# Full setup
-cp examples/agent-frameworks.full.yaml agent-frameworks.yaml
-
-# Ollama-only
-cp examples/agent-frameworks.ollama.yaml agent-frameworks.yaml
-
-# Copy auditor config to governance/
-cp examples/governance/auditor.ollama.yaml governance/auditor.yaml
+python scrutineer-examples/langchain_quickstart.py
 ```
 
-Or just run `agent-fw-setup init` which generates a config for you based
-on what's detected in your environment.
+## Config templates
+
+| File | What it configures |
+|------|--------------------|
+| `agent-frameworks.minimal.yaml` | Governance only; other modules use defaults |
+| `agent-frameworks.full.yaml` | Every module, with fallbacks |
+| `agent-frameworks.ollama.yaml`, `agent-frameworks.lmstudio.yaml` | Local-model equivalents |
+| `governance/auditor.{none,ollama,vllm}.yaml` | Auditor backends. `none` is the default: deterministic comparators, no LLM |
+
+These configure the **governance audit harness**, not agent testing. Copy one into your
+project root to use it:
+
+```bash
+cp scrutineer-examples/governance/auditor.none.yaml governance/auditor.yaml
+```
+
+`scrutineer list` finds these by walking `./scenarios/` and `./scrutineer-examples/`, and counts
+a file only when it is shaped like a scenario — the config templates above sit in the same tree
+and are deliberately ignored.

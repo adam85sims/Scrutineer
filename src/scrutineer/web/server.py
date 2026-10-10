@@ -52,22 +52,22 @@ def main() -> None:
 
     args = parser.parse_args()
 
-    # Import uvicorn here to keep the module importable even if
-    # uvicorn isn't installed (e.g. when running tests).
+    # The 'web' extra is optional, so a missing dependency must name the extra instead of
+    # escaping as a traceback: `scrutineer serve` reports this properly, and this entry point
+    # is the same product. Importing both here makes one check cover everything the UI needs.
     try:
         import uvicorn
-    except ImportError:
+
+        from scrutineer.web.app import create_app
+    except ImportError as exc:
         print(
-            "Error: uvicorn is required to run the web server.\n"
-            "Install it with: pip install 'scrutineer[web]'",
+            f"Error: the Scrutineer WebUI needs the 'web' extra — {exc.name} is not installed.\n"
+            'Install it with: pip install "scrutineer-agents[web]"',
             file=sys.stderr,
         )
         sys.exit(1)
 
-    # Build the ASGI app — uvicorn needs the app object or an import path.
-    # We use the factory directly for clarity.
-    from scrutineer.web.app import create_app
-
+    # uvicorn needs the ASGI app object; we use the factory directly for clarity.
     app = create_app(scenario_dir=args.scenario_dir)
 
     print(

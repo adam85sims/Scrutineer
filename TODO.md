@@ -83,10 +83,19 @@
 - [ ] Add asynchronous chaos injection support for native async agent frameworks
 - [ ] Implement built-in retry assertions (e.g., `assert_retried_after_failure(tool_name, max_retries=3)`)
 - [ ] Implement Prometheus metrics exporter for CI/CD run dashboards
-- [ ] Guard optional deps with `pytest.importorskip` in `tests/scrutineer/test_edge_cases.py`
+- [x] Guard optional deps with `pytest.importorskip` in `tests/scrutineer/test_edge_cases.py`
       — the two YAML edge-case tests raise `ModuleNotFoundError: No module named 'yaml'` on a
       `.[dev]`-only install (4 failures). Same class as the e2e collection abort fixed in c98109f:
       a missing extra should skip, not fail. Not a CI blocker (CI installs `.[all,dev]`).
+      **RESOLVED 2026-10-10, by a different route:** the failures are gone because PyYAML is a
+      core dependency now. Reproduced first, honestly: `.[dev]`-only was `4 failed, 561 passed,
+      21 skipped`, and the 4 were not all where this item said — 2 in `test_edge_cases.py`
+      (`import yaml` inside the test bodies) and 2 in `tests/test_governance.py`
+      (`auditor.yaml` would not load: "PyYAML not installed; cannot load auditor.yaml"). After
+      the dependency move: `0 failed, 607 passed, 19 skipped`, and the extra tests appear
+      because whole YAML-dependent modules stop being skipped. No `importorskip` was needed for
+      yaml; the general rule stays in AGENTS.md for the extras that really are optional
+      (`langchain`, `crewai`, `openai`, `fastapi`).
 - [ ] Give `scrutineer/adapters/openai.py` the same treatment as the LangChain adapter:
       its `wrap_openai_agent` builds adapters and `invoke()` delegates, so it is still
       fail-OPEN — the agent's real FunctionTools run while the trace stays empty and the run
@@ -96,8 +105,42 @@
 
 ## Done
 
-All 6 phases complete. **647 tests passing** (656 collected incl. the 9 browser e2e tests,
+All 6 phases complete. **701 tests passing** (710 collected incl. the 9 browser e2e tests,
 which run in their own CI job).
+
+- [x] **0.3.1 first-run pass (2026-10-10, afternoon)** — the same "it lies" class, hunted further
+      down the same path. Verified from wheels built from this tree, installed into clean venvs:
+      - `src/scrutineer/README.md` (ships inside the wheel) opened with
+        `pip install agent-frameworks[scrutineer]` — a distribution that 404s on PyPI. Seven
+        install lines corrected, the false "zero required dependencies" claim replaced with the
+        truth (`click` + `pyyaml`), and the CLI reference rebuilt from the real `--help` output;
+        it had been missing `init`, `trace` and `serve`.
+      - `scrutineer-serve` raised `ModuleNotFoundError: No module named 'fastapi'` on any install
+        without the `web` extra, because `scrutineer/web/__init__.py` imported the FastAPI-backed
+        app at package import — before the entry point could report anything. `create_app` is now
+        lazy; the command names the missing extra and exits 1.
+      - Two install hints told users to run `pip install scrutineer[web]` — the *other* PyPI
+        project, the exact trap the README warns about. Corrected, including the copy that ships
+        in the wheel.
+      - `scrutineer list` could not see scenario files, so `init` then `list` answered "No
+        scenarios discovered." over twelve of them. Discovery now reads `./scenarios/` and
+        `./scrutineer-examples/`, distinguishing a scenario from the config templates that share
+        those trees; `init → list → run --all` is a closed loop (12 found, 11 pass, 1 fails by
+        design).
+      - `run --path <config file>` executed a governance template as a scenario called "unnamed".
+      - `examples/e2e-scenario-saved.yaml`, a committed playwright byproduct, shipped in the kit
+        and made `run --all` report a failure out of the box. Removed + gitignored.
+      Evidence: 665 tests pass serially and under `-n auto -p randomly`; ruff clean;
+      `twine check` PASSED; both entry points exercised on lean and full installs. Still
+      unpublished — `pyproject.toml` reads 0.3.0.
+- [x] The rename was done in the repo README's OpenAI snippet twice over: `wrap_agent` does not
+      exist in `scrutineer/adapters/openai.py` (it is `wrap_openai_agent`), so that snippet
+      could not be pasted and run. All four adapter snippets now verified to import.
+- [x] `docs/QUICKSTART.md` no longer says "(release pending)", no longer installs from a git
+      URL while 0.3.0 sits on PyPI, and no longer points at `scenarios/basic.yaml`, a path no
+      user has.
+- [x] `examples/README.md` rewritten — it documented a different project's CLI
+      (`agent-fw-setup init`), and would now ship inside the wheel as part of the starter kit.
 
 - [x] **Renamed: Sentinel → Scrutineer (2026-10-09)** — 1603 substitutions across 117 files,
       6 path moves; 647 tests still pass, ruff clean, wheel rebuilt as `scrutineer_agents-0.3.0`.
@@ -117,13 +160,16 @@ which run in their own CI job).
 
 ## Blocked
 
-- [ ] **GitHub repo is still named `Sentinel`** — pending Adam (browser, ~30s).
-      `pyproject.toml` and `README.md` project URLs now point at
-      `github.com/adam85sims/scrutineer`, which 404s until the repo is renamed
-      (Settings → Repository name). GitHub redirects the old URL permanently afterwards, so
-      the local remote keeps working either way. This is the last blocker on a clean 0.3.0
-      project page: **PyPI release metadata cannot be edited after upload**, so either the
-      rename lands before the publish, or 0.3.0 ships a dead project link.
+*(none)*
+
+- [x] **GitHub repo is still named `Sentinel`** — pending Adam (browser, ~30s). **CLOSED
+      2026-10-10, verified:** the rename happened on 2026-10-09. `api.github.com/repos/
+      adam85sims/Scrutineer` → 200 (`full_name: adam85sims/Scrutineer`, `default_branch: main`,
+      last push 2026-10-09T02:18Z); `/Sentinel` → 301. The 0.3.0 project URLs resolve. The item
+      above is kept only so the record shows the blocker really did clear before the publish.
+      Cosmetic leftover: the local remote still reads `.../Sentinel.git` (it works, via the
+      redirect) — update with
+      `git remote set-url origin https://github.com/adam85sims/Scrutineer.git`.
 
 ## Name decision (2026-10-09) — DECIDED: Scrutineer
 
@@ -155,20 +201,25 @@ Rename cost, for the record: 1603 substitutions across 117 files, 6 path moves.
 Verified against the PUBLISHED artifact — clean venvs, installed from PyPI, run from an
 empty cwd — not against the repo checkout:
 
-- [ ] 🔴 **The README's Quick Start cannot work from the published wheel.** The wheel ships
+- [x] 🔴 **The README's Quick Start cannot work from the published wheel.** The wheel ships
       `scrutineer/`, `governance/`, `common/` only — no `examples/` — yet Quick Start tells
       the reader to run `python examples/langchain_quickstart.py` and
       `scrutineer run --path examples/basic_scenario.yaml`. The sdist *does* carry
       `examples/` (26 files), so only source installs work. This is the first command a
       stranger types after `pip install scrutineer-agents` — §4.1's failure class again.
-      Fix: ship starter scenarios inside the package plus a `scrutineer init`/`demo` command
-      that writes one, or point Quick Start at the repo. Target 0.3.1.
-- [ ] 🟠 **YAML scenarios need `pyyaml`, which is in the `[governance]` extra, not core.**
+      **FIXED 2026-10-10:** `examples/` is force-included into the wheel as
+      `scrutineer/examples/` (26 files at the time — 25 once the committed e2e fixture below was
+      removed) and `scrutineer init`
+      writes it into the project as `scrutineer-examples/`. Verified by installing the built
+      wheel into a clean venv and running the new Quick Start verbatim from an empty cwd:
+      `init` → 0, `basic_scenario.yaml` → PASS 0, `chaos_scenario_unhandled.yaml` → FAIL 1.
+- [x] 🟠 **YAML scenarios need `pyyaml`, which is in the `[governance]` extra, not core.**
       So the advertised zero-dependency install cannot run any shipped scenario. Verified:
       core venv prints "PyYAML required for YAML files." and then, misleadingly,
-      "No scenarios found in file." Fix: make pyyaml a core dependency (YAML is the primary
-      user-facing path) or document `scrutineer-agents[governance]`, and make the loader exit
-      on the real reason rather than printing a second, wrong one. Target 0.3.1.
+      "No scenarios found in file." **FIXED 2026-10-10:** `pyyaml>=6.0` is now a core
+      dependency (`[governance]` stays as a resolving alias), and the loader raises
+      `ScenarioLoadError` so the CLI prints the true reason once and exits 1 — the second,
+      false message is gone.
 - [x] Everything else verified good on the published artifact: core install pulls exactly
       `click` + the package; wheel carries `scrutineer/`+`governance/`+`common/`;
       `scrutineer --version` → 0.3.0; `scrutineer serve` from an EMPTY cwd → `/api/health`
@@ -187,16 +238,49 @@ empty cwd — not against the repo checkout:
       that repeat it attribute it inconsistently (PwC / Composio / Bonjoy / RAND); one states
       88% in the headline and computes 86% in the body. The failure-mode breakdown was dropped
       entirely: unsourced, and it sums to 80%.
-- [ ] 🔴 **`docs/CHAOS_BENCHMARK.md` presents invented numbers as real-world sources.** Its
+- [x] 🔴 **`docs/CHAOS_BENCHMARK.md` presents invented numbers as real-world sources.** Its
       table asserted "PagerDuty: 28% of incidents", "RAG systems: 15-30% irrelevant
       retrieval", "Microservices: 60% of outages cascade" and a dozen more with no citation,
       date or report name, and its "Correlation Evidence" section claimed a production
       distribution that was never measured — the doc's own method section lists collecting
       production logs as a future step. These are the figures the README breakdown was
-      relabelled from. Column retitled and flagged 2026-10-09; **each row still needs a real
-      source or removal.** The file ships in the sdist, so a prospect can read it.
+      relabelled from. Column retitled and flagged 2026-10-09.
+      **FIXED 2026-10-10:** rewritten. Every unsourced figure is **removed rather than
+      restated** — removing the number while keeping the verdict beside it ("High — matches
+      reality") would have been the worse half-fix, since the missing number is visible and the
+      verdict is not. Every remaining row describes only what the implementation does, sourced
+      from each injector's signature in `scrutineer/chaos.py`, and the fidelity column now reads
+      "benchmarked against production data: No" for all fifteen rows. Added a table of which
+      injectors are usable from a scenario file (four; three are refused on purpose and
+      `LLMFailureInjector` is Python-only), checked against `_WRAPPABLE_INJECTORS`.
 
 ## Open Questions
+
+- 🔴 **`baseline record` writes into the Python environment, not the user's project.**
+  `get_baseline_dir()` derives the project root from `Path(__file__).parent.parent.parent`: the
+  repo root for a source checkout, but `lib/python3.11/` for an installed wheel. Verified on a
+  clean venv install of the built wheel — from a scratch project directory,
+  `scrutineer baseline record mybaseline --path results.json` created
+  `<venv>/lib/python3.11/.scrutineer/baselines/mybaseline`, i.e. *inside the venv*, and nothing
+  in the user's own directory. So every pip user's baselines live in a directory a reinstall
+  destroys and that every project sharing that venv also writes to; `diff` and `report` read
+  back from the same place, so it looks like it works. Recommended fix: default to
+  `Path.cwd()`, or search upward from cwd for `.git`/`pyproject.toml`, with an explicit
+  override. Deliberately not changed here — where a tool stores a user's data is a product
+  decision, and `tests/conftest.py`'s `tmp_baseline_dir` insulates the suite either way.
+- **`AGENTS.md` still says YAML loading needs `.[governance]`** ("CLI and scenarios"), which now
+  contradicts `pyproject.toml`. The correcting edit was refused by the protected-agent-file
+  guard and has deliberately not been retried. The same file's *Working notes* did receive the
+  2026-10-10 lessons — check whether that landed, and whether it should stay.
+- **The WebUI writes scenarios it saves into `examples/`.** `scrutineer-serve --scenario-dir`
+  defaults to `examples`, so a save from the browser edits the *repository's* example tree — that
+  is how `examples/e2e-scenario-saved.yaml` got committed in the first place. It should default
+  to a user-owned directory (`.scrutineer/scenarios/`, say). Not fixed: it changes the WebUI's
+  storage contract and the e2e tests assert against it.
+- **The README presents the OpenAI adapter as a working drop-in** (`wrap_openai_agent`) while
+  the adapter is still fail-open (see the pending item above). Fix the adapter, or say plainly
+  in the README that it is adapter-construction only today. Deliberately left to Adam: that is
+  product messaging, not a typo.
 
 - Phase 7's queue is ~half stale: of its 11 pending items, **5 are already built** (WebUI
   dashboard, model-endpoint selector, chaos config builder, SSE streaming, trace/baseline
@@ -216,6 +300,12 @@ empty cwd — not against the repo checkout:
 
 - Repo at https://github.com/adam85sims/Scrutineer
 - Governance default is deterministic-only (no LLM required)
+- **Unreleased (targeting 0.3.1):** `pyyaml` is a core dependency; `scrutineer init` writes the
+  starter kit; `examples/` is force-included into the wheel. On a fresh build, expect 26
+  `scrutineer/examples/` files in the wheel and `Requires-Dist: pyyaml>=6.0` with no extra.
+- **Re-check this after every build:** `unzip -l dist/*.whl` and then run the README from an
+  empty cwd in a clean venv. The suite being green does not mean the wheel is complete — 0.3.0
+  proved that.
 - The five shipped Phase 7 items above are marked `[ ]` here despite existing — this file
   overstates remaining work, and its `Done`/`Notes` sections understated test counts until
   2026-10-08. Keep both honest; the governance audit reads this file.
