@@ -99,7 +99,27 @@
 - [ ] Give `scrutineer/adapters/openai.py` the same treatment as the LangChain adapter:
       its `wrap_openai_agent` builds adapters and `invoke()` delegates, so it is still
       fail-OPEN — the agent's real FunctionTools run while the trace stays empty and the run
-      reports success. §4.3 fixed this for LangChain only (see commit 1ab62c0).
+      reports success. §4.3 fixed this for LangChain only (see commit 1ab62c0). **Re-confirmed
+      2026-10-21:** `wrap_openai_agent` (adapters/openai.py:255-294) only constructs and returns
+      `OpenAIAgentWrapper`; its docstring leaves the wiring to the caller
+      (`my_agent.tools = wrapper.get_tool_list()`), so an unwired agent runs its real tools and
+      the trace stays empty. The README still sells it as a drop-in.
+- [ ] **The test suite is not hermetic about `.scrutineer/runs/`.** `tests/conftest.py`
+      isolates `get_baseline_dir` via `tmp_baseline_dir` but there is no equivalent for the run
+      directory, so every full-suite run writes a UUID-named run JSON into the *checkout*
+      (`f20005a6-…json`, 2026-10-21; the directory held 107 files, 23 of them tracked fixtures).
+      Same root cause as the open 🔴 in "Open Questions" — the data-location default is derived
+      from `__file__` rather than cwd — so fixing that properly closes both. Until then: a green
+      suite leaves untracked junk in the tree, and `git status` after a test run is not a clean
+      signal.
+- [ ] **Unattributed, unreproduced: 8 tracked run fixtures vanished from the working tree.**
+      2026-10-21, during a session whose only writes were `pytest` and a `git fetch`, the eight
+      `.scrutineer/runs/*-pass-*.json` files (all `-fail-` twins survived) showed as deleted.
+      Restored with `git checkout -- .scrutineer/runs/`. A full re-run afterwards deleted
+      nothing and added one file, so the suite is *not* the reproducible cause; some other
+      process with cwd in the repo is. No data lost, but nothing ships from this tree until it
+      is understood — if a scenario run can delete a sibling run file, that is a user-data bug,
+      not a test hygiene one.
 
 ---
 
@@ -119,9 +139,18 @@ which run in their own CI job).
     machine and the workflow only triggers on a published GitHub Release. No GitHub Release or
     `v0.3.1` tag exists. Cutting one now would re-run the workflow and fail with "File already
     exists" (the workflow's own comment anticipates this as a wiring test). **Rotate the PyPI
-    token** — it appeared in a chat log earlier.
-  - **Open:** `git remote` still points at `Sentinel.git`, which redirects; every push prints a
-    "repository moved" notice. One `git remote set-url` fixes it, left to Adam.
+    token** — it appeared in a chat log earlier. **STILL LIVE 2026-10-21, verified:** a
+    `twine upload --skip-existing` of the 0.3.1 artifacts rebuilt from this tree authenticated
+    and got "already exists" back for both files — PyPI only says that once auth succeeds, so
+    the legacy `~/.pypirc` token has now spent 11 days unrotated with no read scope but full
+    upload rights to the project. Rotation is a web-only action (pypi.org → Account settings →
+    API tokens → add a new project-scoped token, then delete the `pypi-AgEIcH…` one created
+    2026-10-09). The *structural* fix is the trusted publisher below, which needs no token at
+    all — but that path has never executed once (`0` GitHub releases, `0` tags), and
+    `gh auth status` still reports no host logged in, so `workflow_dispatch` cannot be fired
+    from here either.
+  - **Resolved 2026-10-21:** `git remote set-url origin
+    https://github.com/adam85sims/Scrutineer.git`; `git fetch` is silent, no redirect notice.
 
 - [x] **0.3.1 first-run pass (2026-10-10, afternoon)** — the same "it lies" class, hunted further
       down the same path. Verified from wheels built from this tree, installed into clean venvs:
